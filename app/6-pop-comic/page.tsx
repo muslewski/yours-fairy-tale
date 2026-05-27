@@ -16,17 +16,17 @@ export default function PopComic() {
       <BackLink />
 
       <div className="relative mx-auto max-w-7xl px-6 pb-16 pt-6 sm:px-10">
-        <header className="flex items-center justify-between rounded-2xl border-[3px] border-[#1a1033] bg-white px-4 py-3 shadow-[6px_6px_0_#1a1033]">
+        <header className="flex items-center justify-between gap-4 rounded-2xl border-[3px] border-[#1a1033] bg-white px-5 py-2.5 shadow-[6px_6px_0_#1a1033]">
           <Image
             src="/logo.png"
             alt="Yours Fairy Tale"
             unoptimized
-            width={140}
-            height={72}
+            width={120}
+            height={120}
             priority
-            className="h-16 w-auto"
+            className="h-12 w-12 shrink-0"
           />
-          <nav className="hidden gap-1 md:flex">
+          <nav className="hidden flex-1 justify-center gap-1 md:flex">
             {NAV.map((item) => (
               <a
                 key={item}
@@ -39,7 +39,7 @@ export default function PopComic() {
           </nav>
           <a
             href="#"
-            className="hidden rounded-lg border-[3px] border-[#1a1033] bg-[#f042d2] px-4 py-2 text-sm font-bold text-white shadow-[3px_3px_0_#1a1033] transition active:translate-y-0.5 active:shadow-[1px_1px_0_#1a1033] md:inline-flex"
+            className="shrink-0 rounded-lg border-[3px] border-[#1a1033] bg-[#f042d2] px-4 py-2 text-sm font-bold text-white shadow-[3px_3px_0_#1a1033] transition active:translate-y-0.5 active:shadow-[1px_1px_0_#1a1033]"
           >
             Start! ⚡
           </a>
@@ -50,12 +50,15 @@ export default function PopComic() {
             <div className="inline-block rotate-[-3deg] rounded-xl border-[3px] border-[#1a1033] bg-white px-4 py-2 text-xs font-black uppercase tracking-widest shadow-[4px_4px_0_#1a1033]">
               ⭐ Brand new!
             </div>
-            <h1 className="mt-6 font-[family-name:var(--font-fredoka)] text-6xl font-bold uppercase leading-[0.95] tracking-tight sm:text-7xl lg:text-[104px]">
-              <span className="block">Pow!</span>
-              <span className="block text-[#f042d2]" style={{ WebkitTextStroke: "2px #1a1033" }}>
-                A storybook
+            <h1 className="mt-6 font-[family-name:var(--font-fredoka)] text-5xl font-bold uppercase leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl xl:text-[88px]">
+              <span className="block whitespace-nowrap">Pow! A</span>
+              <span
+                className="block whitespace-nowrap text-[#f042d2]"
+                style={{ WebkitTextStroke: "2px #1a1033" }}
+              >
+                Storybook
               </span>
-              <span className="block">just for YOU!</span>
+              <span className="block whitespace-nowrap">just for YOU!</span>
             </h1>
             <div className="relative mt-6 inline-block max-w-xl">
               <div className="relative rounded-2xl border-[3px] border-[#1a1033] bg-white p-5 text-lg font-semibold shadow-[6px_6px_0_#1a1033]">
