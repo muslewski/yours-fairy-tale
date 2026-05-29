@@ -40,6 +40,8 @@ Personalized, hand-illustrated hardcover storybooks starring a customer's child.
 
 **Every CTA and nav link must lead somewhere real** — scroll to an in-page section anchor (or a route), never a dead `href="#"`. When you add a section, give its `<section>` an `id` and point the matching CTAs at it. In-page anchors rely on `scroll-behavior: smooth` (set on `html` in [app/globals.css](app/globals.css), disabled under `prefers-reduced-motion`).
 
+The nav ([components/home/site-nav.tsx](components/home/site-nav.tsx)) is **fixed** (floating pill, `z-50`); `html { scroll-padding-top }` offsets anchor jumps so targets land below it. New anchored sections need no per-section offset.
+
 Homepage section anchors:
 - `#build` — the configurator. Target for primary "make / create your book" CTAs and the nav **Start** button.
 - `#collections` — the categories grid. Target for "see samples / browse" CTAs.

@@ -3,9 +3,6 @@
 import Image from "next/image";
 import { motion, useReducedMotion, type Variants } from "motion/react";
 import DotField from "@/components/DotField";
-import { Stagger, StaggerItem, hoverPop, tapPop } from "@/components/motion/stagger";
-
-const NAV = ["Home", "Matieniatus", "Fairy Tale", "Resources", "Contact"];
 
 const headlineContainer: Variants = {
   hidden: {},
@@ -35,7 +32,7 @@ export function Hero() {
         };
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-brand-yellow">
+    <section id="top" className="relative min-h-screen overflow-hidden bg-brand-yellow">
       {/* Interactive halftone background. */}
       <div className="pointer-events-none absolute inset-0" aria-hidden>
         <DotField
@@ -50,61 +47,8 @@ export function Hero() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 pb-16 pt-6 sm:px-10">
-        <header className="flex items-center justify-between gap-4 rounded-2xl border-[3px] border-brand-deep bg-white px-5 py-2.5 shadow-comic">
-          <motion.div
-            {...(reduce
-              ? {}
-              : {
-                  initial: { opacity: 0, scale: 0.5, rotate: -12 },
-                  animate: { opacity: 1, scale: 1, rotate: 0 },
-                  transition: { type: "spring", stiffness: 260, damping: 14, delay: 0.05 },
-                })}
-          >
-            <Image
-              src="/logo.png"
-              alt="Yours Fairy Tale"
-              unoptimized
-              width={120}
-              height={120}
-              priority
-              className="h-12 w-12 shrink-0"
-            />
-          </motion.div>
-
-          <Stagger as="nav" trigger="mount" className="hidden flex-1 justify-center gap-1 md:flex">
-            {NAV.map((item) => (
-              <StaggerItem
-                key={item}
-                as="a"
-                href="#"
-                whileHover={reduce ? undefined : hoverPop}
-                whileTap={reduce ? undefined : tapPop}
-                className="rounded-lg px-3.5 py-2 text-sm font-bold text-brand-deep transition-colors hover:bg-brand-yellow"
-              >
-                {item}
-              </StaggerItem>
-            ))}
-          </Stagger>
-
-          <motion.a
-            href="#build"
-            {...(reduce
-              ? {}
-              : {
-                  initial: { opacity: 0, scale: 0.5, rotate: 10 },
-                  animate: { opacity: 1, scale: 1, rotate: 0 },
-                  transition: { type: "spring", stiffness: 260, damping: 14, delay: 0.1 },
-                  whileHover: { scale: 1.06, rotate: -2 },
-                  whileTap: { scale: 0.95 },
-                })}
-            className="shrink-0 rounded-lg border-[3px] border-brand-deep bg-brand-pink px-4 py-2 text-sm font-bold text-white shadow-comic-sm active:translate-y-0.5"
-          >
-            Start! ⚡
-          </motion.a>
-        </header>
-
-        <div className="mt-12 grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
+      <div className="relative z-10 mx-auto max-w-7xl px-6 pb-16 pt-28 sm:px-10 sm:pt-32">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
           <div>
             <motion.div
               {...rise(0.05)}

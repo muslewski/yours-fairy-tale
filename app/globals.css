@@ -84,6 +84,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* Offset in-page anchor jumps so targets land below the fixed nav. */
+  scroll-padding-top: 6rem;
 }
 
 body {
