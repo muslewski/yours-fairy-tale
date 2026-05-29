@@ -96,7 +96,7 @@ export function Configurator() {
                   return (
                     <label
                       key={o.id}
-                      className={`group flex cursor-pointer flex-col rounded-2xl border-[3px] border-brand-deep p-4 shadow-comic transition-transform duration-150 hover:-translate-y-0.5 ${
+                      className={`flex cursor-pointer flex-col rounded-2xl border-[3px] border-brand-deep p-4 shadow-comic transition-shadow duration-150 hover:shadow-comic-lg ${
                         checked ? "bg-brand-yellow text-brand-deep" : "bg-white text-brand-deep"
                       }`}
                     >
@@ -197,7 +197,7 @@ function Choice({
           return (
             <label
               key={o.id}
-              className={`flex cursor-pointer flex-col rounded-2xl border-[3px] border-brand-deep p-4 shadow-comic transition-transform duration-150 hover:-translate-y-0.5 ${
+              className={`flex cursor-pointer flex-col rounded-2xl border-[3px] border-brand-deep p-4 shadow-comic transition-shadow duration-150 hover:shadow-comic-lg ${
                 isSelected ? "bg-brand-blue text-brand-deep" : "bg-white text-brand-deep"
               }`}
             >

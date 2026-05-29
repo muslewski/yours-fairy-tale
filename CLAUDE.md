@@ -26,6 +26,14 @@ Personalized, hand-illustrated hardcover storybooks starring a customer's child.
 
 **Stack:** Next.js 16 (App Router) + React 19 + Tailwind CSS v4 (CSS-first `@theme`, no `tailwind.config`).
 
+**Comic shadows:** the signature hard offset shadow is tokenized — use `shadow-comic` / `shadow-comic-sm` / `shadow-comic-lg` instead of hardcoding `shadow-[...]`.
+
+**Hover lifts — avoid the edge-jitter trap.** Never put a movement (`hover:-translate-*`) on the *same element that detects the hover*: near its edges the element slides out from under the cursor, the hover ends, it snaps back, and you get an infinite flicker. Instead either:
+1. Put `group` on a stable ancestor that does **not** move (e.g. the wrapping `<li>`) and apply the lift via `group-hover:` on the inner element, or
+2. Use a non-moving hover effect such as `hover:shadow-comic-lg`.
+
+(Tailwind v4 compiles `translate-*` to the native CSS `translate` property, not `transform` — read `getComputedStyle(el).translate` when testing.)
+
 ## Brand voice
 
 Calm, warm, sincere, keepsake-focused. We speak to the **parent/gift-giver**; the **child is the hero**. American English. We do **not** shout — no comic-book SFX ("Pow!", "Kapow!", "Boom!"), no hype, sparse exclamation points.

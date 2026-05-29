@@ -62,10 +62,10 @@ export function Categories() {
 
         <ul className="mt-14 grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3">
           {COLLECTIONS.map((c) => (
-            <li key={c.name}>
+            <li key={c.name} className="group">
               <a
                 href="#"
-                className="group block h-full rounded-2xl border-[3px] border-brand-deep bg-white p-6 shadow-comic transition-transform duration-150 hover:-translate-x-0.5 hover:-translate-y-1 hover:shadow-comic-lg"
+                className="block h-full rounded-2xl border-[3px] border-brand-deep bg-white p-6 shadow-comic transition-[transform,box-shadow] duration-150 group-hover:-translate-x-0.5 group-hover:-translate-y-1 group-hover:shadow-comic-lg"
               >
                 <span
                   aria-hidden
