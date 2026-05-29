@@ -34,6 +34,11 @@
   --animate-pulse-soft: pulseSoft 4s ease-in-out infinite;
   --animate-rise: rise 0.8s ease-out both;
   --animate-marquee: marquee 30s linear infinite;
+
+  /* Comic hard shadows (offset, no blur) — the signature pop-comic look */
+  --shadow-comic-sm: 3px 3px 0 var(--color-brand-deep);
+  --shadow-comic: 6px 6px 0 var(--color-brand-deep);
+  --shadow-comic-lg: 10px 10px 0 var(--color-brand-deep);
 }
 
 /* Semantic surface tokens map onto the brand palette. */
