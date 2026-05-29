@@ -26,6 +26,8 @@ Personalized, hand-illustrated hardcover storybooks starring a customer's child.
 
 **Stack:** Next.js 16 (App Router) + React 19 + Tailwind CSS v4 (CSS-first `@theme`, no `tailwind.config`).
 
+**Animation:** use **Motion** (Framer Motion, imported from `motion/react`) for interactive/animated UI — don't add another animation library. Motion components require `"use client"`. Guard motion with `useReducedMotion()` where it would otherwise move on its own.
+
 **Comic shadows:** the signature hard offset shadow is tokenized — use `shadow-comic` / `shadow-comic-sm` / `shadow-comic-lg` instead of hardcoding `shadow-[...]`.
 
 **Hover lifts — avoid the edge-jitter trap.** Never put a movement (`hover:-translate-*`) on the *same element that detects the hover*: near its edges the element slides out from under the cursor, the hover ends, it snaps back, and you get an infinite flicker. Instead either:
