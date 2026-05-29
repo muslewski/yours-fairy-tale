@@ -35,13 +35,13 @@ export function CtaBanner() {
 
         <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
           <a
-            href="#"
+            href="#build"
             className="inline-flex items-center gap-2 rounded-xl border-[3px] border-brand-deep bg-brand-yellow px-7 py-4 text-base font-black uppercase tracking-wide text-brand-deep shadow-comic transition-transform duration-150 active:translate-y-1 active:shadow-comic-sm"
           >
             Create your book →
           </a>
           <a
-            href="#"
+            href="#collections"
             className="inline-flex items-center gap-2 rounded-xl border-[3px] border-brand-deep bg-white px-6 py-4 text-base font-bold text-brand-deep shadow-comic transition-transform duration-150 active:translate-y-1 active:shadow-comic-sm"
           >
             See sample books

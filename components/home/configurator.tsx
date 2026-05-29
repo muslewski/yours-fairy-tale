@@ -60,6 +60,7 @@ export function Configurator() {
 
   return (
     <section
+      id="build"
       className="relative overflow-hidden bg-brand-deep py-20 text-white sm:py-28"
       style={{
         backgroundImage:

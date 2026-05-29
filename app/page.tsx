@@ -52,7 +52,7 @@ export default function Home() {
                 ))}
               </nav>
               <a
-                href="#"
+                href="#build"
                 className="shrink-0 rounded-lg border-[3px] border-brand-deep bg-brand-pink px-4 py-2 text-sm font-bold text-white shadow-comic-sm transition active:translate-y-0.5 active:shadow-[1px_1px_0_var(--color-brand-deep)]"
               >
                 Start! ⚡
@@ -91,13 +91,13 @@ export default function Home() {
 
                 <div className="mt-10 flex flex-wrap items-center gap-4">
                   <a
-                    href="#"
+                    href="#build"
                     className="inline-flex items-center gap-2 rounded-xl border-[3px] border-brand-deep bg-brand-blue px-7 py-4 text-base font-black uppercase tracking-wide text-white shadow-comic transition active:translate-y-1 active:shadow-comic-sm"
                   >
                     Make my book →
                   </a>
                   <a
-                    href="#"
+                    href="#collections"
                     className="inline-flex items-center gap-2 rounded-xl border-[3px] border-brand-deep bg-white px-6 py-4 text-base font-bold text-brand-deep shadow-comic transition active:translate-y-1 active:shadow-comic-sm"
                   >
                     See samples

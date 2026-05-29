@@ -36,6 +36,14 @@ Personalized, hand-illustrated hardcover storybooks starring a customer's child.
 
 (Tailwind v4 compiles `translate-*` to the native CSS `translate` property, not `transform` — read `getComputedStyle(el).translate` when testing.)
 
+## Navigation & CTAs
+
+**Every CTA and nav link must lead somewhere real** — scroll to an in-page section anchor (or a route), never a dead `href="#"`. When you add a section, give its `<section>` an `id` and point the matching CTAs at it. In-page anchors rely on `scroll-behavior: smooth` (set on `html` in [app/globals.css](app/globals.css), disabled under `prefers-reduced-motion`).
+
+Homepage section anchors:
+- `#build` — the configurator. Target for primary "make / create your book" CTAs and the nav **Start** button.
+- `#collections` — the categories grid. Target for "see samples / browse" CTAs.
+
 ## Brand voice
 
 Calm, warm, sincere, keepsake-focused. We speak to the **parent/gift-giver**; the **child is the hero**. American English. We do **not** shout — no comic-book SFX ("Pow!", "Kapow!", "Boom!"), no hype, sparse exclamation points.
