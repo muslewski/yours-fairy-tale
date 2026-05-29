@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { Stagger, StaggerItem, hoverPop, tapPop } from "@/components/motion/stagger";
 
 const COLUMNS = [
   {
@@ -76,18 +79,23 @@ export function SiteFooter() {
                 <h3 className="font-[family-name:var(--font-fredoka)] text-base font-bold uppercase tracking-wide text-brand-yellow">
                   {col.title}
                 </h3>
-                <ul className="mt-4 space-y-3">
+                <Stagger as="ul" trigger="view" className="mt-4 space-y-3">
                   {col.links.map((link) => (
-                    <li key={link}>
+                    <StaggerItem
+                      key={link}
+                      as="li"
+                      style={{ transformOrigin: "left" }}
+                      whileHover={{ scale: 1.08 }}
+                    >
                       <a
                         href="#"
-                        className="text-sm font-semibold text-white/70 transition hover:text-white"
+                        className="text-sm font-semibold text-white/70 transition-colors hover:text-white"
                       >
                         {link}
                       </a>
-                    </li>
+                    </StaggerItem>
                   ))}
-                </ul>
+                </Stagger>
               </div>
             ))}
           </div>
@@ -97,17 +105,20 @@ export function SiteFooter() {
           <p className="text-sm font-semibold text-white/55">
             © 2026 Yours Fairy Tale. Made by hand, with love.
           </p>
-          <div className="flex flex-wrap items-center gap-2">
+          <Stagger trigger="view" className="flex flex-wrap items-center gap-2">
             {SOCIALS.map((s) => (
-              <a
+              <StaggerItem
                 key={s}
+                as="a"
                 href="#"
-                className="rounded-lg border-[3px] border-white/30 px-3 py-1.5 text-xs font-black uppercase tracking-wide text-white/70 transition hover:border-white hover:text-white"
+                whileHover={hoverPop}
+                whileTap={tapPop}
+                className="rounded-lg border-[3px] border-white/30 px-3 py-1.5 text-xs font-black uppercase tracking-wide text-white/70 transition-colors hover:border-white hover:text-white"
               >
                 {s}
-              </a>
+              </StaggerItem>
             ))}
-          </div>
+          </Stagger>
         </div>
       </div>
     </footer>

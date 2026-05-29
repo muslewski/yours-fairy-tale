@@ -1,3 +1,5 @@
+import { AnimatedHeading } from "@/components/motion/animated-heading";
+
 export function CtaBanner() {
   return (
     <section className="bg-brand-cream px-6 py-16 sm:px-10 sm:py-24">
@@ -23,11 +25,11 @@ export function CtaBanner() {
           Ships in 2 weeks
         </span>
 
-        <h2 className="font-[family-name:var(--font-fredoka)] text-4xl font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-6xl">
-          Ready to make
-          <br />
-          their story?
-        </h2>
+        <AnimatedHeading
+          as="h2"
+          text="Ready to make their story?"
+          className="font-[family-name:var(--font-fredoka)] text-4xl font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-6xl"
+        />
         <p className="mx-auto mt-5 max-w-xl text-lg font-semibold text-white/90">
           Add their name, choose an adventure, and we&apos;ll handcraft the rest. A keepsake they&apos;ll
           ask for again and again.

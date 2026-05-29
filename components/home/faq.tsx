@@ -1,3 +1,5 @@
+import { AnimatedHeading } from "@/components/motion/animated-heading";
+
 const FAQS = [
   {
     q: "How long until the book arrives?",
@@ -33,9 +35,11 @@ export function Faq() {
           <span className="inline-block rotate-[2deg] rounded-lg border-[3px] border-brand-deep bg-brand-blue px-3 py-1.5 text-xs font-black uppercase tracking-widest text-brand-deep shadow-comic-sm">
             Questions, answered
           </span>
-          <h2 className="mt-6 font-[family-name:var(--font-fredoka)] text-4xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl">
-            The little details, sorted
-          </h2>
+          <AnimatedHeading
+            as="h2"
+            text="The little details, sorted"
+            className="mt-6 font-[family-name:var(--font-fredoka)] text-4xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl"
+          />
         </div>
 
         <div className="mt-12 space-y-4">

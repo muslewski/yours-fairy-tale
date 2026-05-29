@@ -9,6 +9,8 @@ import {
   useReducedMotion,
   useTransform,
 } from "motion/react";
+import { Checkout, type CheckoutCart } from "@/components/checkout";
+import { AnimatedHeading } from "@/components/motion/animated-heading";
 
 type Option = { id: string; label: string; price: number; note: string };
 
@@ -49,11 +51,22 @@ export function Configurator() {
   const [format, setFormat] = useState("hardcover");
   const [length, setLength] = useState("standard");
   const [extras, setExtras] = useState<string[]>(["dedication"]);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const fmt = FORMATS.find((o) => o.id === format)!;
   const len = LENGTHS.find((o) => o.id === length)!;
   const chosenExtras = useMemo(() => EXTRAS.filter((o) => extras.includes(o.id)), [extras]);
   const total = fmt.price + len.price + chosenExtras.reduce((s, o) => s + o.price, 0);
+
+  const cart: CheckoutCart = {
+    currency: "usd",
+    total,
+    items: [
+      { label: `${fmt.label} cover`, amount: fmt.price },
+      ...(len.price > 0 ? [{ label: len.label, amount: len.price }] : []),
+      ...chosenExtras.map((o) => ({ label: o.label, amount: o.price })),
+    ],
+  };
 
   const toggleExtra = (id: string) =>
     setExtras((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -73,9 +86,11 @@ export function Configurator() {
           <span className="inline-block rotate-[-2deg] rounded-lg border-[3px] border-white bg-brand-pink px-3 py-1.5 text-xs font-black uppercase tracking-widest text-white shadow-[3px_3px_0_#fff]">
             Build their book
           </span>
-          <h2 className="mt-6 font-[family-name:var(--font-fredoka)] text-4xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl">
-            Design the keepsake, watch the price as you go
-          </h2>
+          <AnimatedHeading
+            as="h2"
+            text="Design the keepsake, watch the price as you go"
+            className="mt-6 font-[family-name:var(--font-fredoka)] text-4xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl"
+          />
           <p className="mt-4 text-lg font-medium text-white/70">
             Pick a cover, a length, and any finishing touches. No payment yet. This just helps you
             picture your book.
@@ -189,19 +204,22 @@ export function Configurator() {
               </AnimatePresence>
             </ul>
 
-            <motion.a
-              href="#"
+            <motion.button
+              type="button"
+              onClick={() => setCheckoutOpen(true)}
               whileHover={{ y: -2 }}
               whileTap={{ y: 1, scale: 0.99 }}
               className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl border-[3px] border-brand-deep bg-brand-pink px-6 py-4 text-base font-black uppercase tracking-wide text-white shadow-comic"
             >
               Create your book →
-            </motion.a>
+            </motion.button>
             <p className="mt-3 text-center text-xs font-semibold text-brand-deep/60">
               Free shipping. Full preview before anything prints.
             </p>
           </div>
         </motion.div>
+
+        <Checkout open={checkoutOpen} cart={cart} onClose={() => setCheckoutOpen(false)} />
       </div>
     </section>
   );
