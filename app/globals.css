@@ -1,30 +1,31 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #1a1033;
+/* ============================================================
+   Yours Fairy Tale — design tokens (single source of truth)
 
-  --brand-blue: #17c7e2;
-  --brand-pink: #f042d2;
-  --brand-yellow: #faca23;
-  --brand-deep: #1a1033;
-  --brand-cream: #fff9ee;
-}
+   Brand palette, typography, and motion live here. Use them via:
+     • Tailwind utilities ...... bg-brand-yellow, text-brand-deep, border-brand-deep
+     • CSS variables ........... var(--color-brand-deep)  (for arbitrary values,
+                                 box-shadows, and inline styles)
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+   Do NOT hardcode hex values in components — reach for a token so the
+   palette stays consistent and changeable from one place.
+   ============================================================ */
 
-  --color-brand-blue: #17c7e2;
-  --color-brand-pink: #f042d2;
-  --color-brand-yellow: #faca23;
-  --color-brand-deep: #1a1033;
-  --color-brand-cream: #fff9ee;
+@theme {
+  /* Brand palette */
+  --color-brand-blue: #17c7e2; /* sky · accent */
+  --color-brand-pink: #f042d2; /* magenta · highlight */
+  --color-brand-yellow: #faca23; /* sunshine · primary surface */
+  --color-brand-deep: #1a1033; /* ink · text & outlines */
+  --color-brand-cream: #fff9ee; /* paper · page background */
 
-  --font-display: var(--font-fredoka);
-  --font-sans: var(--font-quicksand);
-  --font-serif: var(--font-fraunces);
+  /* Typography */
+  --font-display: var(--font-fredoka); /* headlines */
+  --font-sans: var(--font-quicksand); /* body / UI */
+  --font-serif: var(--font-fraunces); /* editorial accents */
 
+  /* Motion */
   --animate-float: float 6s ease-in-out infinite;
   --animate-float-slow: float 9s ease-in-out infinite;
   --animate-spin-slow: spin 20s linear infinite;
@@ -33,6 +34,17 @@
   --animate-pulse-soft: pulseSoft 4s ease-in-out infinite;
   --animate-rise: rise 0.8s ease-out both;
   --animate-marquee: marquee 30s linear infinite;
+}
+
+/* Semantic surface tokens map onto the brand palette. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+:root {
+  --background: var(--color-brand-cream);
+  --foreground: var(--color-brand-deep);
 }
 
 @keyframes float {
