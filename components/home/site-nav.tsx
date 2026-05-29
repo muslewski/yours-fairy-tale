@@ -4,7 +4,13 @@ import Image from "next/image";
 import { motion, useReducedMotion } from "motion/react";
 import { Stagger, StaggerItem, hoverPop, tapPop } from "@/components/motion/stagger";
 
-const NAV = ["Home", "Matieniatus", "Fairy Tale", "Resources", "Contact"];
+const NAV = [
+  { label: "Home", href: "/#top" },
+  { label: "Matieniatus", href: "/#top" },
+  { label: "Fairy Tale", href: "/#collections" },
+  { label: "Journal", href: "/blog" },
+  { label: "Contact", href: "/#top" },
+];
 
 /**
  * Fixed floating navigation. The outer wrapper is pointer-events-none so the
@@ -27,7 +33,7 @@ export function SiteNav() {
         className="pointer-events-auto mx-auto flex max-w-7xl items-center justify-between gap-4 rounded-2xl border-[3px] border-brand-deep bg-white px-5 py-2.5 shadow-comic"
       >
         <motion.a
-          href="#top"
+          href="/#top"
           aria-label="Yours Fairy Tale — home"
           {...(reduce
             ? {}
@@ -53,20 +59,20 @@ export function SiteNav() {
         <Stagger as="nav" trigger="mount" className="hidden flex-1 justify-center gap-1 md:flex">
           {NAV.map((item) => (
             <StaggerItem
-              key={item}
+              key={item.label}
               as="a"
-              href="#"
+              href={item.href}
               whileHover={reduce ? undefined : hoverPop}
               whileTap={reduce ? undefined : tapPop}
               className="rounded-lg px-3.5 py-2 text-sm font-bold text-brand-deep transition-colors hover:bg-brand-yellow"
             >
-              {item}
+              {item.label}
             </StaggerItem>
           ))}
         </Stagger>
 
         <motion.a
-          href="#build"
+          href="/#build"
           {...(reduce
             ? {}
             : {

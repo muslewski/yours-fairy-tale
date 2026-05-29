@@ -29,7 +29,7 @@ const FAQS = [
 
 export function Faq() {
   return (
-    <section className="relative bg-brand-cream py-20 sm:py-28">
+    <section id="faq" className="relative bg-brand-cream py-20 sm:py-28">
       <div className="mx-auto max-w-3xl px-6 sm:px-10">
         <div className="text-center">
           <span className="inline-block rotate-[2deg] rounded-lg border-[3px] border-brand-deep bg-brand-blue px-3 py-1.5 text-xs font-black uppercase tracking-widest text-brand-deep shadow-comic-sm">

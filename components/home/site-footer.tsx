@@ -6,15 +6,30 @@ import { Stagger, StaggerItem, hoverPop, tapPop } from "@/components/motion/stag
 const COLUMNS = [
   {
     title: "Explore",
-    links: ["Collections", "How it works", "Sample books", "Pricing"],
+    links: [
+      { label: "Collections", href: "/#collections" },
+      { label: "How it works", href: "/#build" },
+      { label: "The Journal", href: "/blog" },
+      { label: "Pricing", href: "/#build" },
+    ],
   },
   {
     title: "Support",
-    links: ["FAQ", "Contact us", "Shipping", "Track your order"],
+    links: [
+      { label: "FAQ", href: "/#faq" },
+      { label: "Contact us", href: "/#top" },
+      { label: "Shipping", href: "/#faq" },
+      { label: "Track your order", href: "/#top" },
+    ],
   },
   {
     title: "Company",
-    links: ["Our story", "Reviews", "Gift cards", "Careers"],
+    links: [
+      { label: "Our story", href: "/#top" },
+      { label: "Reviews", href: "/#top" },
+      { label: "Gift cards", href: "/#build" },
+      { label: "Careers", href: "/#top" },
+    ],
   },
 ];
 
@@ -82,16 +97,16 @@ export function SiteFooter() {
                 <Stagger as="ul" trigger="view" className="mt-4 space-y-3">
                   {col.links.map((link) => (
                     <StaggerItem
-                      key={link}
+                      key={link.label}
                       as="li"
                       style={{ transformOrigin: "left" }}
                       whileHover={{ scale: 1.08 }}
                     >
                       <a
-                        href="#"
+                        href={link.href}
                         className="text-sm font-semibold text-white/70 transition-colors hover:text-white"
                       >
-                        {link}
+                        {link.label}
                       </a>
                     </StaggerItem>
                   ))}
