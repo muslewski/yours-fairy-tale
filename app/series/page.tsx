@@ -6,7 +6,7 @@ import { WaitlistForm } from "@/components/series/waitlist-form";
 export const metadata: Metadata = {
   title: "The Series — Yours Fairy Tale",
   description:
-    "A personalized animated series starring your child, delivered in a dedicated app for iOS and Android. Coming soon — join the waitlist.",
+    "A personalized animated series starring your child, delivered in a dedicated app for iOS and Android. Coming soon. Join the waitlist.",
 };
 
 export default function SeriesPage() {
