@@ -11,12 +11,7 @@ export function SeriesTeaser() {
   return (
     <section
       id="series"
-      className="relative overflow-hidden bg-brand-blue py-20 text-brand-deep sm:py-28"
-      style={{
-        backgroundImage:
-          "radial-gradient(circle at 10px 10px, color-mix(in srgb, var(--color-brand-deep) 14%, transparent) 2px, transparent 0)",
-        backgroundSize: "26px 26px",
-      }}
+      className="relative overflow-hidden bg-brand-yellow py-20 text-brand-deep sm:py-28"
     >
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 sm:px-10 lg:grid-cols-[1.1fr_1fr]">
         <div>
@@ -52,7 +47,7 @@ export function SeriesTeaser() {
             >
               <Link
                 href="/series"
-                className="inline-flex items-center gap-2 rounded-xl border-[3px] border-brand-deep bg-brand-yellow px-7 py-4 text-base font-black uppercase tracking-wide text-brand-deep shadow-comic"
+                className="inline-flex items-center gap-2 rounded-xl border-[3px] border-brand-deep bg-brand-blue px-7 py-4 text-base font-black uppercase tracking-wide text-brand-deep shadow-comic"
               >
                 See what&apos;s coming →
               </Link>
