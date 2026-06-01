@@ -2,6 +2,7 @@ import { SiteNav } from "@/components/home/site-nav";
 import { Hero } from "@/components/home/hero";
 import { Categories } from "@/components/home/categories";
 import { Configurator } from "@/components/home/configurator";
+import { SeriesTeaser } from "@/components/home/series-teaser";
 import { Faq } from "@/components/home/faq";
 import { CtaBanner } from "@/components/home/cta-banner";
 import { SiteFooter } from "@/components/home/site-footer";
@@ -14,6 +15,7 @@ export default function Home() {
         <Hero />
         <Categories />
         <Configurator />
+        <SeriesTeaser />
         <Faq />
         <CtaBanner />
       </main>
