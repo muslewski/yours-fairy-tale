@@ -4,7 +4,7 @@ import { PhoneMockup } from "@/components/series/phone-mockup";
 
 export function SeriesHero() {
   return (
-    <header className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
+    <header className="grid items-center gap-12 pt-8 sm:pt-14 lg:grid-cols-[1.1fr_1fr]">
       <div>
         <span className="inline-block rotate-[-2deg] rounded-lg border-[3px] border-brand-deep bg-brand-pink px-3 py-1.5 text-xs font-black uppercase tracking-widest text-white shadow-comic-sm">
           Premium · coming soon
