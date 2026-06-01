@@ -21,9 +21,9 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Yours Fairy Tale — Personalized storybooks for every child",
+  title: "Yours Fairy Tale — Personalized animated videos for every child",
   description:
-    "Create custom illustrated fairy tales starring your child. Choose adventures, characters, and keepsake portraits.",
+    "Create a custom animated fairy tale starring your child. Choose an adventure, a length, and the level of detail.",
 };
 
 export default function RootLayout({
