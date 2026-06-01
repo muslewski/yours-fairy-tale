@@ -2,28 +2,32 @@ import { AnimatedHeading } from "@/components/motion/animated-heading";
 
 const FAQS = [
   {
-    q: "How long until the book arrives?",
-    a: "Most books are illustrated and shipped within two weeks, and you'll get an email at every step along the way.",
+    q: "How soon will the video be ready?",
+    a: "Most videos are animated and delivered within two weeks, and we'll email you at every step along the way.",
   },
   {
-    q: "Can I see it before it ships?",
-    a: "Yes. We send a full digital preview, and you can ask for changes before anything is printed.",
+    q: "Can I see it before it's final?",
+    a: "Yes. We send a full preview, and you can ask for changes before we finish the final cut.",
   },
   {
     q: "What ages is this made for?",
-    a: "The stories are written for children from about two to eight years old, and they tend to be treasured well beyond that.",
+    a: "The stories are written for children from about two to eight years old, and they tend to be watched again and again.",
   },
   {
     q: "How do you use my child's details?",
-    a: "Only to create your book. We never sell your information, and you can ask us to delete it at any time.",
+    a: "Only to create your video. We never sell your information, and you can ask us to delete it at any time.",
   },
   {
     q: "What if I need to change something?",
-    a: "Just reply to your confirmation email. We're glad to adjust names, little details, or the dedication.",
+    a: "Just reply to your confirmation email. We're glad to adjust names and the little details.",
   },
   {
     q: "Is it really personalized, or just a name swap?",
-    a: "It's truly personalized. Your child's name, hair, and the details you share are illustrated into the story by a real artist.",
+    a: "It's truly personalized. Your child's name, hair, and the details you share are animated into the story by a real artist.",
+  },
+  {
+    q: "How do I watch it, and what quality?",
+    a: "You'll get a private link to stream or download in crisp HD. A 4K master file is available as an add-on.",
   },
 ];
 

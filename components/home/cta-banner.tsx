@@ -16,13 +16,13 @@ export function CtaBanner() {
           aria-hidden
           className="absolute -left-3 top-8 hidden rotate-[-12deg] rounded-2xl border-[3px] border-brand-deep bg-brand-yellow px-4 py-2 text-sm font-black uppercase shadow-comic-sm sm:block"
         >
-          ✦ Handmade
+          ✦ Hand-animated
         </span>
         <span
           aria-hidden
           className="absolute -right-2 bottom-10 hidden rotate-[10deg] rounded-2xl border-[3px] border-brand-deep bg-brand-blue px-4 py-2 text-sm font-black uppercase text-brand-deep shadow-comic-sm sm:block"
         >
-          Ships in 2 weeks
+          Ready in 2 weeks
         </span>
 
         <AnimatedHeading
@@ -31,7 +31,7 @@ export function CtaBanner() {
           className="font-[family-name:var(--font-fredoka)] text-4xl font-bold uppercase leading-[0.95] tracking-tight text-white sm:text-6xl"
         />
         <p className="mx-auto mt-5 max-w-xl text-lg font-semibold text-white/90">
-          Add their name, choose an adventure, and we&apos;ll handcraft the rest. A keepsake they&apos;ll
+          Add their name, choose an adventure, and we&apos;ll animate the rest. A keepsake they&apos;ll
           ask for again and again.
         </p>
 
@@ -40,13 +40,13 @@ export function CtaBanner() {
             href="#build"
             className="inline-flex items-center gap-2 rounded-xl border-[3px] border-brand-deep bg-brand-yellow px-7 py-4 text-base font-black uppercase tracking-wide text-brand-deep shadow-comic transition-transform duration-150 active:translate-y-1 active:shadow-comic-sm"
           >
-            Create your book →
+            Create their video →
           </a>
           <a
             href="#collections"
             className="inline-flex items-center gap-2 rounded-xl border-[3px] border-brand-deep bg-white px-6 py-4 text-base font-bold text-brand-deep shadow-comic transition-transform duration-150 active:translate-y-1 active:shadow-comic-sm"
           >
-            See sample books
+            Watch samples
           </a>
         </div>
       </div>

@@ -18,7 +18,7 @@ const COLUMNS = [
     links: [
       { label: "FAQ", href: "/#faq" },
       { label: "Contact us", href: "/#top" },
-      { label: "Shipping", href: "/#faq" },
+      { label: "Delivery", href: "/#faq" },
       { label: "Track your order", href: "/#top" },
     ],
   },
@@ -56,8 +56,8 @@ export function SiteFooter() {
               </span>
             </div>
             <p className="mt-5 max-w-sm text-base font-medium text-white/70">
-              Handmade storybooks starring your child. Written with care, illustrated by a real
-              artist, and made to be read again and again.
+              Hand-animated fairy tales starring your child. Written with care, animated by a real
+              artist, and made to be watched again and again.
             </p>
 
             <form className="mt-7 max-w-sm">
