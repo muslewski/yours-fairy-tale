@@ -8,6 +8,7 @@ const NAV = [
   { label: "Home", href: "/#top" },
   { label: "Matieniatus", href: "/#top" },
   { label: "Fairy Tale", href: "/#collections" },
+  { label: "Series", href: "/series" },
   { label: "Journal", href: "/blog" },
   { label: "Contact", href: "/#top" },
 ];
