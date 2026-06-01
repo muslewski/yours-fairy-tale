@@ -82,7 +82,7 @@ export function Categories() {
                 </h3>
                 <p className="mt-2 text-base font-medium text-brand-deep/70">{c.blurb}</p>
                 <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-black uppercase tracking-wide text-brand-pink">
-                  Watch a sample
+                  Start their film
                   <span aria-hidden className="transition-transform duration-150 group-hover:translate-x-1">
                     →
                   </span>

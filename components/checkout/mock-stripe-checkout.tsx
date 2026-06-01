@@ -137,7 +137,7 @@ export function MockStripeCheckout({ open, cart, onClose }: CheckoutProps) {
               </div>
 
               <p className="mt-8 text-sm font-semibold text-white/55">
-                Your personalized storybook
+                Your personalized video
               </p>
               <p className="mt-1 font-[family-name:var(--font-fredoka)] text-5xl font-bold text-brand-yellow">
                 {money(cart.total)}
@@ -158,7 +158,7 @@ export function MockStripeCheckout({ open, cart, onClose }: CheckoutProps) {
               </div>
 
               <p className="mt-auto pt-8 text-xs font-medium text-white/40">
-                Free shipping included. A full preview is sent before anything prints.
+                A full preview is sent before we finish the final cut.
               </p>
             </div>
 
@@ -187,7 +187,7 @@ export function MockStripeCheckout({ open, cart, onClose }: CheckoutProps) {
                       Payment successful
                     </h2>
                     <p className="mt-2 text-sm font-medium text-brand-deep/65">
-                      Order {orderRef}. A confirmation and your book preview are on the way to{" "}
+                      Order {orderRef}. A confirmation and your video preview are on the way to{" "}
                       {email.trim() ? email.trim() : "your inbox"}.
                     </p>
                     <button
