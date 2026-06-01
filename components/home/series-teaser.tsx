@@ -11,15 +11,16 @@ export function SeriesTeaser() {
   return (
     <section
       id="series"
-      className="relative overflow-hidden bg-brand-deep py-20 text-white sm:py-28"
+      className="relative overflow-hidden bg-brand-blue py-20 text-brand-deep sm:py-28"
       style={{
         backgroundImage:
-          "radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--color-brand-pink) 28%, transparent), transparent 45%), radial-gradient(circle at 5% 92%, color-mix(in srgb, var(--color-brand-blue) 24%, transparent), transparent 45%)",
+          "radial-gradient(circle at 10px 10px, color-mix(in srgb, var(--color-brand-deep) 14%, transparent) 2px, transparent 0)",
+        backgroundSize: "26px 26px",
       }}
     >
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 sm:px-10 lg:grid-cols-[1.1fr_1fr]">
         <div>
-          <span className="inline-block rotate-[-2deg] rounded-lg border-[3px] border-white bg-brand-pink px-3 py-1.5 text-xs font-black uppercase tracking-widest text-white shadow-[3px_3px_0_var(--color-brand-blue)]">
+          <span className="inline-block rotate-[-2deg] rounded-lg border-[3px] border-brand-deep bg-brand-pink px-3 py-1.5 text-xs font-black uppercase tracking-widest text-white shadow-comic-sm">
             Premium · coming soon
           </span>
           <AnimatedHeading
@@ -27,7 +28,7 @@ export function SeriesTeaser() {
             text="Give them a whole series, not just one story"
             className="mt-6 font-[family-name:var(--font-fredoka)] text-4xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl"
           />
-          <p className="mt-5 max-w-xl text-lg font-medium text-white/70">
+          <p className="mt-5 max-w-xl text-lg font-medium text-brand-deep/75">
             Their very own show: an ongoing animated adventure of around twenty episodes, with your
             child as the hero of every one. Delivered in a dedicated app for iOS and Android.
           </p>
@@ -36,10 +37,10 @@ export function SeriesTeaser() {
             {Array.from({ length: 20 }).map((_, i) => (
               <span
                 key={i}
-                className={`h-2.5 w-2.5 rounded-full ${i === 0 ? "bg-brand-yellow" : "bg-white/25"}`}
+                className={`h-2.5 w-2.5 rounded-full ${i === 0 ? "bg-brand-deep" : "bg-brand-deep/25"}`}
               />
             ))}
-            <span className="ml-2 text-xs font-bold uppercase tracking-widest text-white/50">
+            <span className="ml-2 text-xs font-bold uppercase tracking-widest text-brand-deep/60">
               ~20 episodes
             </span>
           </div>
@@ -51,20 +52,20 @@ export function SeriesTeaser() {
             >
               <Link
                 href="/series"
-                className="inline-flex items-center gap-2 rounded-xl border-[3px] border-white bg-brand-yellow px-7 py-4 text-base font-black uppercase tracking-wide text-brand-deep shadow-comic"
+                className="inline-flex items-center gap-2 rounded-xl border-[3px] border-brand-deep bg-brand-yellow px-7 py-4 text-base font-black uppercase tracking-wide text-brand-deep shadow-comic"
               >
                 See what&apos;s coming →
               </Link>
             </motion.div>
             <Link
               href="/series#waitlist"
-              className="text-sm font-bold text-white/70 underline-offset-4 transition-colors hover:text-white hover:underline"
+              className="text-sm font-bold text-brand-deep/70 underline-offset-4 transition-colors hover:text-brand-deep hover:underline"
             >
               or join the waitlist
             </Link>
           </div>
 
-          <p className="mt-6 text-xs font-bold uppercase tracking-widest text-white/45">
+          <p className="mt-6 text-xs font-bold uppercase tracking-widest text-brand-deep/55">
             iOS · Android · final pricing at launch
           </p>
         </div>
