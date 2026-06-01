@@ -51,7 +51,7 @@ export function Categories() {
       <div className="mx-auto max-w-7xl px-6 sm:px-10">
         <div className="max-w-2xl">
           <span className="inline-block rotate-[-2deg] rounded-lg border-[3px] border-brand-deep bg-brand-yellow px-3 py-1.5 text-xs font-black uppercase tracking-widest shadow-comic-sm">
-            Storybook collections
+            Story worlds
           </span>
           <AnimatedHeading
             as="h2"
@@ -59,7 +59,7 @@ export function Categories() {
             className="mt-6 font-[family-name:var(--font-fredoka)] text-4xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl"
           />
           <p className="mt-4 text-lg font-medium text-brand-deep/75">
-            Every story is personalized with your child&apos;s name and likeness. Choose the
+            Every film is personalized with your child&apos;s name and likeness. Choose the
             adventure that feels most like them.
           </p>
         </div>
@@ -68,7 +68,7 @@ export function Categories() {
           {COLLECTIONS.map((c) => (
             <li key={c.name} className="group">
               <a
-                href="#"
+                href="#build"
                 className="block h-full rounded-2xl border-[3px] border-brand-deep bg-white p-6 shadow-comic transition-[transform,box-shadow] duration-150 group-hover:-translate-x-0.5 group-hover:-translate-y-1 group-hover:shadow-comic-lg"
               >
                 <span
@@ -82,7 +82,7 @@ export function Categories() {
                 </h3>
                 <p className="mt-2 text-base font-medium text-brand-deep/70">{c.blurb}</p>
                 <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-black uppercase tracking-wide text-brand-pink">
-                  Peek inside
+                  Watch a sample
                   <span aria-hidden className="transition-transform duration-150 group-hover:translate-x-1">
                     →
                   </span>
