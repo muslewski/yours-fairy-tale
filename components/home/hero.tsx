@@ -54,19 +54,19 @@ export function Hero() {
               {...rise(0.05)}
               className="inline-block rotate-[-3deg] rounded-xl border-[3px] border-brand-deep bg-white px-4 py-2 text-xs font-black uppercase tracking-widest shadow-[4px_4px_0_var(--color-brand-deep)]"
             >
-              ⭐ Brand new!
+              ⭐ Brand new
             </motion.div>
 
             {reduce ? (
               <h1 className="mt-6 font-[family-name:var(--font-fredoka)] text-5xl font-bold uppercase leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl xl:text-[88px]">
-                <span className="block whitespace-nowrap">Pow! A</span>
+                <span className="block whitespace-nowrap">An animated</span>
                 <span
                   className="block whitespace-nowrap text-brand-pink"
                   style={{ WebkitTextStroke: "2px var(--color-brand-deep)" }}
                 >
-                  Storybook
+                  fairy tale
                 </span>
-                <span className="block whitespace-nowrap">just for YOU!</span>
+                <span className="block whitespace-nowrap">made for them</span>
               </h1>
             ) : (
               <motion.h1
@@ -76,25 +76,25 @@ export function Hero() {
                 className="mt-6 font-[family-name:var(--font-fredoka)] text-5xl font-bold uppercase leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl xl:text-[88px]"
               >
                 <motion.span variants={headlineLine} className="block whitespace-nowrap">
-                  Pow! A
+                  An animated
                 </motion.span>
                 <motion.span
                   variants={headlineLine}
                   className="block whitespace-nowrap text-brand-pink"
                   style={{ WebkitTextStroke: "2px var(--color-brand-deep)" }}
                 >
-                  Storybook
+                  fairy tale
                 </motion.span>
                 <motion.span variants={headlineLine} className="block whitespace-nowrap">
-                  just for YOU!
+                  made for them
                 </motion.span>
               </motion.h1>
             )}
 
             <motion.div {...rise(0.24)} className="relative mt-6 inline-block max-w-xl">
               <div className="relative rounded-2xl border-[3px] border-brand-deep bg-white p-5 text-lg font-semibold shadow-comic">
-                Drop in their name, hair colour, favourite animal — KAPOW! a hand-illustrated
-                hardcover starring your little legend lands at your door.
+                Tell us their name, their curls, their favorite animal. We hand-animate a short
+                fairy tale starring your child, ready to watch at home.
                 <span
                   aria-hidden
                   className="absolute -bottom-4 left-10 h-0 w-0 border-l-[20px] border-r-[10px] border-t-[20px] border-l-transparent border-r-transparent border-t-white"
@@ -113,7 +113,7 @@ export function Hero() {
                 whileTap={reduce ? undefined : { scale: 0.97 }}
                 className="inline-flex items-center gap-2 rounded-xl border-[3px] border-brand-deep bg-brand-blue px-7 py-4 text-base font-black uppercase tracking-wide text-white shadow-comic active:translate-y-1 active:shadow-comic-sm"
               >
-                Make my book →
+                Create their video →
               </motion.a>
               <motion.a
                 href="#collections"
@@ -121,7 +121,7 @@ export function Hero() {
                 whileTap={reduce ? undefined : { scale: 0.97 }}
                 className="inline-flex items-center gap-2 rounded-xl border-[3px] border-brand-deep bg-white px-6 py-4 text-base font-bold text-brand-deep shadow-comic active:translate-y-1 active:shadow-comic-sm"
               >
-                See samples
+                Watch a sample
               </motion.a>
             </motion.div>
 
@@ -140,7 +140,7 @@ export function Hero() {
                   />
                 ))}
               </div>
-              <span>40,000+ tiny heroes already starring</span>
+              <span>40,000+ children already starring</span>
             </motion.div>
           </div>
 
@@ -162,18 +162,18 @@ export function Hero() {
               aria-hidden
               className="absolute -top-6 -right-4 rotate-[14deg] rounded-2xl border-[3px] border-brand-deep bg-brand-blue px-5 py-3 text-base font-black uppercase shadow-[4px_4px_0_var(--color-brand-deep)]"
             >
-              BOOM!
+              In 4K
             </div>
             <div
               aria-hidden
               className="absolute -bottom-2 -left-4 -rotate-6 rounded-2xl border-[3px] border-brand-deep bg-white px-4 py-2 text-sm font-black uppercase shadow-[4px_4px_0_var(--color-brand-deep)]"
             >
-              ✦ Hand-drawn
+              ✦ Hand-animated
             </div>
             <div className="relative mx-auto aspect-square w-full max-w-[520px]">
               <Image
                 src="/astronaut.png"
-                alt="Tiny astronaut storybook character"
+                alt="Hand-animated astronaut character"
                 fill
                 priority
                 sizes="(min-width: 1024px) 520px, 90vw"
