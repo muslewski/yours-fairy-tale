@@ -190,7 +190,7 @@ export function Configurator() {
                         ✓
                       </span>
                       {o.label}
-                      <span className="font-black">+${o.price}</span>
+                      <span className="font-black">+{usd(o.price)}</span>
                     </motion.label>
                   );
                 })}
@@ -326,7 +326,7 @@ function RangeSlider({
           +{value} min · {totalMinutes} min total
         </span>
         <span className="font-black tabular-nums text-brand-deep">
-          {cost > 0 ? `+${usd(cost)}` : "Included"}
+          {cost > 0 ? `+${usd(cost)}` : ""}
         </span>
       </div>
       <input
