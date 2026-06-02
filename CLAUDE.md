@@ -1,5 +1,22 @@
 @AGENTS.md
 
+## The Mind (read this first — highest priority)
+
+This repo has a knowledge base at `fairy-tale-mind/` (the Mind). **Orient Mind-first;
+maintain on finish; don't work blind; don't leave ghosts.**
+
+- **Before working:** load `fairy-tale-mind/map/index.md` → the relevant zone card
+  (`map/zones/<slug>.md`) → trace its `sources`. Use the `navigating-fairy-tale` skill
+  as the entry ramp.
+- **On finish (same change as the code):** update touched zone cards; re-stamp their
+  `verifiedAt` to HEAD; add a `map/decisions/` record for any non-obvious "why"; file
+  `fairy-tale-mind/tech-debt/` for deferrals; run `npm run mind` and commit the updated
+  `map/index.md`.
+- **Pipeline override:** brainstorming output → `fairy-tale-mind/specs/YYYY-MM-DD-<name>-design.md`;
+  writing-plans output → `fairy-tale-mind/plans/YYYY-MM-DD-<name>.md` (NOT `docs/`).
+- The Map is PRESENT tense (mutable); the Ledger is PAST tense (read-only — supersede,
+  don't edit; tombstone, don't delete).
+
 # Yours Fairy Tale
 
 Personalized, hand-illustrated hardcover storybooks starring a customer's child. Parents add their child's name, hair color, favorite animal, etc., and receive a custom illustrated keepsake book.

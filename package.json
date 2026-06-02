@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "prebuild": "node scripts/mind/generate.mjs",
+    "mind": "node scripts/mind/generate.mjs",
     "start": "next start"
   },
   "dependencies": {

@@ -1,3 +1,15 @@
+---
+type: spec
+summary: "Introduce The Series — a coming-soon personalized animated series delivered via a dedicated iOS/Android app — as a homepage teaser and a /series subpage with a front-end-only waitlist form."
+tags: []
+status: planned
+created: 2026-06-01
+updated: 2026-06-02
+related: []
+sources: []
+origin: ""
+---
+
 # The Series — premium, app-delivered personalized series
 
 **Date:** 2026-06-01

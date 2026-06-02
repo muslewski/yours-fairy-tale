@@ -1,3 +1,15 @@
+---
+type: spec
+summary: "Add a first-impression cream-splash preloader with a curtain exit, playing once per browser session site-wide and skipped entirely under reduced motion."
+tags: []
+status: planned
+created: 2026-06-02
+updated: 2026-06-02
+related: []
+sources: []
+origin: ""
+---
+
 # Preloader — Yours Fairy Tale
 
 **Date:** 2026-06-02

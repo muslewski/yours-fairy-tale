@@ -46,3 +46,6 @@ next-env.d.ts
 
 # brainstorming scratch
 .superpowers/
+
+# Obsidian per-user workspace (the rest of .obsidian is shared/committed)
+fairy-tale-mind/.obsidian/workspace*.json

@@ -1,3 +1,15 @@
+---
+type: spec
+summary: "Switch the live homepage product from hand-illustrated hardcover storybooks to a personalized animated video, including a full homepage rewrite and configurator rebuild."
+tags: []
+status: planned
+created: 2026-06-01
+updated: 2026-06-02
+related: []
+sources: []
+origin: ""
+---
+
 # Switch the product: storybook → personalized animated video
 
 **Date:** 2026-06-01
