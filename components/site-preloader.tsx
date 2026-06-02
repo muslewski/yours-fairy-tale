@@ -87,7 +87,11 @@ export function SitePreloader({
         bgColor="var(--color-brand-cream)"
         zIndex={9999}
         onComplete={() => setVisible(false)}
-        className="!h-auto"
+        // `motion-reduce:hidden` hides the splash at the CSS layer (before first
+        // paint) so reduced-motion users never see a flash of the cream overlay,
+        // even in the SSR HTML before hydration. The effect above also unmounts
+        // it on the client — this is belt-and-suspenders, and the flash-proof one.
+        className="!h-auto motion-reduce:hidden"
       />
 
       {/* Brand stack: logo + tagline, centered. AnimatePresence syncs the exit
@@ -100,7 +104,7 @@ export function SitePreloader({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="pointer-events-none fixed inset-0 z-[10000] flex items-center justify-center px-6"
+            className="pointer-events-none fixed inset-0 z-[10000] flex items-center justify-center px-6 motion-reduce:hidden"
             aria-hidden="true"
           >
             <div className="flex flex-col items-center gap-5 text-center">
@@ -110,6 +114,7 @@ export function SitePreloader({
                 exit={{ opacity: 0, scale: 0.96 }}
                 transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
               >
+                {/* alt="" — decorative; the tagline + labeled status region carry the meaning */}
                 <Image
                   src="/logo.png"
                   alt=""
