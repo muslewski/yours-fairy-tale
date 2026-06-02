@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fredoka, Quicksand, Fraunces } from "next/font/google";
 import "./globals.css";
+import { SitePreloader } from "@/components/site-preloader";
 
 const fredoka = Fredoka({
   variable: "--font-fredoka",
@@ -34,6 +35,7 @@ export default function RootLayout({
       <body
         className={`${fredoka.variable} ${quicksand.variable} ${fraunces.variable} min-h-full antialiased`}
       >
+        <SitePreloader />
         {children}
       </body>
     </html>
