@@ -43,3 +43,6 @@ next-env.d.ts
 # claude / mcp tooling artifacts
 .playwright-mcp/
 .claude/scheduled_tasks.lock
+
+# brainstorming scratch
+.superpowers/
