@@ -13,9 +13,10 @@ owns:
   globs:
     - "scripts/mind/*"
     - ".claude/settings.json"
+    - ".claude/commands/map-sync.md"
 depends: []
 invariants: []
-verifiedAt: 73b3cb8c3542e6bf0cf1814cde54e21b006c6158
+verifiedAt: b74bfbb
 ---
 
 ## Purpose
