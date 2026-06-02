@@ -93,8 +93,9 @@ export function Hero() {
 
             <motion.div {...rise(0.24)} className="relative mt-6 inline-block max-w-xl">
               <div className="relative rounded-2xl border-[3px] border-brand-deep bg-white p-5 text-lg font-semibold shadow-comic">
-                Tell us their name, their curls, their favorite animal. We hand-animate a short
-                fairy tale starring your child, ready to watch at home.
+                Send us a few photos and a few details, like their name and their favorite
+                animal. We hand-animate your child into the hero of their own cinematic fairy
+                tale, ready to watch at home.
                 <span
                   aria-hidden
                   className="absolute -bottom-4 left-10 h-0 w-0 border-l-[20px] border-r-[10px] border-t-[20px] border-l-transparent border-r-transparent border-t-white"
@@ -162,13 +163,13 @@ export function Hero() {
               aria-hidden
               className="absolute -top-6 -right-4 rotate-[14deg] rounded-2xl border-[3px] border-brand-deep bg-brand-blue px-5 py-3 text-base font-black uppercase shadow-[4px_4px_0_var(--color-brand-deep)]"
             >
-              In 4K
+              In HD
             </div>
             <div
               aria-hidden
               className="absolute -bottom-2 -left-4 -rotate-6 rounded-2xl border-[3px] border-brand-deep bg-white px-4 py-2 text-sm font-black uppercase shadow-[4px_4px_0_var(--color-brand-deep)]"
             >
-              ✦ Hand-animated
+              ✦ Personalized
             </div>
             <div className="relative mx-auto aspect-square w-full max-w-[520px]">
               <Image
