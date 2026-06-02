@@ -15,7 +15,7 @@ Read the cheapest note that answers the question: `map/index.md` → `map/zones/
 
 ## Universal frontmatter (every note)
 ```yaml
-type: zone        # zone | entity | flow | decision | spec | plan | idea | debt
+type: zone        # zone | entity | flow | decision | spec | plan | idea | debt | brief
 summary: "1–3 sentence human glance."
 tags: []
 status: active
@@ -34,6 +34,7 @@ sources: []       # lineage [[wikilinks]]
 - **plan** → `implements`, `produced`
 - **idea** → `maturity`
 - **debt** → `severity`, `effort`
+- **brief** → no extras (universal only). The product north-star: what we're building and why. Read it first to orient. Lives at `map/product.md`.
 
 ## Lifecycle (status)
 - spec: `draft → planned → superseded`

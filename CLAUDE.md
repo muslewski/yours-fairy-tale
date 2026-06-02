@@ -5,9 +5,10 @@
 This repo has a knowledge base at `fairy-tale-mind/` (the Mind). **Orient Mind-first;
 maintain on finish; don't work blind; don't leave ghosts.**
 
-- **Before working:** load `fairy-tale-mind/map/index.md` → the relevant zone card
-  (`map/zones/<slug>.md`) → trace its `sources`. Use the `navigating-fairy-tale` skill
-  as the entry ramp.
+- **Before working:** start at `fairy-tale-mind/map/product.md` (the product north-star —
+  what we're building and why), then `fairy-tale-mind/map/index.md` → the relevant zone
+  card (`map/zones/<slug>.md`) → trace its `sources`. Use the `navigating-fairy-tale`
+  skill as the entry ramp.
 - **On finish (same change as the code):** update touched zone cards; re-stamp their
   `verifiedAt` to HEAD; add a `map/decisions/` record for any non-obvious "why"; file
   `fairy-tale-mind/tech-debt/` for deferrals; run `npm run mind` and commit the updated

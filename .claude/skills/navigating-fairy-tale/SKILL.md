@@ -7,6 +7,8 @@ description: Use at the start of any task in this repo to orient before coding �
 
 Orient via the Mind before touching code. Do not restate the Map here — go read it.
 
+0. **Read `fairy-tale-mind/map/product.md`** first if you're new to the project — the
+   north-star brief: what Yours Fairy Tale is, who it's for, and what each surface is for.
 1. **Open `fairy-tale-mind/map/index.md`** — the generated table of zones, their status,
    freshness, and one-line essence. Pick the zone(s) your task touches.
 2. **Read that zone card** (`fairy-tale-mind/map/zones/<slug>.md`) — its purpose, `owns`
