@@ -6,7 +6,7 @@ status: active
 created: 2026-06-02
 updated: 2026-06-02
 related: ["[[homepage]]", "[[configurator]]", "[[series]]", "[[journal]]", "[[checkout]]"]
-sources: ["[[pivot-to-animated-videos]]", "[[2026-06-02-product-brief-design]]"]
+sources: ["[[pivot-to-animated-videos]]", "[[personalization-from-photos]]", "[[2026-06-02-product-brief-design]]"]
 ---
 
 # Yours Fairy Tale — what we're building
@@ -18,10 +18,11 @@ intent from markup.
 ## What it is
 
 A personalized, **hand-animated fairy-tale video** starring the customer's own child.
-The parent gives a few details — the child's name, hair ("their curls"), a favorite
-animal, an adventure — and receives a short custom animated film with their child as the
-hero. The homepage says it plainly: *"An animated fairy tale made for them."* Social proof
-on the hero: *"40,000+ children already starring."*
+The parent **sends a few photos** (so the animated hero carries the child's real likeness)
+plus a few light details (their name, a favorite animal, a plot), and receives a short,
+**cinematic** custom film with their child as the hero, **in HD**. The homepage says it
+plainly: *"An animated fairy tale made for them."* Social proof on the hero: *"40,000+
+children already starring."* (Personalization mechanic: `[[personalization-from-photos]]`.)
 
 > Note: this product **pivoted from hand-illustrated hardcover books to animated videos**
 > (`[[pivot-to-animated-videos]]`). Live copy and `app/layout.tsx` metadata say *videos*;
@@ -37,14 +38,15 @@ and again."*
 
 ## The offer / how it works
 
-1. **Pick a story world** — the homepage `#collections` grid offers six: Bedtime
-   adventures, Outer space, Under the sea, Enchanted forest, Dragons and castles, Birthday
-   surprise. *"Every film is personalized with your child's name and likeness."*
-2. **Configure** — the `[[configurator]]` (`#build`) lets the parent pick a length, add
-   extra minutes, and choose a level of detail. It's framed as no-commitment:
-   *"No payment yet. This just helps you picture your video."*
-3. **Check out** — the `[[checkout]]` looks and behaves like Stripe embedded checkout but
-   is a **simulation** — no network calls, no charges (`[[checkout-is-a-simulation]]`). It
+1. **Share photos + a few details** — a few photos give the animated hero the child's real
+   likeness; light details (name, favorite animal) shape the story.
+2. **Choose a plot** — pick one of the ready story worlds (the homepage `#collections` grid:
+   Bedtime adventures, Outer space, Under the sea, Enchanted forest, Dragons and castles,
+   Birthday surprise) **or create your own**.
+3. **Configure** — the `[[configurator]]` (`#build`): length and level of detail, framed as
+   no-commitment (*"No payment yet. This just helps you picture their video."*).
+4. **Check out** — the `[[checkout]]` looks and behaves like Stripe embedded checkout but
+   is a **simulation**: no network calls, no charges (`[[checkout-is-a-simulation]]`). It
    exists to demonstrate the flow, not to take real money.
 
 Headline CTAs throughout: *"Create their video"* / *"Watch a sample."*

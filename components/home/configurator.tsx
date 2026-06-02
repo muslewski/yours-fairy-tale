@@ -124,8 +124,8 @@ export function Configurator() {
             className="mt-6 font-[family-name:var(--font-fredoka)] text-4xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl"
           />
           <p className="mt-4 text-lg font-medium text-white/70">
-            Pick a length, add any extra minutes, and choose the level of detail. No payment yet.
-            This just helps you picture their video.
+            Choose one of the ready plots or create your own. Then pick a length and the level
+            of detail. No payment yet. This just helps you picture their video.
           </p>
         </div>
 
