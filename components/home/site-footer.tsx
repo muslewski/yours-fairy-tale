@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Stagger, StaggerItem, hoverPop, tapPop } from "@/components/motion/stagger";
+import { SectionWave, type BrandColor } from "@/components/home/section-wave";
 
 const COLUMNS = [
   {
@@ -36,9 +37,17 @@ const COLUMNS = [
 
 const SOCIALS = ["Instagram", "TikTok", "Pinterest"];
 
-export function SiteFooter() {
+/**
+ * The footer owns its own entry wave: every page that renders <SiteFooter />
+ * (home, Series, Journal, blog posts) gets the cream→navy wave transition for
+ * free. `waveFrom` overrides the color of the section directly above the footer
+ * (defaults to cream, which all current pages end on).
+ */
+export function SiteFooter({ waveFrom = "cream" }: { waveFrom?: BrandColor } = {}) {
   return (
-    <footer className="bg-brand-deep px-6 pb-10 pt-16 text-white sm:px-10 sm:pt-20">
+    <>
+      <SectionWave from={waveFrom} to="deep" />
+      <footer className="bg-brand-deep px-6 pb-10 pt-16 text-white sm:px-10 sm:pt-20">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 lg:grid-cols-[1.4fr_2fr]">
           {/* Brand + newsletter */}
@@ -138,5 +147,6 @@ export function SiteFooter() {
         </div>
       </div>
     </footer>
+    </>
   );
 }

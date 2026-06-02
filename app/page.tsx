@@ -25,7 +25,6 @@ export default function Home() {
         <CtaBanner />
       </main>
 
-      <SectionWave from="cream" to="deep" />
       <SiteFooter />
     </>
   );

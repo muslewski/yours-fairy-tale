@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
  * `aria-hidden`, no semantic role.
  */
 
-type BrandColor = "yellow" | "cream" | "deep" | "pink" | "blue";
+export type BrandColor = "yellow" | "cream" | "deep" | "pink" | "blue";
 type Amplitude = "gentle" | "medium" | "bounce";
 
 // Full literal class names so Tailwind's scanner detects them (no dynamic strings).
