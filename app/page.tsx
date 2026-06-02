@@ -6,6 +6,7 @@ import { SeriesTeaser } from "@/components/home/series-teaser";
 import { Faq } from "@/components/home/faq";
 import { CtaBanner } from "@/components/home/cta-banner";
 import { SiteFooter } from "@/components/home/site-footer";
+import { SectionWave } from "@/components/home/section-wave";
 
 export default function Home() {
   return (
@@ -13,13 +14,18 @@ export default function Home() {
       <SiteNav />
       <main className="font-[family-name:var(--font-quicksand)] text-brand-deep">
         <Hero />
+        <SectionWave from="yellow" to="cream" />
         <Categories />
+        <SectionWave from="cream" to="deep" flip />
         <Configurator />
+        <SectionWave from="deep" to="yellow" />
         <SeriesTeaser />
+        <SectionWave from="yellow" to="cream" flip />
         <Faq />
         <CtaBanner />
       </main>
 
+      <SectionWave from="cream" to="deep" />
       <SiteFooter />
     </>
   );
