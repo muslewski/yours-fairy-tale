@@ -30,7 +30,7 @@ export type SitePreloaderProps = {
 };
 
 export function SitePreloader({
-  loadingText = "Once upon your child.",
+  loadingText = "A story made just for them.",
   duration = DEFAULT_DURATION_MS,
 }: SitePreloaderProps) {
   // Default state: VISIBLE so SSR renders the overlay over the page.
