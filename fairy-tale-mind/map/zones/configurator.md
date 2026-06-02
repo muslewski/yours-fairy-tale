@@ -14,7 +14,7 @@ owns:
     - "components/home/configurator.tsx"
 depends: ["[[checkout]]"]
 invariants: []
-verifiedAt: 73b3cb8c3542e6bf0cf1814cde54e21b006c6158
+verifiedAt: b5a6c612bdd69b4b1eb1b4f1c1894210a3aa4dcd
 ---
 
 ## Purpose
