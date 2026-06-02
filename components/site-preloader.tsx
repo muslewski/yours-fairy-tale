@@ -57,8 +57,9 @@ export function SitePreloader({
       return;
     }
 
-    // Whole-site, once-per-session gate (single global key).
-    if (typeof sessionStorage === "undefined") return;
+    // Whole-site, once-per-session gate (single global key). This runs only in
+    // the browser (it's inside an effect in a client component), so
+    // sessionStorage is always available here.
     if (sessionStorage.getItem(STORAGE_KEY)) {
       setVisible(false);
       return;
