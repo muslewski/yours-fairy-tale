@@ -1,3 +1,15 @@
+---
+type: spec
+summary: "Add organic SVG wave dividers between the homepage's solid color-block sections using a reusable SectionWave component with brand-ink crest outlines."
+tags: []
+status: planned
+created: 2026-06-02
+updated: 2026-06-02
+related: []
+sources: []
+origin: ""
+---
+
 # Section-divider waves — Yours Fairy Tale
 
 **Date:** 2026-06-02

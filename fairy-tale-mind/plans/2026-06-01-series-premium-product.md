@@ -1,3 +1,16 @@
+---
+type: plan
+summary: "Add The Series coming-soon homepage teaser and /series subpage with a front-end-only waitlist form."
+tags: []
+status: done
+created: 2026-06-01
+updated: 2026-06-02
+related: []
+sources: []
+implements: "[[2026-06-01-series-premium-product-design]]"
+produced: []
+---
+
 # The Series — Premium Product Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

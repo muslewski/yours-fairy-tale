@@ -1,3 +1,15 @@
+---
+type: spec
+summary: "Stand up fairy-tale-mind/ as an Obsidian-vault repository knowledge base with a Node generator that validates zone anchors, gates the build, and surfaces orientation context on session start."
+tags: []
+status: planned
+created: 2026-06-02
+updated: 2026-06-02
+related: []
+sources: []
+origin: ""
+---
+
 # The Mind — repository knowledge system for Yours Fairy Tale
 
 **Date:** 2026-06-02

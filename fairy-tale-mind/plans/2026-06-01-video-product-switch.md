@@ -1,3 +1,16 @@
+---
+type: plan
+summary: "Switch the live homepage from a storybook to a personalized animated video, including a full configurator rebuild and all section copy rewrites."
+tags: []
+status: done
+created: 2026-06-01
+updated: 2026-06-02
+related: []
+sources: []
+implements: "[[2026-06-01-video-product-switch-design]]"
+produced: []
+---
+
 # Video Product Switch Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

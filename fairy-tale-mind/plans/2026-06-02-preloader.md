@@ -1,3 +1,16 @@
+---
+type: plan
+summary: "Add a first-impression cream-splash curtain preloader to the live site, mounting it as the first child of body in the root layout."
+tags: []
+status: done
+created: 2026-06-02
+updated: 2026-06-02
+related: []
+sources: []
+implements: "[[2026-06-02-preloader-design]]"
+produced: ["[[site-preloader]]", "[[preloader-once-per-session]]"]
+---
+
 # Preloader Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
