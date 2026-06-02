@@ -30,6 +30,8 @@ Personalized, hand-illustrated hardcover storybooks starring a customer's child.
 
 **Comic shadows:** the signature hard offset shadow is tokenized — use `shadow-comic` / `shadow-comic-sm` / `shadow-comic-lg` instead of hardcoding `shadow-[...]`.
 
+**Section waves:** transitions between differently-colored full-bleed sections use the `<SectionWave from to>` divider ([components/home/section-wave.tsx](components/home/section-wave.tsx)); the footer supplies its own entry wave. This is a site-wide convention, not homepage-only — see the `section-waves` skill in [.claude/skills/section-waves/SKILL.md](.claude/skills/section-waves/SKILL.md) before adding or editing section dividers.
+
 **Hover lifts — avoid the edge-jitter trap.** Never put a movement (`hover:-translate-*`) on the *same element that detects the hover*: near its edges the element slides out from under the cursor, the hover ends, it snaps back, and you get an infinite flicker. Instead either:
 1. Put `group` on a stable ancestor that does **not** move (e.g. the wrapping `<li>`) and apply the lift via `group-hover:` on the inner element, or
 2. Use a non-moving hover effect such as `hover:shadow-comic-lg`.
