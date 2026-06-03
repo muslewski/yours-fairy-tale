@@ -42,7 +42,7 @@ invariants:
     enforcedBy: ["tests/auth/adapter.test.ts"]
   - rule: "Never hardcode the connection string or secret — read process.env.DATABASE_URI / PAYLOAD_SECRET."
     enforcedBy: []
-verifiedAt: a61f9263268f98a65fbe7d78bc5898cea8cb5c3e
+verifiedAt: cfe21d407149343cfdfa8a48e3a9ee44e715442d
 ---
 
 ## Purpose
