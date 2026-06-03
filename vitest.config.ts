@@ -13,6 +13,9 @@ export default defineConfig({
   test: {
     environment: "node",
     setupFiles: ["./tests/setup-env.ts"],
+    // Scope to tests/ only so e2e/ Playwright specs (which import @playwright/test)
+    // are never collected by vitest.
+    include: ["tests/**/*.{test,spec}.ts"],
     // Each test file boots its own Payload instance, which pulls/pushes the schema
     // against the single local Postgres. Running files in parallel races on that DB,
     // so serialize them. (Tests are DB-bound, not CPU-bound — little speed cost.)
