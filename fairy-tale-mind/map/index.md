@@ -5,8 +5,8 @@
 | Zone | Status | Freshness | Summary |
 |---|---|---|---|
 | [[app-shell]] | active | ✓ fresh | Nav, footer, root layout and fonts — the chrome wrapping every page. |
-| [[auth-gating]] | active | ⚠ stale | Two-layer /app gating: optimistic proxy cookie check + authoritative layout session check. Magic-link sign-in page. Owner-scoped order reads. |
-| [[checkout]] | active | ✓ fresh | Stripe checkout integration — mock UI simulation + real Checkout Session route + webhook that creates accounts, orders, sends confirmation email, and syncs refund/dispute status. |
+| [[auth-gating]] | active | ✓ fresh | Two-layer /app gating: optimistic proxy cookie check + authoritative layout session check. Magic-link sign-in page. Owner-scoped order reads. |
+| [[checkout]] | active | ⚠ stale | Stripe checkout integration — mock UI simulation + real Checkout Session route + webhook that creates accounts, orders, sends confirmation email, and syncs refund/dispute status. |
 | [[configurator]] | active | ✓ fresh | The personalized video builder — the homepage's conversion centerpiece (#build). |
 | [[design-system]] | active | ✓ fresh | Brand tokens, motion primitives, comic shadows, and the cn helper. |
 | [[homepage]] | active | ✓ fresh | The live marketing homepage — hero, categories grid, configurator, series teaser, FAQ, CTA. The page we build forward. |

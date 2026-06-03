@@ -16,10 +16,13 @@ owns:
   globs:
     - "proxy.ts"
     - "lib/customer-data.ts"
+    - "lib/order-stages.ts"
     - "app/(app)/app/layout.tsx"
     - "app/(app)/app/page.tsx"
     - "app/(app)/sign-in/page.tsx"
+    - "components/app/status-timeline.tsx"
     - "tests/auth/gating.test.ts"
+    - "tests/app/order-stages.test.ts"
 depends: ["[[payload-backend]]"]
 invariants:
   - rule: "proxy.ts is PRESENCE-ONLY (no DB hit). The authoritative DB check is app/(app)/app/layout.tsx only."
@@ -28,7 +31,9 @@ invariants:
     enforcedBy: ["tests/auth/gating.test.ts"]
   - rule: "sign-in page is OUTSIDE the gated app route group — redirect can never trap it."
     enforcedBy: []
-verifiedAt: 30bf2a8b3777690f017efafba166860ff62c5d3d
+  - rule: "The status → stage mapping and parent-facing copy live ONLY in lib/order-stages.ts (DOM-free, tested). The timeline component and dashboard page render FROM it; they never re-derive stage indices or hardcode status copy."
+    enforcedBy: ["tests/app/order-stages.test.ts"]
+verifiedAt: bc2efd993f62b0522cd4bc08f2bf28267f6f6315
 ---
 
 ## Purpose
@@ -45,6 +50,25 @@ The layout calls `getCustomerSession()` → `auth.api.getSession({ headers })`. 
 - `getOrdersForOwner(ownerId)` — Payload `find({ where: { owner: { equals: ownerId } }, overrideAccess: true })`. Testable without a session mock.
 - `getOrdersForCurrentCustomer()` — composes the two above.
 
+### Dashboard view (app/(app)/app/page.tsx + the timeline)
+The `/app` page lists the customer's orders as comic-styled cards (`bg-white`,
+`border-2 border-brand-deep`, `shadow-comic`): child's name + chosen world, the
+production timeline, and a calm status-aware message. Empty state links to the
+homepage configurator (`/#build`). Per-status ACTIONS (photo upload, proof
+approval, video player) are NOT built here — the page leaves labeled, dashed
+placeholder slots (`data-action-slot`) where tasks 4.2/4.3/4.4 land.
+
+- **`lib/order-stages.ts`** — DOM-free, fully unit-tested core. `STAGES` (the six
+  ordered production steps), `stageForStatus(status)` → `{ activeIndex }` on the
+  happy path or `{ terminal: "refunded" | "cancelled" }` off it, and
+  `messageForStatus(status, childName?)` → brand-voice `{ headline, body }`.
+  `proof_ready` and `revisions` both sit at stage 3 ("Your preview").
+- **`components/app/status-timeline.tsx`** (`"use client"`) — renders the six
+  stages as a comic stepper: completed (brand-yellow + check), active (brand-blue,
+  gentle Motion pulse + filling rail), upcoming (muted). `useReducedMotion()`
+  drops all auto-motion to static emphasis. Horizontal on desktop, vertical on
+  mobile. For terminal statuses it renders a quiet note, not a stepper.
+
 ### Sign-in page (app/(app)/sign-in/page.tsx)
 Client component. Email input + submit calling `authClient.signIn.magicLink({ email, callbackURL: "/app" })`. On success, "check your email" state. No-account explainer below the form per brand-voice: calm, warm, explains checkout → email → account flow.
 
@@ -54,4 +78,6 @@ Client component. Email input + submit calling `authClient.signIn.magicLink({ em
 2. `getOrdersForOwner`: creates two users + one order each, asserts only the queried user's order is returned (isolation by explicit where).
 
 ## Lineage
-Task 2.4 (proxy) + 2.5 (sign-in) + 2.6 (layout + customer data) from the purchase → account → dashboard plan.
+Task 2.4 (proxy) + 2.5 (sign-in) + 2.6 (layout + customer data) + the dashboard
+order list and animated production timeline (order-stages + status-timeline)
+from the purchase → account → dashboard plan.
