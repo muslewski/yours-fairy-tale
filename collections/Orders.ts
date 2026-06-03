@@ -1,6 +1,64 @@
-import type { CollectionConfig } from "payload";
+import type { CollectionAfterChangeHook, CollectionConfig } from "payload";
 
 import { adminOnly } from "@/access/adminOnly";
+import {
+  shouldSendStatusEmail,
+  sendStatusTransitionEmail,
+} from "@/lib/order-status-email";
+
+/**
+ * Emails the order owner when the studio advances to a milestone they are
+ * waiting for (proof_ready or delivered). Fires on update + real status change
+ * only; errors are non-fatal.
+ */
+const statusTransitionEmailHook: CollectionAfterChangeHook = async ({
+  doc,
+  previousDoc,
+  operation,
+  req,
+}) => {
+  const newStatus: string = doc.status;
+  const previousStatus: string | undefined = previousDoc?.status;
+
+  if (!shouldSendStatusEmail({ operation, previousStatus, newStatus })) {
+    return;
+  }
+
+  // Resolve the owner's email. `doc.owner` may be an id or a populated object.
+  let ownerEmail: string | null = null;
+
+  if (typeof doc.owner === "object" && doc.owner !== null && "email" in doc.owner) {
+    // Already populated
+    ownerEmail = (doc.owner as { email: string }).email ?? null;
+  } else {
+    // Fetch the user via the Local API
+    const ownerId = typeof doc.owner === "object" ? (doc.owner as { id: string }).id : doc.owner;
+    try {
+      const user = await req.payload.findByID({
+        collection: "users",
+        id: String(ownerId),
+        depth: 0,
+        overrideAccess: true,
+      });
+      ownerEmail = user?.email ?? null;
+    } catch (err) {
+      console.error("[orders/hook] Failed to fetch owner email for email notification:", err);
+    }
+  }
+
+  if (!ownerEmail) {
+    console.warn(
+      `[orders/hook] Could not resolve owner email for order ${doc.id} — skipping notification.`,
+    );
+    return;
+  }
+
+  await sendStatusTransitionEmail({
+    ownerEmail,
+    newStatus: newStatus as "proof_ready" | "delivered",
+    childName: doc.childName ?? null,
+  });
+};
 
 /**
  * An Order represents a single book purchase by a customer.
@@ -23,6 +81,9 @@ export const Orders: CollectionConfig = {
     create: adminOnly,
     update: adminOnly,
     delete: adminOnly,
+  },
+  hooks: {
+    afterChange: [statusTransitionEmailHook],
   },
   fields: [
     {

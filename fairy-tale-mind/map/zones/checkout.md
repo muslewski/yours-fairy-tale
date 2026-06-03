@@ -17,11 +17,14 @@ owns:
     - "lib/stripe.ts"
     - "lib/checkout.ts"
     - "lib/email.ts"
+    - "lib/order-status-email.ts"
     - "app/api/stripe/checkout/route.ts"
     - "app/api/stripe/webhook/route.ts"
+    - "collections/Orders.ts"
     - "tests/stripe/checkout.test.ts"
     - "tests/stripe/webhook.test.ts"
     - "tests/stripe/refund-email.test.ts"
+    - "tests/app/status-emails.test.ts"
 depends: ["[[payload-backend]]"]
 invariants:
   - rule: "Never makes network calls or charges money — simulation only."
@@ -50,7 +53,11 @@ invariants:
     enforcedBy: ["tests/stripe/refund-email.test.ts"]
   - rule: "stripePaymentIntentId must be indexed for O(1) refund/dispute lookups."
     enforcedBy: ["collections/Orders.ts"]
-verifiedAt: d0c9ad060992bb6b9bc140425c7e74e35fea0b61
+  - rule: "Status-transition email fires ONLY on update + real status change + proof_ready or delivered. All other transitions (including create) are silent."
+    enforcedBy: ["tests/app/status-emails.test.ts"]
+  - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
+    enforcedBy: ["tests/app/status-emails.test.ts"]
+verifiedAt: 1ebff7f4dd8c92fe6fe7c2098dcf142f9eeb7ce6
 ---
 
 ## Purpose
@@ -109,3 +116,4 @@ Guard: if `RESEND_API_KEY` is absent, logs a warning and returns without error.
 Seeded from the existing site at Mind setup. Real Stripe route added 2026-06-03.
 Webhook (checkout-gated account creation) added 2026-06-03.
 Confirmation email + refund/dispute status sync added 2026-06-03.
+Status-transition emails (proof_ready, delivered) added via Orders afterChange hook 2026-06-03.
