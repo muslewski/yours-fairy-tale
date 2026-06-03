@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const { childName, world, length, detail, extraMinutes, addOns, email } = body;
+  const { childName, world, length, detail, extraMinutes, addOns, email, plotNote } = body;
 
   // world / length / detail are required to shape and price the order.
   // childName is intentionally optional — the parent can add it later.
@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
     detail,
     extraMinutes: typeof extraMinutes === "number" ? extraMinutes : 0,
     addOns: Array.isArray(addOns) ? addOns : [],
+    plotNote: typeof plotNote === "string" ? plotNote : "",
     email,
   };
 

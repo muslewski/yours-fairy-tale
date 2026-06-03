@@ -4,7 +4,7 @@ summary: "Stripe checkout integration — mock UI simulation + real Checkout Ses
 tags: [ui, checkout, stripe, api, webhook, orders]
 status: active
 created: 2026-06-02
-updated: 2026-06-03
+updated: 2026-06-04
 related: ["[[configurator]]", "[[payload-backend]]"]
 sources: ["[[checkout-is-a-simulation]]", "[[payments-stripe-over-shopify]]", "[[stripe-checkout-session-route]]"]
 owns:
@@ -39,7 +39,7 @@ invariants:
     enforcedBy: ["lib/stripe.ts"]
   - rule: "buildCheckoutSessionParams is pure — no network calls, safe to unit-test."
     enforcedBy: ["tests/stripe/checkout.test.ts"]
-  - rule: "Session metadata must carry all four config fields: childName, world, length, detailLevel."
+  - rule: "Session metadata must carry all seven config fields: childName, world, length, detailLevel, extraMinutes (string), addOns (comma-joined string), plotNote (capped at 500 chars)."
     enforcedBy: ["tests/stripe/checkout.test.ts"]
   - rule: "Orders length/detailLevel/world enums match the configurator vocabulary exactly: length [short,medium,long], detailLevel [basic,detailed,premium], world [bedtime,space,sea,forest,dragons,birthday,custom]."
     enforcedBy: ["tests/stripe/webhook.test.ts"]
@@ -65,7 +65,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
     enforcedBy: ["tests/app/status-emails.test.ts"]
-verifiedAt: cd8fe918598831c5be64121fc979a0511a5fb39b
+verifiedAt: 14d7810
 ---
 
 ## Purpose
@@ -105,7 +105,8 @@ Enacts the "checkout-gated, no public sign-up" model:
 3. **Upsert user** — finds `users` by email (from `customer_details.email` or
    `customer_email`); creates one with `emailVerified: true` if absent.
 4. **Create order** — links to the user via `owner`, stores `stripeSessionId`,
-   `stripePaymentIntentId`, the four metadata fields, and lets `status` default to `"paid"`.
+   `stripePaymentIntentId`, the seven config fields from metadata (childName, world, length,
+   detailLevel, extraMinutes, addOns, plotNote), and lets `status` default to `"paid"`.
 5. **Confirmation email** — sends a "your video is on its way — sign in to track it" email
    via `lib/email.ts` (Resend). Email failure is logged and never re-throws; the order is
    always the critical path.
@@ -128,3 +129,4 @@ Seeded from the existing site at Mind setup. Real Stripe route added 2026-06-03.
 Webhook (checkout-gated account creation) added 2026-06-03.
 Confirmation email + refund/dispute status sync added 2026-06-03.
 Status-transition emails (proof_ready, delivered) added via Orders afterChange hook 2026-06-03.
+extraMinutes, addOns, and plotNote fields added to metadata → webhook → Orders pipeline 2026-06-04.

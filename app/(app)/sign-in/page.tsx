@@ -16,6 +16,7 @@
  * Every order is saved to that same account automatically.
  */
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
 import { authClient } from "@/lib/auth-client";
@@ -160,6 +161,13 @@ export default function SignInPage() {
             above whenever you want to sign in. Every order you place is saved
             to the same account, so you can come back as many times as you like.
           </p>
+          <Link
+            href="/#build"
+            className="mt-5 inline-flex items-center gap-1 rounded-xl border-2 border-brand-deep bg-brand-yellow px-5 py-2.5 font-semibold text-brand-deep shadow-comic-sm transition-shadow hover:shadow-comic"
+            style={{ fontFamily: "var(--font-quicksand)" }}
+          >
+            Place an order →
+          </Link>
         </div>
 
       </div>

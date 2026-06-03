@@ -27,6 +27,8 @@ export type CheckoutInput = {
   detail: string;
   extraMinutes: number;
   addOns: string[];
+  /** Optional free-text plot idea from the parent (capped before sending). */
+  plotNote?: string;
   /** Buyer e-mail — pre-fills the Stripe Checkout form when provided. */
   email?: string;
 };
@@ -35,7 +37,7 @@ export function buildCheckoutSessionParams(
   input: CheckoutInput,
   baseUrl: string = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
 ): Stripe.Checkout.SessionCreateParams {
-  const { childName, world, length, detail, extraMinutes, addOns, email } = input;
+  const { childName, world, length, detail, extraMinutes, addOns, email, plotNote } = input;
 
   const selections: OrderSelections = { length, detail, extraMinutes, addOns };
 
@@ -70,6 +72,9 @@ export function buildCheckoutSessionParams(
       world,
       length,
       detailLevel: detail,
+      extraMinutes: String(extraMinutes),
+      addOns: addOns.join(","),
+      plotNote: (plotNote ?? "").slice(0, 500),
     },
   };
 

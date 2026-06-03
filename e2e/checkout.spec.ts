@@ -26,15 +26,15 @@ test("@layerA configuring a video posts the right selections and redirects to St
 
   await page.goto("/#build");
 
-  // Fill child name
-  await page.getByRole("textbox", { name: "Who is it for?" }).fill("Ada");
+  // Step 1 — The film: defaults are fine (medium / basic / narration / 0 extra). Continue.
+  await page.getByRole("button", { name: /Continue/ }).click();
 
-  // Select world: "Outer space" (id="space").
-  // The radio is sr-only inside a <label> — click the label itself.
+  // Step 2 — The story: pick a plot + name, then Continue.
   await page.locator("label").filter({ hasText: "Outer space" }).first().click();
+  await page.getByRole("textbox", { name: "Who is it for?" }).fill("Ada");
+  await page.getByRole("button", { name: /Continue/ }).click();
 
-  // defaults: length="medium", detail="basic", addOns=["narration"], extraMinutes=0
-
+  // Step 3 — Photos & checkout.
   await page.getByRole("button", { name: /Create their video/ }).click();
 
   await page.waitForURL("https://checkout.stripe.com/**");
