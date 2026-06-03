@@ -9,6 +9,10 @@ test("@layerA sign-in shows the no-account explainer and the check-your-email st
   await page.goto("/sign-in");
   await expect(page.getByRole("heading", { name: "No account to create" })).toBeVisible();
 
+  const placeOrder = page.getByRole("link", { name: "Place an order" });
+  await expect(placeOrder).toBeVisible();
+  await expect(placeOrder).toHaveAttribute("href", "/#build");
+
   const submit = page.getByRole("button", { name: "Send sign-in link" });
   await expect(submit).toBeDisabled();
   await page.getByRole("textbox", { name: "Email address" }).fill("ada-parent@example.com");
