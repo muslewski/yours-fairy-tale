@@ -20,12 +20,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { getOrdersForCurrentCustomer } from "@/lib/customer-data";
+import { getPayloadClient } from "@/lib/payload";
 import {
   messageForStatus,
   stageForStatus,
   type OrderStatus,
 } from "@/lib/order-stages";
 import { StatusTimeline } from "@/components/app/status-timeline";
+import { PhotoUpload } from "@/components/app/photo-upload";
+import { ProofReview } from "@/components/app/proof-review";
 
 export const metadata: Metadata = {
   title: "Your videos — Yours Fairy Tale",
@@ -48,6 +51,39 @@ interface OrderLike {
   childName?: string | null;
   world?: string | null;
   status: OrderStatus;
+  proof?: string | null;
+}
+
+/** The proof media fields the proof-review action needs to render it. */
+interface ProofMedia {
+  url?: string | null;
+  mimeType?: string | null;
+  alt?: string | null;
+}
+
+/**
+ * Resolve a proof media id to the fields the review component renders. Read via
+ * the Local API with overrideAccess (media is staff-only). Returns null if
+ * there is no proof yet or it cannot be loaded.
+ */
+async function loadProof(proofId?: string | null): Promise<ProofMedia | null> {
+  if (!proofId) return null;
+  try {
+    const payload = await getPayloadClient();
+    const media = await payload.findByID({
+      collection: "media",
+      id: proofId,
+      depth: 0,
+      overrideAccess: true,
+    });
+    return {
+      url: media.url ?? null,
+      mimeType: media.mimeType ?? null,
+      alt: media.alt ?? null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export default async function AppPage() {
@@ -75,11 +111,20 @@ export default async function AppPage() {
           <EmptyState />
         ) : (
           <ul className="flex flex-col gap-8">
-            {orders.map((order) => (
-              <li key={order.id}>
-                <OrderCard order={order} />
-              </li>
-            ))}
+            {await Promise.all(
+              orders.map(async (order) => (
+                <li key={order.id}>
+                  <OrderCard
+                    order={order}
+                    proof={
+                      order.status === "proof_ready"
+                        ? await loadProof(order.proof)
+                        : null
+                    }
+                  />
+                </li>
+              )),
+            )}
           </ul>
         )}
       </div>
@@ -87,7 +132,13 @@ export default async function AppPage() {
   );
 }
 
-function OrderCard({ order }: { order: OrderLike }) {
+function OrderCard({
+  order,
+  proof,
+}: {
+  order: OrderLike;
+  proof: ProofMedia | null;
+}) {
   const childName = order.childName?.trim() || undefined;
   const title = childName
     ? `${childName}'s fairy tale`
@@ -141,45 +192,58 @@ function OrderCard({ order }: { order: OrderLike }) {
       </div>
 
       {/*
-        Per-status ACTION slot — built in later tasks, not here.
-          • awaiting_assets → photo upload          (task 4.2)
-          • proof_ready     → watch + approve proof  (task 4.3)
-          • delivered       → final video player     (task 4.4)
-        Leaving a labeled placeholder so the seam is obvious; do not build the
-        actions in this task.
+        Per-status ACTION slot.
+          • awaiting_assets → photo upload     (task 4.2 — built)
+          • proof_ready     → proof review     (task 4.3 — built)
+          • delivered       → final video player (task 4.4 — still a placeholder)
       */}
-      <ActionSlot status={order.status} />
+      <ActionSlot order={order} childName={childName} proof={proof} />
     </article>
   );
 }
 
 /**
- * Placeholder for the per-status action that lands in a later task. Renders a
- * quiet labeled slot for the statuses that will get an action, and nothing for
- * the rest. Intentionally NOT the real action UI.
+ * The per-status action. awaiting_assets and proof_ready now render the real
+ * customer actions (photo upload, proof review). delivered keeps a labeled
+ * placeholder until the video player lands (task 4.4). Other statuses render
+ * nothing.
  */
-function ActionSlot({ status }: { status: OrderStatus }) {
-  const labels: Partial<Record<OrderStatus, string>> = {
-    awaiting_assets: "Photo upload coming here",
-    proof_ready: "Preview player and approval coming here",
-    delivered: "Your video player coming here",
-  };
-  const label = labels[status];
-  if (!label) return null;
+function ActionSlot({
+  order,
+  childName,
+  proof,
+}: {
+  order: OrderLike;
+  childName?: string;
+  proof: ProofMedia | null;
+}) {
+  if (order.status === "awaiting_assets") {
+    return <PhotoUpload orderId={order.id} childName={childName} />;
+  }
 
-  return (
-    <div
-      className="mt-5 rounded-2xl border-2 border-dashed border-brand-deep/30 px-5 py-4"
-      data-action-slot={status}
-    >
-      <p
-        className="text-sm font-semibold uppercase tracking-widest text-brand-deep/40"
-        style={{ fontFamily: "var(--font-quicksand)" }}
+  if (order.status === "proof_ready") {
+    return (
+      <ProofReview orderId={order.id} childName={childName} proof={proof} />
+    );
+  }
+
+  if (order.status === "delivered") {
+    return (
+      <div
+        className="mt-5 rounded-2xl border-2 border-dashed border-brand-deep/30 px-5 py-4"
+        data-action-slot="delivered"
       >
-        {label}
-      </p>
-    </div>
-  );
+        <p
+          className="text-sm font-semibold uppercase tracking-widest text-brand-deep/40"
+          style={{ fontFamily: "var(--font-quicksand)" }}
+        >
+          Your video player coming here
+        </p>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 function EmptyState() {

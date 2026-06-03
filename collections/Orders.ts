@@ -92,6 +92,14 @@ export const Orders: CollectionConfig = {
       relationTo: "media",
     },
     {
+      name: "revisionNote",
+      type: "textarea",
+      admin: {
+        description:
+          "The change the customer asked for when reviewing their preview. Set by the customer dashboard when they request a revision.",
+      },
+    },
+    {
       name: "status",
       type: "select",
       required: true,
