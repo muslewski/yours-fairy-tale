@@ -10,7 +10,11 @@
     "start": "next start",
     "payload": "payload",
     "generate:types": "payload generate:types",
-    "generate:importmap": "payload generate:importmap"
+    "generate:importmap": "payload generate:importmap",
+    "test": "vitest run",
+    "test:e2e": "playwright test --grep-invert @smoke",
+    "test:e2e:smoke": "playwright test --grep @smoke",
+    "test:all": "vitest run && playwright test --grep-invert @smoke"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.85.0",
@@ -32,6 +36,7 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
