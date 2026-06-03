@@ -40,6 +40,7 @@ if (!secret) {
 // that might be stale or missing.
 const trustedOrigins = [
   "http://localhost:3000",
+  "http://localhost:3002",
   "https://yoursfairytale.com",
   "https://www.yoursfairytale.com",
   "https://*.vercel.app",
