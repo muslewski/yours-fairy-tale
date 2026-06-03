@@ -11,7 +11,7 @@ owns:
   routes: []
   anchors: ["id:build"]
   globs:
-    - "components/home/configurator.tsx"
+    - "components/home/configurator/**"
     - "lib/pricing.ts"
     - "lib/worlds.ts"
     - "tests/lib/pricing.test.ts"
