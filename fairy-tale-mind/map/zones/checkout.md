@@ -105,7 +105,8 @@ Enacts the "checkout-gated, no public sign-up" model:
 3. **Upsert user** — finds `users` by email (from `customer_details.email` or
    `customer_email`); creates one with `emailVerified: true` if absent.
 4. **Create order** — links to the user via `owner`, stores `stripeSessionId`,
-   `stripePaymentIntentId`, the four metadata fields, and lets `status` default to `"paid"`.
+   `stripePaymentIntentId`, the seven config fields from metadata (childName, world, length,
+   detailLevel, extraMinutes, addOns, plotNote), and lets `status` default to `"paid"`.
 5. **Confirmation email** — sends a "your video is on its way — sign in to track it" email
    via `lib/email.ts` (Resend). Email failure is logged and never re-throws; the order is
    always the critical path.

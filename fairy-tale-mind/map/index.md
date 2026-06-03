@@ -4,11 +4,11 @@
 
 | Zone | Status | Freshness | Summary |
 |---|---|---|---|
-| [[app-shell]] | active | ⚠ stale | Nav, footer, root layout and fonts — the chrome wrapping every page. |
+| [[app-shell]] | active | ✓ fresh | Nav, footer, root layout and fonts — the chrome wrapping every page. |
 | [[auth-gating]] | active | ⚠ stale | Two-layer /app gating: optimistic proxy cookie check + authoritative layout session check. Magic-link sign-in page. Owner-scoped order reads. |
 | [[checkout]] | active | ✓ fresh | Stripe checkout integration — mock UI simulation + real Checkout Session route + webhook that creates accounts, orders, sends confirmation email, and syncs refund/dispute status. |
 | [[configurator]] | active | ✓ fresh | The personalized video builder — the homepage's conversion centerpiece (#build). |
-| [[design-system]] | active | ✓ fresh | Brand tokens, motion primitives, comic shadows, and the cn helper. |
+| [[design-system]] | active | ⚠ stale | Brand tokens, motion primitives, comic shadows, and the cn helper. |
 | [[homepage]] | active | ✓ fresh | The live marketing homepage — hero, categories grid, configurator, series teaser, FAQ, CTA. The page we build forward. |
 | [[journal]] | active | ✓ fresh | The blog ("Journal") — index, posts, and RSS feed. |
 | [[legacy-examples]] | active | ✓ fresh | The 10 frozen hero-concept pages — a design archive, not built forward. |
@@ -21,10 +21,10 @@
 
 ## ⚠ Verification gaps
 
+- zone "app-shell": invariant "Internal navigation uses next/link (client-side, no full reload) — never raw <a>/motion.a for in-app routes. Animated links wrap Link via motion.create(Link); StaggerItem supports as="link"." has no enforcedBy
 - zone "auth-gating": invariant "sign-in page is OUTSIDE the gated app route group — redirect can never trap it." has no enforcedBy
 - zone "checkout": invariant "The mock UI (components/checkout/*) never makes network calls or charges money — simulation only. It is NO LONGER on the live configurator flow." has no enforcedBy
 - zone "checkout": invariant "No public sign-up path exists — customer accounts come ONLY from this webhook." has no enforcedBy
-- zone "configurator": invariant "The CTA POSTs SELECTIONS (childName, world, length, detail, extraMinutes, addOns) to /api/stripe/checkout and redirects to the returned Stripe url — it never sends a price and never opens the mock checkout." has no enforcedBy
 - zone "configurator": invariant "World ids match collections/Orders.ts world options and lib/worlds.ts WORLD_LABELS; childName is optional (empty is allowed, parent adds it later)." has no enforcedBy
 - zone "design-system": invariant "Never hardcode hex — use brand tokens / CSS vars." has no enforcedBy
 - zone "homepage": invariant "Every CTA/nav link leads somewhere real (anchor or route), never href='#'." has no enforcedBy
