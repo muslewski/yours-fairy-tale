@@ -10,9 +10,8 @@
  * The session is already verified by the (app) layout, so this server component
  * trusts it exists and reads owner-scoped orders via getOrdersForCurrentCustomer().
  *
- * Per-status ACTIONS (photo upload, proof approval, the video player) are
- * SEPARATE later tasks. This page leaves a clearly labeled slot where each
- * lands — it does not build them (YAGNI).
+ * Per-status ACTIONS (photo upload, proof approval, the video player) live in
+ * dedicated components rendered from the ACTION slot below.
  *
  * Copy is parent-facing and runs through the brand-voice guide.
  */
@@ -29,6 +28,7 @@ import {
 import { StatusTimeline } from "@/components/app/status-timeline";
 import { PhotoUpload } from "@/components/app/photo-upload";
 import { ProofReview } from "@/components/app/proof-review";
+import { VideoPlayer } from "@/components/app/video-player";
 
 export const metadata: Metadata = {
   title: "Your videos — Yours Fairy Tale",
@@ -52,6 +52,7 @@ interface OrderLike {
   world?: string | null;
   status: OrderStatus;
   proof?: string | null;
+  finalVideo?: string | null;
 }
 
 /** The proof media fields the proof-review action needs to render it. */
@@ -92,19 +93,28 @@ export default async function AppPage() {
   return (
     <main className="min-h-screen bg-brand-cream px-6 py-16">
       <div className="mx-auto max-w-2xl">
-        <header className="mb-10">
-          <h1
-            className="text-4xl text-brand-deep md:text-5xl"
+        <header className="mb-10 flex items-start justify-between gap-4">
+          <div>
+            <h1
+              className="text-4xl text-brand-deep md:text-5xl"
+              style={{ fontFamily: "var(--font-fredoka)" }}
+            >
+              Your videos
+            </h1>
+            <p
+              className="mt-2 text-lg text-brand-deep/70"
+              style={{ fontFamily: "var(--font-quicksand)" }}
+            >
+              Follow every step as we bring their story to life.
+            </p>
+          </div>
+          <Link
+            href="/app/profile"
+            className="mt-1 shrink-0 rounded-full border-2 border-brand-deep bg-white px-5 py-2 text-sm font-bold text-brand-deep shadow-comic-sm transition-shadow hover:shadow-comic"
             style={{ fontFamily: "var(--font-fredoka)" }}
           >
-            Your videos
-          </h1>
-          <p
-            className="mt-2 text-lg text-brand-deep/70"
-            style={{ fontFamily: "var(--font-quicksand)" }}
-          >
-            Follow every step as we bring their story to life.
-          </p>
+            Profile
+          </Link>
         </header>
 
         {orders.length === 0 ? (
@@ -193,9 +203,9 @@ function OrderCard({
 
       {/*
         Per-status ACTION slot.
-          • awaiting_assets → photo upload     (task 4.2 — built)
-          • proof_ready     → proof review     (task 4.3 — built)
-          • delivered       → final video player (task 4.4 — still a placeholder)
+          • awaiting_assets → photo upload      (task 4.2)
+          • proof_ready     → proof review      (task 4.3)
+          • delivered       → final video player (task 4.4)
       */}
       <ActionSlot order={order} childName={childName} proof={proof} />
     </article>
@@ -203,10 +213,9 @@ function OrderCard({
 }
 
 /**
- * The per-status action. awaiting_assets and proof_ready now render the real
- * customer actions (photo upload, proof review). delivered keeps a labeled
- * placeholder until the video player lands (task 4.4). Other statuses render
- * nothing.
+ * The per-status action. awaiting_assets, proof_ready, and delivered render the
+ * real customer actions (photo upload, proof review, the finished-film player).
+ * Other statuses render nothing.
  */
 function ActionSlot({
   order,
@@ -229,17 +238,11 @@ function ActionSlot({
 
   if (order.status === "delivered") {
     return (
-      <div
-        className="mt-5 rounded-2xl border-2 border-dashed border-brand-deep/30 px-5 py-4"
-        data-action-slot="delivered"
-      >
-        <p
-          className="text-sm font-semibold uppercase tracking-widest text-brand-deep/40"
-          style={{ fontFamily: "var(--font-quicksand)" }}
-        >
-          Your video player coming here
-        </p>
-      </div>
+      <VideoPlayer
+        orderId={order.id}
+        childName={childName}
+        hasVideo={Boolean(order.finalVideo)}
+      />
     );
   }
 

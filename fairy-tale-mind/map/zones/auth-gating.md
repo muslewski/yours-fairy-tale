@@ -5,7 +5,7 @@ tags: [auth, security, customer-area]
 status: active
 created: 2026-06-03
 updated: 2026-06-03
-related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]"]
+related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]", "[[video-ownership-route-over-static-url]]", "[[local-disk-video-delivery]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
 owns:
@@ -19,15 +19,21 @@ owns:
     - "lib/order-stages.ts"
     - "lib/order-actions.ts"
     - "lib/order-upload-validation.ts"
+    - "lib/video-access.ts"
     - "app/(app)/app/layout.tsx"
     - "app/(app)/app/page.tsx"
+    - "app/(app)/app/profile/page.tsx"
+    - "app/(app)/api/orders/[id]/video/route.ts"
     - "app/(app)/sign-in/page.tsx"
     - "components/app/status-timeline.tsx"
     - "components/app/photo-upload.tsx"
     - "components/app/proof-review.tsx"
+    - "components/app/video-player.tsx"
+    - "components/app/sign-out-button.tsx"
     - "tests/auth/gating.test.ts"
     - "tests/app/order-stages.test.ts"
     - "tests/app/order-actions.test.ts"
+    - "tests/app/video-access.test.ts"
 depends: ["[[payload-backend]]"]
 invariants:
   - rule: "proxy.ts is PRESENCE-ONLY (no DB hit). The authoritative DB check is app/(app)/app/layout.tsx only."
@@ -36,11 +42,13 @@ invariants:
     enforcedBy: ["tests/auth/gating.test.ts"]
   - rule: "Every mutating customer order action (lib/order-actions.ts) starts with assertOwnsOrder(orderId), which throws unless the signed-in customer owns the order. A customer can never mutate another customer's order."
     enforcedBy: ["tests/app/order-actions.test.ts"]
+  - rule: "The delivered film is served ONLY through the ownership-checked route (app/(app)/api/orders/[id]/video) via resolveOwnedVideo → assertOwnsOrder. Never a direct/guessable media URL; media stays read: adminOnly. A non-owner can never fetch another customer's video."
+    enforcedBy: ["tests/app/video-access.test.ts"]
   - rule: "sign-in page is OUTSIDE the gated app route group — redirect can never trap it."
     enforcedBy: []
   - rule: "The status → stage mapping and parent-facing copy live ONLY in lib/order-stages.ts (DOM-free, tested). The timeline component and dashboard page render FROM it; they never re-derive stage indices or hardcode status copy."
     enforcedBy: ["tests/app/order-stages.test.ts"]
-verifiedAt: d2bde2a3c33f9596fd1c61e306299821f3121e35
+verifiedAt: f10cab87afb488952dff9dca1fd2cbcdad6957b7
 ---
 
 ## Purpose
@@ -62,9 +70,9 @@ The `/app` page lists the customer's orders as comic-styled cards (`bg-white`,
 `border-2 border-brand-deep`, `shadow-comic`): child's name + chosen world, the
 production timeline, and a calm status-aware message. Empty state links to the
 homepage configurator (`/#build`). The per-status ACTION slot now renders the
-real customer actions: photo upload for `awaiting_assets` and proof review for
-`proof_ready` (below). `delivered` still shows a labeled placeholder until the
-video player lands (task 4.4).
+real customer actions: photo upload for `awaiting_assets`, proof review for
+`proof_ready`, and the finished-film player for `delivered` (below). The header
+carries a **Profile** link to `/app/profile`.
 
 ### Customer order actions (lib/order-actions.ts — `"use server"`)
 Server-only mutations the dashboard calls. **Security invariant:** each begins
@@ -94,6 +102,33 @@ the client upload component, and unit-tested directly.
   `approveProof` / `requestProofChange`. The page resolves the `proof` media id
   to `{ url, mimeType, alt }` server-side and passes it in.
 Both guard Motion with `useReducedMotion()` and use brand tokens only.
+- **VideoPlayer** (plain component, no `"use client"`) — the `delivered` action.
+  A native `<video controls>` plus a Download link, both pointing at the
+  ownership-gated route (below), with a calm "watch it together" line. When the
+  order is `delivered` but `finalVideo` is not attached yet (`hasVideo` false),
+  it renders a gentle "your video is being finalized" fallback instead of an
+  empty player.
+
+### Delivered video — gated streaming (Task 4.4)
+- **`lib/video-access.ts`** — `resolveOwnedVideo(orderId)` runs `assertOwnsOrder`
+  (the shared ownership doorway), then resolves `order.finalVideo` to the media
+  fields needed to stream it; returns `null` when there is no film yet (so the
+  route 404s and the UI shows the fallback). `mediaFilePath(filename)` resolves
+  the on-disk path under `MEDIA_STATIC_DIR` and guards against path traversal.
+- **`app/(app)/api/orders/[id]/video/route.ts`** — the only path a customer can
+  reach the film. `GET` streams the local file (Range-aware for scrubbing);
+  `?download` sets an attachment disposition. Non-owner → 403, no film → 404.
+  Because `media` is `read: adminOnly`, access is gated by ownership, NOT by a
+  guessable static URL (`[[video-ownership-route-over-static-url]]`). The
+  local-disk byte source is a deliberate MVP shortcut, flagged in-code and in
+  `[[local-disk-video-delivery]]` — production needs signed/managed delivery.
+
+### Profile (app/(app)/app/profile/page.tsx + sign-out)
+Server component; the layout has already gated the session, so it reads the
+parent's name + email straight from it (read-only for MVP) into an on-brand card,
+with a link back to `/app` and a **SignOutButton**.
+- **`components/app/sign-out-button.tsx`** (`"use client"`) — calls
+  `authClient.signOut()` then `router.replace("/sign-in")`, with a pending state.
 
 - **`lib/order-stages.ts`** — DOM-free, fully unit-tested core. `STAGES` (the six
   ordered production steps), `stageForStatus(status)` → `{ activeIndex }` on the
@@ -126,9 +161,24 @@ The full multipart upload round-trip is not exercised (awkward to feed a real
 File through the action in the node env); the validation predicate and the
 shared ownership guard — the security-critical paths — are.
 
+`tests/app/video-access.test.ts` (DB-backed, network-free; same session mock)
+covers `resolveOwnedVideo`: the owner of a `delivered` order with a `finalVideo`
+gets the media back; a non-owner and an unauthenticated caller are rejected
+(learning nothing about the file); a `delivered` order with no `finalVideo`
+resolves to `null` for the owner. The route handler's streaming/Range/disposition
+plumbing is thin glue over this gate and is not separately unit-tested.
+
+> Build/runtime caveat: `npm run build` and any server-side auth route handler in
+> `next dev` currently fail with a `@better-auth/kysely-adapter` ↔ `kysely`
+> export mismatch. This is **pre-existing and repo-wide** (it breaks the
+> untouched `app/api/auth/[...all]/route.ts`), not caused by this work, so the
+> video route could not be smoke-tested end to end. Tracked in
+> `[[better-auth-kysely-build-break]]`. tsc is clean and the unit suite is green.
+
 ## Lineage
 Task 2.4 (proxy) + 2.5 (sign-in) + 2.6 (layout + customer data) + the dashboard
 order list and animated production timeline (order-stages + status-timeline),
 then Task 4.2 (photo upload) + 4.3 (proof review) wiring the two per-status
-customer actions into the dashboard, all from the purchase → account →
-dashboard plan.
+customer actions into the dashboard, then Task 4.4 (the ownership-gated delivered
+video player + streaming route) + 4.5 (the profile page + sign-out), all from the
+purchase → account → dashboard plan.
