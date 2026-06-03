@@ -59,5 +59,9 @@ export default buildConfig({
     // Chosen now so the later Better Auth integration (which uses string ids)
     // lines up without a primary-key migration.
     idType: "uuid",
+    // Migrations live here. Dev still uses drizzle push (NODE_ENV !== production);
+    // prod has no push, so schema changes reach prod ONLY via `payload migrate`
+    // run against the prod DB. See tech-debt/no-production-db-migrations.md.
+    migrationDir: path.resolve(dirname, "migrations"),
   }),
 });
