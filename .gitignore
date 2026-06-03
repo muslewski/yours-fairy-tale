@@ -38,6 +38,9 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# payload local-disk upload storage (dev only; prod uses Vercel Blob)
+/media
 next-env.d.ts
 
 # claude / mcp tooling artifacts

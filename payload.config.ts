@@ -6,6 +6,12 @@ import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { buildConfig } from "payload";
 
 import { Admins } from "./collections/Admins";
+import { Accounts } from "./collections/auth/Accounts";
+import { Sessions } from "./collections/auth/Sessions";
+import { Users } from "./collections/auth/Users";
+import { Verifications } from "./collections/auth/Verifications";
+import { Media } from "./collections/Media";
+import { Orders } from "./collections/Orders";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -25,9 +31,18 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  // Only `admins` exists for now (staff/dev login). Customer auth (Better Auth
-  // users/accounts/sessions/verifications), Orders, and Media are later slices.
-  collections: [Admins],
+  collections: [
+    // Payload native auth — staff / dev login for /admin.
+    Admins,
+    // Better Auth customer collections (plain, no `auth: true`).
+    Users,
+    Accounts,
+    Sessions,
+    Verifications,
+    // Commerce.
+    Orders,
+    Media,
+  ],
   editor: lexicalEditor(),
   secret,
   typescript: {
