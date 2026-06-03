@@ -18,7 +18,7 @@ owns:
     - "components/home/site-footer.tsx"
 depends: ["[[site-preloader]]", "[[section-waves]]"]
 invariants: []
-verifiedAt: f8eb4a2
+verifiedAt: 18614e2
 ---
 
 ## Purpose
