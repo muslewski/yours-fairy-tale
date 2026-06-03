@@ -49,3 +49,4 @@ next-env.d.ts
 
 # Obsidian per-user workspace (the rest of .obsidian is shared/committed)
 fairy-tale-mind/.obsidian/workspace*.json
+.env

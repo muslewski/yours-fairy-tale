@@ -10,14 +10,22 @@
     "start": "next start"
   },
   "dependencies": {
+    "@payloadcms/db-postgres": "^3.85.0",
+    "@payloadcms/next": "^3.85.0",
+    "@payloadcms/richtext-lexical": "^3.85.0",
+    "@payloadcms/storage-vercel-blob": "^3.85.0",
+    "better-auth": "^1.6.14",
     "clsx": "^2.1.1",
     "gray-matter": "^4.0.3",
     "motion": "^12.40.0",
     "next": "16.2.6",
+    "payload": "^3.85.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
+    "resend": "^6.12.4",
+    "stripe": "^22.2.0",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
@@ -26,6 +34,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.8"
   }
 }
