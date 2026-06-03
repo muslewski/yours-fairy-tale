@@ -10,6 +10,13 @@ import { Admins } from "./collections/Admins";
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
+// Fail loudly if the signing secret / DB are missing — never boot with an empty
+// PAYLOAD_SECRET (every JWT would be signed with "" and trivially forgeable).
+const secret = process.env.PAYLOAD_SECRET;
+if (!secret) throw new Error("PAYLOAD_SECRET env var is required");
+const connectionString = process.env.DATABASE_URI;
+if (!connectionString) throw new Error("DATABASE_URI env var is required");
+
 export default buildConfig({
   // Payload's own admin panel logs in via the `admins` collection (native auth).
   admin: {
@@ -22,13 +29,13 @@ export default buildConfig({
   // users/accounts/sessions/verifications), Orders, and Media are later slices.
   collections: [Admins],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || "",
+  secret,
   typescript: {
     outputFile: path.resolve(dirname, "payload-types.ts"),
   },
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URI || "",
+      connectionString,
     },
     // String UUID primary keys for every collection — Postgres mints them.
     // Chosen now so the later Better Auth integration (which uses string ids)

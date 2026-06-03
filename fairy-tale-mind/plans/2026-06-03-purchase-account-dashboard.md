@@ -37,6 +37,12 @@ This is a greenfield integration of fast-moving libraries. Two rules keep the co
 
 ## File structure (created/modified across the plan)
 
+> **PATH CONVENTION (this repo):** root-level layout — there is **no `src/`**, and `@/*`
+> maps to `./*` (see `tsconfig.json`). **Drop the `src/` prefix from every path below:**
+> `src/lib/X` → `lib/X`, `src/collections/X` → `collections/X`, `src/app/X` → `app/X`,
+> `src/proxy.ts` → `proxy.ts`. The paths are shown with `src/` only to mirror the delieta
+> reference; translate them to root-level here. (delieta uses `src/`; we don't.)
+
 ```
 src/payload.config.ts                         # Payload init: db (uuid), admin.user=admins, collections
 src/collections/Admins.ts                     # Payload-native auth (staff) — the ONLY auth:true collection
