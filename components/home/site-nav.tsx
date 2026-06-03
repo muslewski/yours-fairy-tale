@@ -72,21 +72,39 @@ export function SiteNav() {
           ))}
         </Stagger>
 
-        <motion.a
-          href="/#build"
-          {...(reduce
-            ? {}
-            : {
-                initial: { opacity: 0, scale: 0.5, rotate: 10 },
-                animate: { opacity: 1, scale: 1, rotate: 0 },
-                transition: { type: "spring", stiffness: 260, damping: 14, delay: 0.2 },
-                whileHover: { scale: 1.06, rotate: -2 },
-                whileTap: { scale: 0.95 },
-              })}
-          className="shrink-0 rounded-lg border-[3px] border-brand-deep bg-brand-pink px-4 py-2 text-sm font-bold text-white shadow-comic-sm active:translate-y-0.5"
-        >
-          Start! ⚡
-        </motion.a>
+        <div className="flex shrink-0 items-center gap-2">
+          <motion.a
+            href="/sign-in"
+            {...(reduce
+              ? {}
+              : {
+                  initial: { opacity: 0, scale: 0.5, rotate: -8 },
+                  animate: { opacity: 1, scale: 1, rotate: 0 },
+                  transition: { type: "spring", stiffness: 260, damping: 14, delay: 0.18 },
+                  whileHover: { scale: 1.06, rotate: 2 },
+                  whileTap: { scale: 0.95 },
+                })}
+            className="inline-flex rounded-lg border-[3px] border-brand-deep bg-white px-3 py-2 text-sm font-bold text-brand-deep shadow-comic-sm transition-colors hover:bg-brand-yellow active:translate-y-0.5 sm:px-4"
+          >
+            Sign in
+          </motion.a>
+
+          <motion.a
+            href="/#build"
+            {...(reduce
+              ? {}
+              : {
+                  initial: { opacity: 0, scale: 0.5, rotate: 10 },
+                  animate: { opacity: 1, scale: 1, rotate: 0 },
+                  transition: { type: "spring", stiffness: 260, damping: 14, delay: 0.2 },
+                  whileHover: { scale: 1.06, rotate: -2 },
+                  whileTap: { scale: 0.95 },
+                })}
+            className="rounded-lg border-[3px] border-brand-deep bg-brand-pink px-4 py-2 text-sm font-bold text-white shadow-comic-sm active:translate-y-0.5"
+          >
+            Start! ⚡
+          </motion.a>
+        </div>
       </motion.header>
     </div>
   );
