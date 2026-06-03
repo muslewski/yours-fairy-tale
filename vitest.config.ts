@@ -3,7 +3,15 @@ import { fileURLToPath } from "node:url";
 
 export default defineConfig({
   resolve: {
-    alias: { "@": fileURLToPath(new URL(".", import.meta.url)) },
+    alias: {
+      "@payload-config": fileURLToPath(
+        new URL("./payload.config.ts", import.meta.url),
+      ),
+      "@": fileURLToPath(new URL(".", import.meta.url)),
+    },
   },
-  test: { environment: "node" },
+  test: {
+    environment: "node",
+    setupFiles: ["./tests/setup-env.ts"],
+  },
 });

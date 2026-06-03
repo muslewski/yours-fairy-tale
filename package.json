@@ -3,11 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --no-server-fast-refresh",
     "build": "next build",
     "prebuild": "node scripts/mind/generate.mjs",
     "mind": "node scripts/mind/generate.mjs",
-    "start": "next start"
+    "start": "next start",
+    "payload": "payload",
+    "generate:types": "payload generate:types",
+    "generate:importmap": "payload generate:importmap"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.85.0",
