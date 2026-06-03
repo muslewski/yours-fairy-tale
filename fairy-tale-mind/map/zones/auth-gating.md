@@ -40,7 +40,7 @@ invariants:
     enforcedBy: []
   - rule: "The status → stage mapping and parent-facing copy live ONLY in lib/order-stages.ts (DOM-free, tested). The timeline component and dashboard page render FROM it; they never re-derive stage indices or hardcode status copy."
     enforcedBy: ["tests/app/order-stages.test.ts"]
-verifiedAt: bc2efd993f62b0522cd4bc08f2bf28267f6f6315
+verifiedAt: d2bde2a3c33f9596fd1c61e306299821f3121e35
 ---
 
 ## Purpose
