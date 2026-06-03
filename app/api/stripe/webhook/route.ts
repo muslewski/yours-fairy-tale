@@ -103,11 +103,13 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
   const { childName, world, length, detailLevel } = meta;
 
   if (!email) {
-    console.error(
-      "[webhook] checkout.session.completed has no email — cannot create user. session:",
-      sessionId,
+    // No email on the event — we cannot create the account. THROW (not return)
+    // so the POST handler returns 500 and Stripe RETRIES. A silent 200 would
+    // drop the sale with no recovery path, since accounts come ONLY from this
+    // webhook. (Code-review I1.)
+    throw new Error(
+      `checkout.session.completed has no resolvable email — session: ${sessionId}`,
     );
-    return;
   }
 
   const payload = await getPayloadClient();

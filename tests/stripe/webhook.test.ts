@@ -7,9 +7,10 @@
  *
  * These tests hit the local Postgres DB via the Payload Local API.
  */
-import { expect, test, beforeAll } from "vitest";
+import { expect, test } from "vitest";
 import Stripe from "stripe";
-import { handleStripeEvent } from "@/app/api/stripe/webhook/route";
+import { handleStripeEvent, POST } from "@/app/api/stripe/webhook/route";
+import { stripe } from "@/lib/stripe";
 import { getPayloadClient } from "@/lib/payload";
 
 // ---------------------------------------------------------------------------
@@ -146,4 +147,89 @@ test("unknown event type is ignored without error", async () => {
 
   // Should resolve without throwing
   await expect(handleStripeEvent(unknownEvent)).resolves.toBeUndefined();
+});
+
+// ---------------------------------------------------------------------------
+// I1: a completed event with no resolvable email must THROW, so the POST
+// handler returns 500 and Stripe RETRIES (rather than silently dropping the sale).
+// ---------------------------------------------------------------------------
+
+test("checkout.session.completed with no email throws (Stripe will retry)", async () => {
+  const ev = completedEvent("x@x.io", `cs_${Date.now()}_noemail`);
+  (ev.data.object as { customer_email: string | null }).customer_email = null;
+  (ev.data.object as { customer_details: unknown }).customer_details = null;
+  await expect(handleStripeEvent(ev)).rejects.toThrow(/no resolvable email/);
+});
+
+// ---------------------------------------------------------------------------
+// HTTP layer — the signature security boundary (rejection paths + happy path)
+// ---------------------------------------------------------------------------
+
+const TEST_SECRET = "whsec_test_secret_for_unit_tests";
+
+function restoreSecret(prev: string | undefined) {
+  if (prev === undefined) delete process.env.STRIPE_WEBHOOK_SECRET;
+  else process.env.STRIPE_WEBHOOK_SECRET = prev;
+}
+
+function postRequest(rawBody: string, headers: Record<string, string>) {
+  return new Request("http://localhost/api/stripe/webhook", {
+    method: "POST",
+    body: rawBody,
+    headers,
+  }) as unknown as Parameters<typeof POST>[0];
+}
+
+test("POST → 500 when the webhook secret is not configured", async () => {
+  const prev = process.env.STRIPE_WEBHOOK_SECRET;
+  delete process.env.STRIPE_WEBHOOK_SECRET;
+  try {
+    const res = await POST(postRequest("{}", { "stripe-signature": "x" }));
+    expect(res.status).toBe(500);
+  } finally {
+    restoreSecret(prev);
+  }
+});
+
+test("POST → 400 when the stripe-signature header is missing", async () => {
+  const prev = process.env.STRIPE_WEBHOOK_SECRET;
+  process.env.STRIPE_WEBHOOK_SECRET = TEST_SECRET;
+  try {
+    const res = await POST(postRequest("{}", {}));
+    expect(res.status).toBe(400);
+  } finally {
+    restoreSecret(prev);
+  }
+});
+
+test("POST → 400 on an invalid signature", async () => {
+  const prev = process.env.STRIPE_WEBHOOK_SECRET;
+  process.env.STRIPE_WEBHOOK_SECRET = TEST_SECRET;
+  try {
+    const res = await POST(
+      postRequest(JSON.stringify({ id: "evt" }), {
+        "stripe-signature": "t=1,v1=deadbeef",
+      }),
+    );
+    expect(res.status).toBe(400);
+  } finally {
+    restoreSecret(prev);
+  }
+});
+
+test("POST → 200 on a correctly-signed event", async () => {
+  const prev = process.env.STRIPE_WEBHOOK_SECRET;
+  process.env.STRIPE_WEBHOOK_SECRET = TEST_SECRET;
+  try {
+    const email = `wh-http-${Date.now()}@x.io`;
+    const rawBody = JSON.stringify(completedEvent(email, `cs_${Date.now()}_http`));
+    const header = stripe.webhooks.generateTestHeaderString({
+      payload: rawBody,
+      secret: TEST_SECRET,
+    });
+    const res = await POST(postRequest(rawBody, { "stripe-signature": header }));
+    expect(res.status).toBe(200);
+  } finally {
+    restoreSecret(prev);
+  }
 });
