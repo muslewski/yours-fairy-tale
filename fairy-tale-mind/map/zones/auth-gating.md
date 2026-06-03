@@ -48,7 +48,7 @@ invariants:
     enforcedBy: []
   - rule: "The status → stage mapping and parent-facing copy live ONLY in lib/order-stages.ts (DOM-free, tested). The timeline component and dashboard page render FROM it; they never re-derive stage indices or hardcode status copy."
     enforcedBy: ["tests/app/order-stages.test.ts"]
-verifiedAt: a0558d5bdb6fdf6daa0f7e5ad3e0c1be67b05965
+verifiedAt: cd8fe918598831c5be64121fc979a0511a5fb39b
 ---
 
 ## Purpose
@@ -182,3 +182,5 @@ then Task 4.2 (photo upload) + 4.3 (proof review) wiring the two per-status
 customer actions into the dashboard, then Task 4.4 (the ownership-gated delivered
 video player + streaming route) + 4.5 (the profile page + sign-out), all from the
 purchase → account → dashboard plan.
+The dashboard's `WORLD_LABELS` was extracted to the shared `lib/worlds.ts` (also used by
+the configurator's plot picker) when checkout was wired to real Stripe (2026-06-03).

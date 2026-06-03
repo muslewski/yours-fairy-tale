@@ -65,7 +65,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
     enforcedBy: ["tests/app/status-emails.test.ts"]
-verifiedAt: bf5545cb0be50eb970ecd43cad5d3ffe92881d26
+verifiedAt: cd8fe918598831c5be64121fc979a0511a5fb39b
 ---
 
 ## Purpose

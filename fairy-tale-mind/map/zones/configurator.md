@@ -25,7 +25,7 @@ invariants:
     enforcedBy: []
   - rule: "World ids match collections/Orders.ts world options and lib/worlds.ts WORLD_LABELS; childName is optional (empty is allowed, parent adds it later)."
     enforcedBy: []
-verifiedAt: bf5545cb0be50eb970ecd43cad5d3ffe92881d26
+verifiedAt: cd8fe918598831c5be64121fc979a0511a5fb39b
 ---
 
 ## Purpose
