@@ -20,5 +20,9 @@ export default defineConfig({
     // against the single local Postgres. Running files in parallel races on that DB,
     // so serialize them. (Tests are DB-bound, not CPU-bound — little speed cost.)
     fileParallelism: false,
+    // The Neon test branch adds ~1-2s connect + schema-push latency per Payload boot,
+    // which blows vitest's 5s/10s defaults. Generous timeouts keep DB-bound tests green.
+    testTimeout: 30_000,
+    hookTimeout: 30_000,
   },
 });
