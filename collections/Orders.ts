@@ -41,6 +41,7 @@ export const Orders: CollectionConfig = {
     {
       name: "stripePaymentIntentId",
       type: "text",
+      index: true,
     },
     { name: "childName", type: "text" },
     {

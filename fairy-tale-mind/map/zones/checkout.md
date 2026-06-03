@@ -1,6 +1,6 @@
 ---
 type: zone
-summary: "Stripe checkout integration — mock UI simulation + real Checkout Session route + webhook that creates checkout-gated accounts and orders."
+summary: "Stripe checkout integration — mock UI simulation + real Checkout Session route + webhook that creates accounts, orders, sends confirmation email, and syncs refund/dispute status."
 tags: [ui, checkout, stripe, api, webhook, orders]
 status: active
 created: 2026-06-02
@@ -16,10 +16,12 @@ owns:
     - "components/checkout/*"
     - "lib/stripe.ts"
     - "lib/checkout.ts"
+    - "lib/email.ts"
     - "app/api/stripe/checkout/route.ts"
     - "app/api/stripe/webhook/route.ts"
     - "tests/stripe/checkout.test.ts"
     - "tests/stripe/webhook.test.ts"
+    - "tests/stripe/refund-email.test.ts"
 depends: ["[[payload-backend]]"]
 invariants:
   - rule: "Never makes network calls or charges money — simulation only."
@@ -40,7 +42,15 @@ invariants:
     enforcedBy: ["tests/stripe/webhook.test.ts"]
   - rule: "No public sign-up path exists — customer accounts come ONLY from this webhook."
     enforcedBy: []
-verifiedAt: 410c1bf6d8af07e4bcd4da0d76f6b0f8c8f6b2d1
+  - rule: "Confirmation email failure never blocks order creation — errors are logged, not thrown."
+    enforcedBy: ["tests/stripe/refund-email.test.ts"]
+  - rule: "Dev email always routes to RESEND_TO_OVERRIDE when set; subject prefixed with real recipient."
+    enforcedBy: ["tests/stripe/refund-email.test.ts"]
+  - rule: "charge.refunded → order status 'refunded'; charge.dispute.created → 'cancelled'. Unknown paymentIntentId: log and return, no throw."
+    enforcedBy: ["tests/stripe/refund-email.test.ts"]
+  - rule: "stripePaymentIntentId must be indexed for O(1) refund/dispute lookups."
+    enforcedBy: ["collections/Orders.ts"]
+verifiedAt: d0c9ad060992bb6b9bc140425c7e74e35fea0b61
 ---
 
 ## Purpose
@@ -65,20 +75,37 @@ Two-layer checkout:
 - API version pinned to `2026-05-27.dahlia` (latest in stripe@22.2.0).
 
 ## Webhook (`POST /api/stripe/webhook`)
-Handles `checkout.session.completed` to enact the "checkout-gated, no public sign-up" model:
+Handles three event types via `handleStripeEvent` (exported, HTTP-free, safe to unit-test):
 
+### `checkout.session.completed`
+Enacts the "checkout-gated, no public sign-up" model:
 1. **Signature verification** — `stripe.webhooks.constructEvent(rawBody, sig, secret)` with
    raw body via `req.text()` (never `req.json()`, which would break the HMAC). Secret read
    lazily inside the handler (not at module top) — returns 500 if missing at request time.
-2. **handleStripeEvent** (exported, HTTP-free) — called after verification; safe to unit-test
-   directly. Ignores unknown event types.
-3. **Idempotency** — checks for an existing `orders` row with the same `stripeSessionId`
+2. **Idempotency** — checks for an existing `orders` row with the same `stripeSessionId`
    before doing any DB work; returns early on duplicate.
-4. **Upsert user** — finds `users` by email (from `customer_details.email` or
+3. **Upsert user** — finds `users` by email (from `customer_details.email` or
    `customer_email`); creates one with `emailVerified: true` if absent.
-5. **Create order** — links to the user via `owner`, stores `stripeSessionId`,
+4. **Create order** — links to the user via `owner`, stores `stripeSessionId`,
    `stripePaymentIntentId`, the four metadata fields, and lets `status` default to `"paid"`.
+5. **Confirmation email** — sends a "your video is on its way — sign in to track it" email
+   via `lib/email.ts` (Resend). Email failure is logged and never re-throws; the order is
+   always the critical path.
+
+### `charge.refunded`
+Finds the order by `stripePaymentIntentId` (indexed). Sets `status: "refunded"`.
+Unknown payment intent: log + return (no throw).
+
+### `charge.dispute.created`
+Same lookup. Sets `status: "cancelled"`.
+Unknown payment intent: log + return (no throw).
+
+## Email (`lib/email.ts`)
+Thin Resend wrapper. Dev routing: if `RESEND_TO_OVERRIDE` is set, all mail goes to that
+address with the real recipient prefixed to the subject (`[→ buyer@x.io] subject`).
+Guard: if `RESEND_API_KEY` is absent, logs a warning and returns without error.
 
 ## Lineage
 Seeded from the existing site at Mind setup. Real Stripe route added 2026-06-03.
 Webhook (checkout-gated account creation) added 2026-06-03.
+Confirmation email + refund/dispute status sync added 2026-06-03.

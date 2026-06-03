@@ -18,6 +18,7 @@ import type Stripe from "stripe";
 
 import { stripe } from "@/lib/stripe";
 import { getPayloadClient } from "@/lib/payload";
+import { sendEmail } from "@/lib/email";
 
 // ---------------------------------------------------------------------------
 // HTTP handler
@@ -77,11 +78,93 @@ export async function POST(req: NextRequest) {
  * Processes a verified Stripe.Event.
  *
  * Currently handles:
- *   - checkout.session.completed  → upsert user, create order (idempotent)
+ *   - checkout.session.completed  → upsert user, create order (idempotent), send confirmation email
+ *   - charge.refunded             → set order status to "refunded"
+ *   - charge.dispute.created      → set order status to "cancelled"
  *
  * Unknown event types are silently ignored (return undefined).
  */
 export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
+  // ------------------------------------------------------------------
+  // charge.refunded — set matching order status to "refunded"
+  // ------------------------------------------------------------------
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object as Stripe.Charge;
+    const paymentIntentId =
+      typeof charge.payment_intent === "string"
+        ? charge.payment_intent
+        : (charge.payment_intent?.id ?? null);
+
+    if (!paymentIntentId) {
+      console.warn("[webhook] charge.refunded has no payment_intent — skipping.");
+      return;
+    }
+
+    const payload = await getPayloadClient();
+    const existing = await payload.find({
+      collection: "orders",
+      where: { stripePaymentIntentId: { equals: paymentIntentId } },
+      limit: 1,
+      overrideAccess: true,
+    });
+
+    if (existing.totalDocs === 0) {
+      console.warn(
+        `[webhook] charge.refunded: no order found for payment_intent ${paymentIntentId}`,
+      );
+      return;
+    }
+
+    const order = existing.docs[0];
+    await payload.update({
+      collection: "orders",
+      id: order.id,
+      data: { status: "refunded" },
+      overrideAccess: true,
+    });
+    return;
+  }
+
+  // ------------------------------------------------------------------
+  // charge.dispute.created — set matching order status to "cancelled"
+  // ------------------------------------------------------------------
+  if (event.type === "charge.dispute.created") {
+    const dispute = event.data.object as Stripe.Dispute;
+    const paymentIntentId =
+      typeof dispute.payment_intent === "string"
+        ? dispute.payment_intent
+        : (dispute.payment_intent?.id ?? null);
+
+    if (!paymentIntentId) {
+      console.warn("[webhook] charge.dispute.created has no payment_intent — skipping.");
+      return;
+    }
+
+    const payload = await getPayloadClient();
+    const existing = await payload.find({
+      collection: "orders",
+      where: { stripePaymentIntentId: { equals: paymentIntentId } },
+      limit: 1,
+      overrideAccess: true,
+    });
+
+    if (existing.totalDocs === 0) {
+      console.warn(
+        `[webhook] charge.dispute.created: no order found for payment_intent ${paymentIntentId}`,
+      );
+      return;
+    }
+
+    const order = existing.docs[0];
+    await payload.update({
+      collection: "orders",
+      id: order.id,
+      data: { status: "cancelled" },
+      overrideAccess: true,
+    });
+    return;
+  }
+
   if (event.type !== "checkout.session.completed") {
     return;
   }
@@ -184,4 +267,58 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
     },
     overrideAccess: true,
   });
+
+  // ------------------------------------------------------------------
+  // Send the order confirmation email (non-fatal — log errors, never throw)
+  // ------------------------------------------------------------------
+  try {
+    const childFirstName = childName ? ` for ${childName}` : "";
+    await sendEmail({
+      to: email,
+      subject: `Your video${childFirstName} is on its way`,
+      html: buildOrderConfirmationEmail({ email, childName: childName ?? null }),
+    });
+  } catch (err) {
+    console.error("[webhook] Confirmation email failed (order still created):", err);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Email copy — brand-voice: calm, warm, parent-facing, American English
+// ---------------------------------------------------------------------------
+
+function buildOrderConfirmationEmail({
+  email,
+  childName,
+}: {
+  email: string;
+  childName: string | null;
+}): string {
+  const childLine = childName
+    ? `<p>We have received your order and ${childName}'s video is now in production.</p>`
+    : `<p>We have received your order and the video is now in production.</p>`;
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Your order is confirmed</title>
+</head>
+<body style="font-family: sans-serif; color: #1a1033; max-width: 560px; margin: 0 auto; padding: 32px 16px;">
+  <h1 style="font-size: 22px; margin-bottom: 8px;">Your order is confirmed.</h1>
+  ${childLine}
+  <p>Our team will hand-animate every scene with care. We will reach out when it is ready for you to watch.</p>
+  <p>
+    In the meantime, sign in at
+    <a href="https://yoursfairytale.com/sign-in" style="color: #17c7e2;">yoursfairytale.com/sign-in</a>
+    using this email address (${email}) to follow along with production and access your video when it is delivered.
+  </p>
+  <p>Thank you for trusting us with their story.</p>
+  <p style="margin-top: 32px; font-size: 13px; color: #888;">
+    Yours Fairy Tale &mdash; a keepsake they will ask for again and again.
+  </p>
+</body>
+</html>
+  `.trim();
 }
