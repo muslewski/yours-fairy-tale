@@ -1,25 +1,29 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { AnimatedHeading } from "@/components/motion/animated-heading";
 import {
   ADDONS,
   DETAILS,
   EXTRA_MINUTE_PRICE,
   LENGTHS,
-  MAX_EXTRA_MINUTES,
+  summarizeSelections,
 } from "@/lib/pricing";
-import { Segmented, type SegOption } from "./segmented";
-import { RangeSlider } from "./range-slider";
-import { WorldPicker } from "./world-picker";
+import { type SegOption } from "./segmented";
 import { PriceRail } from "./price-rail";
+import { StepNav } from "./step-nav";
+import { StepFilm } from "./step-film";
+import { StepStory } from "./step-story";
+import { StepPhotos } from "./step-photos";
 import type { WorldId } from "@/lib/worlds";
 
 const pct = (multiplier: number) => Math.round((multiplier - 1) * 100);
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
 
 export function Configurator() {
+  const reduce = useReducedMotion();
+
   const [childName, setChildName] = useState("");
   const [world, setWorld] = useState<WorldId>("bedtime");
   const [length, setLength] = useState("medium");
@@ -27,6 +31,8 @@ export function Configurator() {
   const [detail, setDetail] = useState("basic");
   const [addOns, setAddOns] = useState<string[]>(["narration"]);
   const [status, setStatus] = useState<"idle" | "pending" | "error">("idle");
+  const [plotNote, setPlotNote] = useState("");
+  const [step, setStep] = useState(1);
 
   const tier = LENGTHS.find((o) => o.id === length)!;
   const lvl = DETAILS.find((o) => o.id === detail)!;
@@ -55,6 +61,7 @@ export function Configurator() {
           detail,
           extraMinutes,
           addOns,
+          plotNote: plotNote.trim(),
         }),
       });
       if (!res.ok) throw new Error(`Checkout failed (${res.status})`);
@@ -65,6 +72,14 @@ export function Configurator() {
       setStatus("error");
     }
   };
+
+  const goToStep = (n: number) => {
+    setStatus("idle"); // clear any stale checkout error when changing steps
+    setStep(n);
+  };
+  const onPrimary = () => (step < 3 ? goToStep(step + 1) : startCheckout());
+  const primaryLabel =
+    step < 3 ? "Continue →" : status === "pending" ? "Taking you to checkout…" : "Create their video →";
 
   const lengthOptions: SegOption[] = LENGTHS.map((o) => ({
     id: o.id,
@@ -83,13 +98,13 @@ export function Configurator() {
     <>
       <motion.button
         type="button"
-        onClick={startCheckout}
+        onClick={onPrimary}
         disabled={status === "pending"}
         whileHover={status === "pending" ? undefined : { y: -2 }}
         whileTap={status === "pending" ? undefined : { y: 1, scale: 0.99 }}
         className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl border-[3px] border-brand-deep bg-brand-pink px-6 py-4 text-base font-black uppercase tracking-wide text-white shadow-comic disabled:cursor-not-allowed disabled:opacity-70"
       >
-        {status === "pending" ? "Taking you to checkout…" : "Create their video →"}
+        {primaryLabel}
       </motion.button>
       <AnimatePresence mode="wait">
         {status === "error" ? (
@@ -141,8 +156,7 @@ export function Configurator() {
             className="mt-6 font-[family-name:var(--font-fredoka)] text-4xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl"
           />
           <p className="mt-4 text-lg font-medium text-white/70">
-            Tell us who the story is for and pick a plot. Then choose a length and the level
-            of detail. You can change any of it before we animate a thing.
+            Start with the film, then tell us the story and who it&apos;s for. Add photos and check out when you&apos;re ready. You can change anything before we animate a thing.
           </p>
         </div>
 
@@ -155,102 +169,49 @@ export function Configurator() {
         >
           {/* Controls */}
           <div className="space-y-9 p-7 sm:p-9">
-            <div>
-              <label
-                htmlFor="child-name"
-                className="font-[family-name:var(--font-fredoka)] text-xl font-semibold"
+            <StepNav step={step} onBack={() => goToStep(Math.max(1, step - 1))} />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={step}
+                initial={reduce ? false : { opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={reduce ? undefined : { opacity: 0, x: -24 }}
+                transition={{ duration: 0.22 }}
               >
-                Who is it for?
-              </label>
-              <input
-                id="child-name"
-                type="text"
-                value={childName}
-                onChange={(e) => setChildName(e.target.value)}
-                autoComplete="off"
-                maxLength={40}
-                placeholder="Their first name"
-                className="mt-4 w-full rounded-2xl border-[3px] border-brand-deep bg-brand-cream px-4 py-3 text-base font-bold text-brand-deep outline-none placeholder:font-semibold placeholder:text-brand-deep/40 focus-visible:ring-4 focus-visible:ring-brand-pink/40"
-              />
-              <p className="mt-3 text-sm font-medium text-brand-deep/60">
-                The child becomes the hero of the story. You can add this later if you like.
-              </p>
-            </div>
-
-            <WorldPicker selected={world} onSelect={setWorld} />
-
-            <Segmented
-              legend="Length"
-              name="length"
-              options={lengthOptions}
-              selected={length}
-              onSelect={setLength}
-            />
-            <RangeSlider
-              value={extraMinutes}
-              onChange={setExtraMinutes}
-              max={MAX_EXTRA_MINUTES}
-              totalMinutes={totalMinutes}
-              cost={minutesCost}
-            />
-            <Segmented
-              legend="Detail level"
-              name="detail"
-              options={detailOptions}
-              selected={detail}
-              onSelect={setDetail}
-            />
-
-            <fieldset>
-              <legend className="font-[family-name:var(--font-fredoka)] text-xl font-semibold">
-                Add-ons
-              </legend>
-              <div className="mt-4 flex flex-wrap gap-2.5">
-                {ADDONS.map((o) => {
-                  const checked = addOns.includes(o.id);
-                  return (
-                    <motion.label
-                      key={o.id}
-                      whileTap={{ scale: 0.94 }}
-                      className={`flex cursor-pointer items-center gap-2.5 rounded-full border-[3px] border-brand-deep px-4 py-2.5 text-sm font-bold shadow-comic-sm transition-colors ${
-                        checked ? "bg-brand-pink text-white" : "bg-white text-brand-deep"
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        className="sr-only"
-                        checked={checked}
-                        onChange={() => toggleAddOn(o.id)}
-                      />
-                      <span
-                        aria-hidden
-                        className={`inline-flex h-5 w-5 items-center justify-center rounded-full border-[2px] text-[11px] font-black ${
-                          checked ? "border-white bg-white text-brand-pink" : "border-brand-deep text-transparent"
-                        }`}
-                      >
-                        ✓
-                      </span>
-                      {o.label}
-                      <span className="font-black">+{usd(o.price)}</span>
-                    </motion.label>
-                  );
-                })}
-              </div>
-              <AnimatePresence mode="wait">
-                <motion.p
-                  key={chosenAddOns.map((o) => o.id).join("-") || "none"}
-                  initial={{ opacity: 0, y: 4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ duration: 0.18 }}
-                  className="mt-3 text-sm font-medium text-brand-deep/60"
-                >
-                  {chosenAddOns.length > 0
-                    ? chosenAddOns[chosenAddOns.length - 1].note
-                    : "Optional touches you can add to make it extra special."}
-                </motion.p>
-              </AnimatePresence>
-            </fieldset>
+                {step === 1 && (
+                  <StepFilm
+                    lengthOptions={lengthOptions}
+                    length={length}
+                    setLength={setLength}
+                    extraMinutes={extraMinutes}
+                    setExtraMinutes={setExtraMinutes}
+                    totalMinutes={totalMinutes}
+                    minutesCost={minutesCost}
+                    detailOptions={detailOptions}
+                    detail={detail}
+                    setDetail={setDetail}
+                    addOns={addOns}
+                    toggleAddOn={toggleAddOn}
+                    chosenAddOns={chosenAddOns}
+                  />
+                )}
+                {step === 2 && (
+                  <StepStory
+                    childName={childName}
+                    setChildName={setChildName}
+                    world={world}
+                    setWorld={setWorld}
+                    plotNote={plotNote}
+                    setPlotNote={setPlotNote}
+                  />
+                )}
+                {step === 3 && (
+                  <StepPhotos
+                    summary={summarizeSelections({ length, detail, extraMinutes, addOns })}
+                  />
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
 
           {/* Summary rail */}
