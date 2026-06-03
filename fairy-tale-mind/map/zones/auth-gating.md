@@ -34,6 +34,9 @@ owns:
     - "tests/app/order-stages.test.ts"
     - "tests/app/order-actions.test.ts"
     - "tests/app/video-access.test.ts"
+    - "e2e/fixtures/auth.ts"
+    - "e2e/fixtures/seed.runner.ts"
+    - "e2e/fixtures/seed.vitest.config.ts"
 depends: ["[[payload-backend]]"]
 invariants:
   - rule: "proxy.ts is PRESENCE-ONLY (no DB hit). The authoritative DB check is app/(app)/app/layout.tsx only."
@@ -48,7 +51,7 @@ invariants:
     enforcedBy: []
   - rule: "The status → stage mapping and parent-facing copy live ONLY in lib/order-stages.ts (DOM-free, tested). The timeline component and dashboard page render FROM it; they never re-derive stage indices or hardcode status copy."
     enforcedBy: ["tests/app/order-stages.test.ts"]
-verifiedAt: cd8fe918598831c5be64121fc979a0511a5fb39b
+verifiedAt: 7ca00807e2f3dfdf0054bade949edfffc7e91524
 ---
 
 ## Purpose
@@ -143,6 +146,30 @@ with a link back to `/app` and a **SignOutButton**.
 
 ### Sign-in page (app/(app)/sign-in/page.tsx)
 Client component. Email input + submit calling `authClient.signIn.magicLink({ email, callbackURL: "/app" })`. On success, "check your email" state. No-account explainer below the form per brand-voice: calm, warm, explains checkout → email → account flow.
+
+### E2E auth fixture (e2e/fixtures/auth.ts — Playwright `setup` project)
+Produces the signed-in `storageState` (`e2e/.auth/customer.json`) the `chromium`
+project consumes. The flow is version-proof — it never reads tokens from the DB
+(BA may hash them):
+1. **Seed first** (account must exist — `disableSignUp: true`): the fixture cannot
+   `import` `seed.ts` directly, because pulling the Payload config (ESM-only,
+   `@/`/`@payload-config` aliases) through Playwright's transpiler emits CJS that
+   crashes at runtime (`exports is not defined in ES module scope`). Vitest's
+   loader is the ONLY boot path proven on this stack, so the fixture shells out:
+   `node --env-file=.env.test vitest run --config e2e/fixtures/seed.vitest.config.ts`.
+   `seed.runner.ts` calls `seedCustomer(E2E_SEED_EMAIL)`; its scoped config aliases
+   `@`/`@payload-config` and `include`s only that file, so it is never part of
+   `npm test` (the name is not `*.test.ts`/`*.spec.ts`).
+2. **Request the link through the real UI** (correct Origin for BA), assert the
+   "Check your email" state.
+3. **Capture via the test-mode sink** (see below): poll
+   `e2e/.auth/last-magic-link.txt` for the verify URL.
+4. **Visit it** → BA sets the session cookie → lands on `/app` → save storageState.
+
+**Test-mode sink in `lib/auth.ts`:** `sendMagicLink` additionally writes the full
+`url` to `e2e/.auth/last-magic-link.txt` ONLY when `process.env.PLAYWRIGHT_TEST === "1"`
+(`.env.test` sets it). Strictly gated — production/dev behavior is unchanged; the
+existing `console.log` always runs. `e2e/.auth/` is gitignored.
 
 ## Tests
 `tests/auth/gating.test.ts` covers:

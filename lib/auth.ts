@@ -66,6 +66,16 @@ export const auth = betterAuth({
         // DEV: log the magic link to the console.
         // FUTURE: replace with Resend email transport (later task).
         console.log(`[auth] Magic link for ${email}: ${url}`);
+
+        // TEST-ONLY SINK: under Playwright, also persist the full link to a file
+        // so the auth fixture can read it back (version-proof — never parse
+        // hashed tokens out of the DB). Gated strictly on PLAYWRIGHT_TEST === "1"
+        // so production/dev behavior is unchanged.
+        if (process.env.PLAYWRIGHT_TEST === "1") {
+          const { mkdirSync, writeFileSync } = await import("node:fs");
+          mkdirSync("e2e/.auth", { recursive: true });
+          writeFileSync("e2e/.auth/last-magic-link.txt", url, "utf8");
+        }
       },
     }),
   ],
