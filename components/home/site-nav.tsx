@@ -1,8 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import { Stagger, StaggerItem, hoverPop, tapPop } from "@/components/motion/stagger";
+
+/** Next.js <Link> with motion props — client-side navigation, no full page reload. */
+const MotionLink = motion.create(Link);
 
 const NAV = [
   { label: "Home", href: "/#top" },
@@ -33,7 +37,7 @@ export function SiteNav() {
             })}
         className="pointer-events-auto mx-auto flex max-w-7xl items-center justify-between gap-4 rounded-2xl border-[3px] border-brand-deep bg-white px-5 py-2.5 shadow-comic"
       >
-        <motion.a
+        <MotionLink
           href="/#top"
           aria-label="Yours Fairy Tale — home"
           {...(reduce
@@ -55,13 +59,13 @@ export function SiteNav() {
             priority
             className="h-12 w-12 shrink-0"
           />
-        </motion.a>
+        </MotionLink>
 
         <Stagger as="nav" trigger="mount" className="hidden flex-1 justify-center gap-1 md:flex">
           {NAV.map((item) => (
             <StaggerItem
               key={item.label}
-              as="a"
+              as="link"
               href={item.href}
               whileHover={reduce ? undefined : hoverPop}
               whileTap={reduce ? undefined : tapPop}
@@ -73,7 +77,7 @@ export function SiteNav() {
         </Stagger>
 
         <div className="flex shrink-0 items-center gap-2">
-          <motion.a
+          <MotionLink
             href="/sign-in"
             {...(reduce
               ? {}
@@ -87,9 +91,9 @@ export function SiteNav() {
             className="inline-flex rounded-lg border-[3px] border-brand-deep bg-white px-3 py-2 text-sm font-bold text-brand-deep shadow-comic-sm transition-colors hover:bg-brand-yellow active:translate-y-0.5 sm:px-4"
           >
             Sign in
-          </motion.a>
+          </MotionLink>
 
-          <motion.a
+          <MotionLink
             href="/#build"
             {...(reduce
               ? {}
@@ -103,7 +107,7 @@ export function SiteNav() {
             className="rounded-lg border-[3px] border-brand-deep bg-brand-pink px-4 py-2 text-sm font-bold text-white shadow-comic-sm active:translate-y-0.5"
           >
             Start! ⚡
-          </motion.a>
+          </MotionLink>
         </div>
       </motion.header>
     </div>

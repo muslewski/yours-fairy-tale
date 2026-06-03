@@ -1,7 +1,11 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { motion, useReducedMotion, type Variants } from "motion/react";
+
+/** A Next.js <Link> with motion superpowers — client-side nav, no full reload. */
+const MotionLink = motion.create(Link);
 
 /**
  * Springy staggered reveal for lists (nav items, footer links, etc.).
@@ -59,7 +63,7 @@ export function Stagger({ children, className, trigger = "view", as = "div" }: S
   );
 }
 
-type ItemTag = "div" | "li" | "span" | "a";
+type ItemTag = "div" | "li" | "span" | "a" | "link";
 
 type StaggerItemProps = {
   as?: ItemTag;
@@ -72,7 +76,15 @@ export function StaggerItem({ as = "div", children, ...rest }: StaggerItemProps)
   // Polymorphic motion tag; per-tag props are validated at call sites.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const Comp: any =
-    as === "li" ? motion.li : as === "span" ? motion.span : as === "a" ? motion.a : motion.div;
+    as === "li"
+      ? motion.li
+      : as === "span"
+        ? motion.span
+        : as === "link"
+          ? MotionLink
+          : as === "a"
+            ? motion.a
+            : motion.div;
   return (
     <Comp variants={itemVariants} {...rest}>
       {children}
