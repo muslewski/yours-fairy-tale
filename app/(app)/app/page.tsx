@@ -29,20 +29,10 @@ import { StatusTimeline } from "@/components/app/status-timeline";
 import { PhotoUpload } from "@/components/app/photo-upload";
 import { ProofReview } from "@/components/app/proof-review";
 import { VideoPlayer } from "@/components/app/video-player";
+import { WORLD_LABELS, type WorldId } from "@/lib/worlds";
 
 export const metadata: Metadata = {
   title: "Your videos — Yours Fairy Tale",
-};
-
-/** Friendly names for the story worlds (mirrors the Orders `world` options). */
-const WORLD_LABELS: Record<string, string> = {
-  bedtime: "Bedtime adventure",
-  space: "Outer space",
-  sea: "Under the sea",
-  forest: "Enchanted forest",
-  dragons: "Dragons and castles",
-  birthday: "Birthday surprise",
-  custom: "A story of your own",
 };
 
 /** The shape we actually read off an order doc (depth 0 from Payload). */
@@ -153,7 +143,7 @@ function OrderCard({
   const title = childName
     ? `${childName}'s fairy tale`
     : "Your fairy tale";
-  const world = order.world ? WORLD_LABELS[order.world] : undefined;
+  const world = order.world ? WORLD_LABELS[order.world as WorldId] : undefined;
   const message = messageForStatus(order.status, childName);
   const result = stageForStatus(order.status);
   const onHappyPath = "activeIndex" in result;

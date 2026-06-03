@@ -19,6 +19,7 @@ import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { getPayloadClient } from "@/lib/payload";
 import { sendEmail } from "@/lib/email";
+import type { WorldId } from "@/lib/worlds";
 
 // ---------------------------------------------------------------------------
 // HTTP handler
@@ -250,18 +251,10 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
       stripeSessionId: sessionId,
       stripePaymentIntentId: paymentIntentId ?? undefined,
       childName: childName ?? undefined,
-      world: (world as
-        | "bedtime"
-        | "space"
-        | "sea"
-        | "forest"
-        | "dragons"
-        | "birthday"
-        | "custom"
-        | undefined) ?? undefined,
-      length: (length as "short" | "standard" | "long" | undefined) ?? undefined,
+      world: (world as WorldId | undefined) ?? undefined,
+      length: (length as "short" | "medium" | "long" | undefined) ?? undefined,
       detailLevel:
-        (detailLevel as "classic" | "detailed" | "premium" | undefined) ??
+        (detailLevel as "basic" | "detailed" | "premium" | undefined) ??
         undefined,
       // status defaults to "paid" via the collection schema
     },

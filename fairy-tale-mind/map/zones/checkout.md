@@ -16,6 +16,7 @@ owns:
     - "components/checkout/*"
     - "lib/stripe.ts"
     - "lib/checkout.ts"
+    - "lib/pricing.ts"
     - "lib/email.ts"
     - "lib/order-status-email.ts"
     - "app/api/stripe/checkout/route.ts"
@@ -24,17 +25,24 @@ owns:
     - "tests/stripe/checkout.test.ts"
     - "tests/stripe/webhook.test.ts"
     - "tests/stripe/refund-email.test.ts"
+    - "tests/lib/pricing.test.ts"
     - "tests/app/status-emails.test.ts"
 depends: ["[[payload-backend]]"]
 invariants:
-  - rule: "Never makes network calls or charges money — simulation only."
+  - rule: "The mock UI (components/checkout/*) never makes network calls or charges money — simulation only. It is NO LONGER on the live configurator flow."
     enforcedBy: []
+  - rule: "The charge amount is computed SERVER-SIDE via computeTotalCents(selections) — the request body carries selections, never a price. A tampered client cannot change what they pay."
+    enforcedBy: ["tests/stripe/checkout.test.ts", "tests/lib/pricing.test.ts"]
+  - rule: "Invalid selections (unknown length/detail/add-on, out-of-range minutes) → computeTotalCents throws → route returns 400."
+    enforcedBy: ["tests/lib/pricing.test.ts"]
   - rule: "STRIPE_SECRET_KEY must be set; singleton throws at boot if missing."
     enforcedBy: ["lib/stripe.ts"]
   - rule: "buildCheckoutSessionParams is pure — no network calls, safe to unit-test."
     enforcedBy: ["tests/stripe/checkout.test.ts"]
   - rule: "Session metadata must carry all four config fields: childName, world, length, detailLevel."
     enforcedBy: ["tests/stripe/checkout.test.ts"]
+  - rule: "Orders length/detailLevel/world enums match the configurator vocabulary exactly: length [short,medium,long], detailLevel [basic,detailed,premium], world [bedtime,space,sea,forest,dragons,birthday,custom]."
+    enforcedBy: ["tests/stripe/webhook.test.ts"]
   - rule: "success_url must include the {CHECKOUT_SESSION_ID} Stripe template literal."
     enforcedBy: ["tests/stripe/checkout.test.ts"]
   - rule: "Webhook reads STRIPE_WEBHOOK_SECRET lazily inside POST (not at module top) so importing in dev with empty env doesn't throw."
@@ -57,7 +65,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
     enforcedBy: ["tests/app/status-emails.test.ts"]
-verifiedAt: 1ebff7f4dd8c92fe6fe7c2098dcf142f9eeb7ce6
+verifiedAt: bf5545cb0be50eb970ecd43cad5d3ffe92881d26
 ---
 
 ## Purpose
@@ -75,10 +83,13 @@ Two-layer checkout:
 
 ## Key design choices
 - `lib/stripe.ts` — SDK singleton; throws at import time if `STRIPE_SECRET_KEY` is absent.
-- `lib/checkout.ts` — pure `buildCheckoutSessionParams()` function; no network, fully
-  unit-testable (see `[[stripe-checkout-session-route]]` decision).
-- Price: placeholder `$49` (`unit_amount: 4900`); overridable via `STRIPE_VIDEO_PRICE_CENTS`
-  env var. **TODO: confirm real pricing with product owner before going live.**
+- `lib/checkout.ts` — pure `buildCheckoutSessionParams(selections)`; no network, fully
+  unit-testable (see `[[stripe-checkout-session-route]]` decision). Takes the buyer's
+  SELECTIONS, prices them via `computeTotalCents`, and builds a single `price_data` line
+  item (`unit_amount` + `product_data.name`/`description` from `summarizeSelections`).
+- `lib/pricing.ts` — the shared, server-usable pricing model (single source of truth);
+  `computeTotalCents` is the authoritative amount. The old `$49`/`STRIPE_VIDEO_PRICE_CENTS`
+  placeholder is REMOVED — price is always configured.
 - API version pinned to `2026-05-27.dahlia` (latest in stripe@22.2.0).
 
 ## Webhook (`POST /api/stripe/webhook`)

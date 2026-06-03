@@ -9,34 +9,17 @@ import {
   useReducedMotion,
   useTransform,
 } from "motion/react";
-import { Checkout, type CheckoutCart } from "@/components/checkout";
 import { AnimatedHeading } from "@/components/motion/animated-heading";
+import {
+  ADDONS,
+  DETAILS,
+  EXTRA_MINUTE_PRICE,
+  LENGTHS,
+  MAX_EXTRA_MINUTES,
+} from "@/lib/pricing";
+import { WORLDS, type WorldId } from "@/lib/worlds";
 
 type SegOption = { id: string; label: string; caption: string; note: string };
-type LengthTier = { id: string; label: string; minutes: number; price: number; note: string };
-type DetailLevel = { id: string; label: string; multiplier: number; note: string };
-type AddOn = { id: string; label: string; price: number; note: string };
-
-const LENGTHS: LengthTier[] = [
-  { id: "short", label: "Short", minutes: 3, price: 300, note: "A short and sweet first story." },
-  { id: "medium", label: "Medium", minutes: 5, price: 450, note: "Room for a fuller adventure." },
-  { id: "long", label: "Long", minutes: 10, price: 900, note: "The full journey, start to finish." },
-];
-
-const DETAILS: DetailLevel[] = [
-  { id: "basic", label: "Basic", multiplier: 1, note: "Clean, charming animation with all the essentials." },
-  { id: "detailed", label: "Detailed", multiplier: 1.1, note: "Richer backgrounds and more movement in every scene." },
-  { id: "premium", label: "Premium", multiplier: 1.3, note: "Our finest work, with lush detail in every frame." },
-];
-
-const ADDONS: AddOn[] = [
-  { id: "narration", label: "Custom narration", price: 60, note: "A warm voice reads the story aloud." },
-  { id: "music", label: "Original music", price: 40, note: "A score written to match their adventure." },
-  { id: "master", label: "4K master file", price: 50, note: "A downloadable copy in the highest quality." },
-];
-
-const EXTRA_MINUTE_PRICE = 100;
-const MAX_EXTRA_MINUTES = 30;
 
 const pct = (multiplier: number) => Math.round((multiplier - 1) * 100);
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
@@ -57,11 +40,13 @@ function AnimatedNumber({ value }: { value: number }) {
 }
 
 export function Configurator() {
+  const [childName, setChildName] = useState("");
+  const [world, setWorld] = useState<WorldId>("bedtime");
   const [length, setLength] = useState("medium");
   const [extraMinutes, setExtraMinutes] = useState(0);
   const [detail, setDetail] = useState("basic");
   const [addOns, setAddOns] = useState<string[]>(["narration"]);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [status, setStatus] = useState<"idle" | "pending" | "error">("idle");
 
   const tier = LENGTHS.find((o) => o.id === length)!;
   const lvl = DETAILS.find((o) => o.id === detail)!;
@@ -74,21 +59,32 @@ export function Configurator() {
   const total = subtotal + surcharge;
   const totalMinutes = tier.minutes + extraMinutes;
 
-  const cart: CheckoutCart = {
-    currency: "usd",
-    total,
-    items: [
-      { label: `${tier.label} film (${tier.minutes} min)`, amount: tier.price },
-      ...(extraMinutes > 0 ? [{ label: `+${extraMinutes} extra min`, amount: minutesCost }] : []),
-      ...chosenAddOns.map((o) => ({ label: o.label, amount: o.price })),
-      ...(surcharge > 0
-        ? [{ label: `${lvl.label} detail (+${pct(lvl.multiplier)}%)`, amount: surcharge }]
-        : []),
-    ],
-  };
-
   const toggleAddOn = (id: string) =>
     setAddOns((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  const startCheckout = async () => {
+    setStatus("pending");
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          childName: childName.trim(),
+          world,
+          length,
+          detail,
+          extraMinutes,
+          addOns,
+        }),
+      });
+      if (!res.ok) throw new Error(`Checkout failed (${res.status})`);
+      const { url } = (await res.json()) as { url?: string };
+      if (!url) throw new Error("No checkout URL returned.");
+      window.location.href = url;
+    } catch {
+      setStatus("error");
+    }
+  };
 
   const lengthOptions: SegOption[] = LENGTHS.map((o) => ({
     id: o.id,
@@ -124,8 +120,8 @@ export function Configurator() {
             className="mt-6 font-[family-name:var(--font-fredoka)] text-4xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl"
           />
           <p className="mt-4 text-lg font-medium text-white/70">
-            Choose one of the ready plots or create your own. Then pick a length and the level
-            of detail. No payment yet. This just helps you picture their video.
+            Tell us who the story is for and pick a plot. Then choose a length and the level
+            of detail. You can change any of it before we animate a thing.
           </p>
         </div>
 
@@ -138,6 +134,30 @@ export function Configurator() {
         >
           {/* Controls */}
           <div className="space-y-9 p-7 sm:p-9">
+            <div>
+              <label
+                htmlFor="child-name"
+                className="font-[family-name:var(--font-fredoka)] text-xl font-semibold"
+              >
+                Who is it for?
+              </label>
+              <input
+                id="child-name"
+                type="text"
+                value={childName}
+                onChange={(e) => setChildName(e.target.value)}
+                autoComplete="off"
+                maxLength={40}
+                placeholder="Their first name"
+                className="mt-4 w-full rounded-2xl border-[3px] border-brand-deep bg-brand-cream px-4 py-3 text-base font-bold text-brand-deep outline-none placeholder:font-semibold placeholder:text-brand-deep/40 focus-visible:ring-4 focus-visible:ring-brand-pink/40"
+              />
+              <p className="mt-3 text-sm font-medium text-brand-deep/60">
+                The child becomes the hero of the story. You can add this later if you like.
+              </p>
+            </div>
+
+            <WorldPicker selected={world} onSelect={setWorld} />
+
             <Segmented
               legend="Length"
               name="length"
@@ -274,20 +294,42 @@ export function Configurator() {
 
             <motion.button
               type="button"
-              onClick={() => setCheckoutOpen(true)}
-              whileHover={{ y: -2 }}
-              whileTap={{ y: 1, scale: 0.99 }}
-              className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl border-[3px] border-brand-deep bg-brand-pink px-6 py-4 text-base font-black uppercase tracking-wide text-white shadow-comic"
+              onClick={startCheckout}
+              disabled={status === "pending"}
+              whileHover={status === "pending" ? undefined : { y: -2 }}
+              whileTap={status === "pending" ? undefined : { y: 1, scale: 0.99 }}
+              className="mt-7 flex w-full items-center justify-center gap-2 rounded-xl border-[3px] border-brand-deep bg-brand-pink px-6 py-4 text-base font-black uppercase tracking-wide text-white shadow-comic disabled:cursor-not-allowed disabled:opacity-70"
             >
-              Create their video →
+              {status === "pending" ? "Taking you to checkout…" : "Create their video →"}
             </motion.button>
-            <p className="mt-3 text-center text-xs font-semibold text-brand-deep/60">
-              No payment yet. Full preview before we animate.
-            </p>
+            <AnimatePresence mode="wait">
+              {status === "error" ? (
+                <motion.p
+                  key="error"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.18 }}
+                  className="mt-3 text-center text-xs font-bold text-brand-deep"
+                  role="alert"
+                >
+                  Something went wrong while starting checkout. Please try again in a moment.
+                </motion.p>
+              ) : (
+                <motion.p
+                  key="reassure"
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.18 }}
+                  className="mt-3 text-center text-xs font-semibold text-brand-deep/60"
+                >
+                  Secure checkout. Full preview before we animate.
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
-
-        <Checkout open={checkoutOpen} cart={cart} onClose={() => setCheckoutOpen(false)} />
       </div>
     </section>
   );
@@ -299,6 +341,48 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
       <span className="text-brand-deep/75">{label}</span>
       <span className="font-black tabular-nums">{value}</span>
     </li>
+  );
+}
+
+function WorldPicker({
+  selected,
+  onSelect,
+}: {
+  selected: WorldId;
+  onSelect: (id: WorldId) => void;
+}) {
+  return (
+    <fieldset>
+      <legend className="font-[family-name:var(--font-fredoka)] text-xl font-semibold">
+        Choose a plot
+      </legend>
+      <div className="mt-4 flex flex-wrap gap-2.5">
+        {WORLDS.map((w) => {
+          const active = selected === w.id;
+          return (
+            <motion.label
+              key={w.id}
+              whileTap={{ scale: 0.94 }}
+              className={`flex cursor-pointer items-center rounded-full border-[3px] border-brand-deep px-4 py-2.5 text-sm font-bold shadow-comic-sm transition-colors ${
+                active ? "bg-brand-deep text-white" : "bg-white text-brand-deep"
+              }`}
+            >
+              <input
+                type="radio"
+                name="world"
+                className="sr-only"
+                checked={active}
+                onChange={() => onSelect(w.id)}
+              />
+              {w.label}
+            </motion.label>
+          );
+        })}
+      </div>
+      <p className="mt-3 text-sm font-medium text-brand-deep/60">
+        Pick one of our ready story worlds, or choose your own to shape it with us.
+      </p>
+    </fieldset>
   );
 }
 

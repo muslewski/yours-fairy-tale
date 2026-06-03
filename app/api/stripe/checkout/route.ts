@@ -4,16 +4,19 @@
  * Creates a Stripe Checkout Session for a personalized animated video order.
  * Returns { url } — the client should redirect the buyer to that URL.
  *
- * All param shaping is delegated to the pure builder in lib/checkout.ts so
- * this handler stays thin and testable at the unit level.
+ * SECURITY: the request body carries SELECTIONS, never a price. The charge
+ * amount is recomputed server-side via the shared pricing model (inside
+ * buildCheckoutSessionParams → computeTotalCents). A client can never dictate
+ * what they pay. Invalid selections → 400.
  *
- * The webhook (separate task) will receive session.completed, read the
- * session's metadata, and create the Customer + Order records.
+ * The webhook receives checkout.session.completed, reads the session metadata,
+ * and creates the Customer + Order records.
  */
 import { NextRequest, NextResponse } from "next/server";
 
 import { buildCheckoutSessionParams, type CheckoutInput } from "@/lib/checkout";
 import { stripe } from "@/lib/stripe";
+import { isWorldId } from "@/lib/worlds";
 
 export async function POST(req: NextRequest) {
   let body: Partial<CheckoutInput>;
@@ -24,20 +27,40 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const { childName, world, length, detailLevel, email } = body;
+  const { childName, world, length, detail, extraMinutes, addOns, email } = body;
 
-  if (!childName || !world || !length || !detailLevel) {
+  // world / length / detail are required to shape and price the order.
+  // childName is intentionally optional — the parent can add it later.
+  if (!world || !length || !detail) {
     return NextResponse.json(
-      {
-        error:
-          "Missing required fields: childName, world, length, and detailLevel are all required.",
-      },
+      { error: "Missing required fields: world, length, and detail are required." },
       { status: 400 },
     );
   }
 
-  const input: CheckoutInput = { childName, world, length, detailLevel, email };
-  const params = buildCheckoutSessionParams(input);
+  if (!isWorldId(world)) {
+    return NextResponse.json({ error: "Unknown story world." }, { status: 400 });
+  }
+
+  const input: CheckoutInput = {
+    childName: typeof childName === "string" ? childName : "",
+    world,
+    length,
+    detail,
+    extraMinutes: typeof extraMinutes === "number" ? extraMinutes : 0,
+    addOns: Array.isArray(addOns) ? addOns : [],
+    email,
+  };
+
+  let params;
+  try {
+    // Recomputes (and validates) the price from the selections — throws on
+    // anything invalid (unknown length/detail/add-on, out-of-range minutes).
+    params = buildCheckoutSessionParams(input);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Invalid selections.";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
 
   const session = await stripe.checkout.sessions.create(params);
 

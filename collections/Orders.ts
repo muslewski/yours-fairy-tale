@@ -122,16 +122,16 @@ export const Orders: CollectionConfig = {
       name: "length",
       type: "select",
       options: [
-        { label: "Short (16 pages)", value: "short" },
-        { label: "Standard (24 pages)", value: "standard" },
-        { label: "Long (32 pages)", value: "long" },
+        { label: "Short", value: "short" },
+        { label: "Medium", value: "medium" },
+        { label: "Long", value: "long" },
       ],
     },
     {
       name: "detailLevel",
       type: "select",
       options: [
-        { label: "Classic", value: "classic" },
+        { label: "Basic", value: "basic" },
         { label: "Detailed", value: "detailed" },
         { label: "Premium", value: "premium" },
       ],

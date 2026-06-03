@@ -53,8 +53,8 @@ function completedEvent(
         metadata: {
           childName: "Lily",
           world: "forest",
-          length: "standard",
-          detailLevel: "classic",
+          length: "medium",
+          detailLevel: "basic",
         },
       },
     },
