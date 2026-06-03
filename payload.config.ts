@@ -20,8 +20,11 @@ const dirname = path.dirname(filename);
 // PAYLOAD_SECRET (every JWT would be signed with "" and trivially forgeable).
 const secret = process.env.PAYLOAD_SECRET;
 if (!secret) throw new Error("PAYLOAD_SECRET env var is required");
-const connectionString = process.env.DATABASE_URI;
-if (!connectionString) throw new Error("DATABASE_URI env var is required");
+// DATABASE_URI is what we set locally and in tests; on Vercel the Neon
+// integration auto-provisions POSTGRES_URL (pooled), so fall back to it in prod.
+const connectionString = process.env.DATABASE_URI ?? process.env.POSTGRES_URL;
+if (!connectionString)
+  throw new Error("DATABASE_URI (or POSTGRES_URL) env var is required");
 
 export default buildConfig({
   // Payload's own admin panel logs in via the `admins` collection (native auth).
