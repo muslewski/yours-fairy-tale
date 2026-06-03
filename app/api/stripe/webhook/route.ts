@@ -184,7 +184,7 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
     session.customer_details?.email ?? session.customer_email ?? null;
 
   const meta = session.metadata ?? {};
-  const { childName, world, length, detailLevel } = meta;
+  const { childName, world, length, detailLevel, extraMinutes, addOns, plotNote } = meta;
 
   if (!email) {
     // No email on the event — we cannot create the account. THROW (not return)
@@ -256,6 +256,9 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
       detailLevel:
         (detailLevel as "basic" | "detailed" | "premium" | undefined) ??
         undefined,
+      extraMinutes: extraMinutes ? parseInt(extraMinutes, 10) || 0 : undefined,
+      addOns: addOns ? addOns.split(",").filter(Boolean) : undefined,
+      plotNote: plotNote || undefined,
       // status defaults to "paid" via the collection schema
     },
     overrideAccess: true,

@@ -8,15 +8,38 @@ test("builds a session carrying config in metadata + customer_email", () => {
     world: "space",
     length: "short",
     detail: "basic",
-    extraMinutes: 0,
-    addOns: [],
+    extraMinutes: 2,
+    addOns: ["narration", "music"],
+    plotNote: "A brave knight who loves cats.",
     email: "a@b.io",
   });
   expect(p.mode).toBe("payment");
   expect(p.customer_email).toBe("a@b.io");
-  expect(p.metadata).toMatchObject({ childName: "Ada", world: "space", length: "short", detailLevel: "basic" });
+  expect(p.metadata).toMatchObject({
+    childName: "Ada",
+    world: "space",
+    length: "short",
+    detailLevel: "basic",
+    extraMinutes: "2",
+    addOns: "narration,music",
+    plotNote: "A brave knight who loves cats.",
+  });
   expect(p.line_items?.[0]?.quantity).toBe(1);
   expect(p.success_url).toContain("{CHECKOUT_SESSION_ID}");
+});
+
+test("plotNote is capped to Stripe's 500-char metadata limit", () => {
+  const long = "x".repeat(600);
+  const p = buildCheckoutSessionParams({
+    childName: "",
+    world: "custom",
+    length: "short",
+    detail: "basic",
+    extraMinutes: 0,
+    addOns: [],
+    plotNote: long,
+  });
+  expect((p.metadata?.plotNote as string).length).toBe(500);
 });
 
 test("prices the line item from the selections — server-computed, never client-supplied", () => {

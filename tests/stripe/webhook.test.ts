@@ -45,6 +45,37 @@ function completedEvent(email: string, sessionId: string): Stripe.Event {
   } as unknown as Stripe.Event;
 }
 
+function completedEventWithExtras(email: string, sessionId: string): Stripe.Event {
+  return {
+    id: `evt_${sessionId}`,
+    type: "checkout.session.completed",
+    object: "event",
+    api_version: "2026-05-27.dahlia",
+    created: Math.floor(Date.now() / 1000),
+    livemode: false,
+    pending_webhooks: 0,
+    request: null,
+    data: {
+      object: {
+        id: sessionId,
+        object: "checkout.session",
+        payment_intent: `pi_${sessionId}`,
+        customer_email: email,
+        customer_details: null,
+        metadata: {
+          childName: "Ada",
+          world: "space",
+          length: "short",
+          detailLevel: "detailed",
+          extraMinutes: "3",
+          addOns: "narration,music",
+          plotNote: "A brave knight.",
+        },
+      },
+    },
+  } as unknown as Stripe.Event;
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -84,6 +115,25 @@ test("creates user + order on checkout.session.completed", async () => {
       ? (order.owner as { id: string | number }).id
       : order.owner;
   expect(String(ownerId)).toBe(String(user.id));
+});
+
+test("order carries extraMinutes, addOns, and plotNote from session metadata", async () => {
+  const p = await getPayloadClient();
+  const email = `wh-extras-${Date.now()}@x.io`;
+  const sessionId = `cs_${Date.now()}_extras`;
+
+  await handleStripeEvent(completedEventWithExtras(email, sessionId));
+
+  const orders = await p.find({
+    collection: "orders",
+    where: { stripeSessionId: { equals: sessionId } },
+    overrideAccess: true,
+  });
+  expect(orders.totalDocs).toBe(1);
+  const order = orders.docs[0];
+  expect(order.extraMinutes).toBe(3);
+  expect(order.addOns).toEqual(["narration", "music"]);
+  expect(order.plotNote).toBe("A brave knight.");
 });
 
 test("duplicate sessionId is idempotent — no second order created", async () => {

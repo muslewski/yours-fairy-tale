@@ -136,6 +136,15 @@ export const Orders: CollectionConfig = {
         { label: "Premium", value: "premium" },
       ],
     },
+    { name: "extraMinutes", type: "number", min: 0, defaultValue: 0 },
+    { name: "addOns", type: "text", hasMany: true },
+    {
+      name: "plotNote",
+      type: "textarea",
+      admin: {
+        description: "The parent's own plot idea from the configurator (optional).",
+      },
+    },
     {
       name: "assets",
       type: "relationship",
