@@ -7,9 +7,11 @@
  *
  * Copy is calm and parent-facing per the brand-voice guide.
  */
+import type { Metadata } from "next";
+
 import { getOrdersForCurrentCustomer } from "@/lib/customer-data";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Your videos — Yours Fairy Tale",
 };
 

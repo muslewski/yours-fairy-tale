@@ -16,7 +16,7 @@
  * Every order is saved to that same account automatically.
  */
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 
 import { authClient } from "@/lib/auth-client";
 
@@ -25,7 +25,7 @@ export default function SignInPage() {
   const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatus("loading");
     setErrorMessage("");
