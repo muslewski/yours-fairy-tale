@@ -13,12 +13,14 @@ owns:
   globs:
     - "app/blog/page.tsx"
     - "app/blog/[slug]/page.tsx"
+    - "app/blog/[slug]/opengraph-image.tsx"
+    - "app/blog/[slug]/twitter-image.tsx"
     - "app/blog/rss.xml/route.ts"
     - "components/blog/*"
     - "lib/blog.ts"
 depends: ["[[app-shell]]", "[[design-system]]"]
 invariants: []
-verifiedAt: 0252759
+verifiedAt: 8d49abd
 ---
 
 ## Purpose
@@ -29,3 +31,5 @@ Data helpers live in `lib/blog.ts`.
 ## Lineage
 Seeded from the existing site at Mind setup.
 Repositioned from books to personalized videos, and from hand-illustration to crafted with editing tools + AI (2026-06-04).
+Per-post dynamic OG/Twitter images added (post title on the brand card) via next/og
+(2026-06-04, see `[[branded-og-and-favicons]]`).
