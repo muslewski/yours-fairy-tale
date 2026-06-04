@@ -133,6 +133,7 @@ export async function uploadOrderAssets(
   });
 
   revalidatePath("/app");
+  revalidatePath(`/app/orders/${orderId}`);
   return { added: newAssetIds.length };
 }
 
@@ -151,6 +152,7 @@ export async function approveProof(orderId: string): Promise<void> {
   });
 
   revalidatePath("/app");
+  revalidatePath(`/app/orders/${orderId}`);
 }
 
 /**
@@ -174,6 +176,7 @@ export async function requestProofChange(
   });
 
   revalidatePath("/app");
+  revalidatePath(`/app/orders/${orderId}`);
 }
 
 /**
