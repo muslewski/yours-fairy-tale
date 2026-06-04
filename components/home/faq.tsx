@@ -23,7 +23,7 @@ const FAQS = [
   },
   {
     q: "Is it really personalized, or just a name swap?",
-    a: "It's truly personalized. Your child's name, hair, and the details you share are animated into the story by a real artist.",
+    a: "It's truly personalized. Your child's name, hair, and the details you share are animated into the story with professional editing tools and AI. It is shaped around your child, not a name swapped into a template.",
   },
   {
     q: "How do I watch it, and what quality?",
