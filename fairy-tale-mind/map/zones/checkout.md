@@ -65,7 +65,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
     enforcedBy: ["tests/app/status-emails.test.ts"]
-verifiedAt: 14d7810
+verifiedAt: c51aa13
 ---
 
 ## Purpose
@@ -130,3 +130,6 @@ Webhook (checkout-gated account creation) added 2026-06-03.
 Confirmation email + refund/dispute status sync added 2026-06-03.
 Status-transition emails (proof_ready, delivered) added via Orders afterChange hook 2026-06-03.
 extraMinutes, addOns, and plotNote fields added to metadata → webhook → Orders pipeline 2026-06-04.
+Order confirmation + status emails re-skinned through the shared branded template
+(`lib/email-template.ts`) and now send from `hello@yoursfairytale.com`; `sendEmail` gained
+`replyTo` (2026-06-04, see `[[branded-email-template]]`).
