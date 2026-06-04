@@ -51,7 +51,7 @@ invariants:
     enforcedBy: []
   - rule: "The status → stage mapping and parent-facing copy live ONLY in lib/order-stages.ts (DOM-free, tested). The timeline component and dashboard page render FROM it; they never re-derive stage indices or hardcode status copy."
     enforcedBy: ["tests/app/order-stages.test.ts"]
-verifiedAt: 83d679cf498ff80cb320bd66a75ca3bf39e351ad
+verifiedAt: 7c28ccd
 ---
 
 ## Purpose
@@ -145,7 +145,8 @@ with a link back to `/app` and a **SignOutButton**.
   mobile. For terminal statuses it renders a quiet note, not a stepper.
 
 ### Sign-in page (app/(app)/sign-in/page.tsx)
-Client component. Email input + submit calling `authClient.signIn.magicLink({ email, callbackURL: "/app" })`. On success, "check your email" state. No-account explainer below the form per brand-voice: calm, warm, explains checkout → email → account flow.
+Client component. Email input + submit calling `authClient.signIn.magicLink({ email, callbackURL: "/app" })`. On success, "check your email" state. No-account explainer (with a "Place an order" → `/#build` CTA) below the form per brand-voice: calm, warm, explains checkout → email → account flow.
+Design: a **split-screen** comic card (mirrors the configurator) — left brand-deep dotted "Welcome back" panel with the astronaut (hidden below lg), right panel holds the form + explainer. Gets the full site chrome via its own `app/(app)/sign-in/layout.tsx` (SiteNav + SiteFooter — see `[[app-shell]]`); the gated `/app` deliberately does not.
 
 ### E2E auth fixture (e2e/fixtures/auth.ts — Playwright `setup` project)
 Produces the signed-in `storageState` (`e2e/.auth/customer.json`) the `chromium`
