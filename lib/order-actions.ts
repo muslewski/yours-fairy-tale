@@ -24,6 +24,7 @@ import { revalidatePath } from "next/cache";
 import { getCustomerSession } from "@/lib/customer-data";
 import { getPayloadClient } from "@/lib/payload";
 import { validateUploadFile } from "@/lib/order-upload-validation";
+import { MAX_NOTE_LENGTH, type AddNoteResult } from "@/lib/order-notes-shared";
 
 /**
  * Confirm the current customer owns `orderId`, returning the session and the
@@ -173,4 +174,65 @@ export async function requestProofChange(
   });
 
   revalidatePath("/app");
+}
+
+/**
+ * Append a single customer note to an order's `customerNotes`, preserving prior
+ * rows. Validates the message is non-empty and within MAX_NOTE_LENGTH. This is
+ * the DB-facing core; the public `addOrderNote` action wraps it with the
+ * ownership guard. Reads/writes via the Local API with overrideAccess (Orders is
+ * staff-only); call sites must enforce ownership.
+ */
+export async function appendCustomerNote(
+  orderId: string,
+  message: string,
+): Promise<AddNoteResult> {
+  const trimmed = message?.trim() ?? "";
+  if (trimmed.length === 0) {
+    return { ok: false, error: "Please write a note before sending." };
+  }
+  if (trimmed.length > MAX_NOTE_LENGTH) {
+    return { ok: false, error: "That note is a little long. Please shorten it." };
+  }
+
+  const payload = await getPayloadClient();
+  const order = await payload.findByID({
+    collection: "orders",
+    id: orderId,
+    depth: 0,
+    overrideAccess: true,
+  });
+
+  const existing = Array.isArray(order.customerNotes) ? order.customerNotes : [];
+
+  await payload.update({
+    collection: "orders",
+    id: orderId,
+    data: {
+      customerNotes: [
+        ...existing,
+        { message: trimmed, createdAt: new Date().toISOString() },
+      ],
+    },
+    overrideAccess: true,
+  });
+
+  return { ok: true };
+}
+
+/**
+ * The parent adds a note to the studio from their order page. Ownership-checked
+ * (the single mutation doorway), then appended. Available at any status. Does
+ * not change `status`.
+ */
+export async function addOrderNote(
+  orderId: string,
+  message: string,
+): Promise<AddNoteResult> {
+  await assertOwnsOrder(orderId);
+  const result = await appendCustomerNote(orderId, message);
+  if (result.ok) {
+    revalidatePath(`/app/orders/${orderId}`);
+  }
+  return result;
 }
