@@ -6,7 +6,7 @@ category: "For parents"
 author: "Mara Quinn"
 ---
 
-You can order a book entirely on your own, and many parents do, as a surprise. But if your child is old enough to have opinions, and most of them are, letting them help can be half the fun.
+You can order a video entirely on your own, and many parents do, as a surprise. But if your child is old enough to have opinions, and most of them are, letting them help can be half the fun.
 
 ## Give them the small choices
 
@@ -24,10 +24,10 @@ When the preview arrives, look at it together. Children love seeing the drawing 
 
 ## Why it matters
 
-A child who helped choose the story feels a different kind of ownership over it. It is not just a book they were given. It is a book they made decisions about, with you. That shared effort is part of what they are really keeping.
+A child who helped choose the story feels a different kind of ownership over it. It is not just a video they were given. It is a video they made decisions about, with you. That shared effort is part of what they are really keeping.
 
 ## A quiet bonus
 
-Working on it together gives you a small project to share, away from screens, with a happy thing at the end. The conversations along the way, about which animal and why, are their own little gift. The book arrives later. The time together happens now.
+Working on it together gives you a small project to share, away from screens, with a happy thing at the end. The conversations along the way, about which animal and why, are their own little gift. The video arrives later. The time together happens now.
 
 If a surprise feels right for your family, keep it a surprise. But if you want to make it together, the door is wide open, and the choosing is genuinely fun.
