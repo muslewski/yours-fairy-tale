@@ -7,7 +7,7 @@ description: Use when writing or editing any user-facing copy for Yours Fairy Ta
 
 ## Overview
 
-We make **keepsakes, not noise.** The voice is warm, sincere, and calm — a trusted friend who handcrafts something a family will treasure, never a hype salesperson. Let the craft speak; we don't shout.
+We make **keepsakes, not noise.** The voice is warm, sincere, and calm — a trusted friend who makes something a family will treasure, never a hype salesperson. Let the craft speak; we don't shout.
 
 ## Voice pillars
 
@@ -21,7 +21,7 @@ We make **keepsakes, not noise.** The voice is warm, sincere, and calm — a tru
 | Rule | Standard |
 |------|----------|
 | Spelling | **American English** — color, favorite, personalize, neighbor. |
-| Capitalization | **Sentence case** everywhere, including buttons and labels: "Create your book", not "Create Your Book". |
+| Capitalization | **Sentence case** everywhere, including buttons and labels: "Create their video", not "Create Their Video". |
 | Em-dashes | **Avoid.** Use a comma, period, or colon. No breathless "their name—woven in" asides. |
 | Exclamation points | **Rare.** Default to a period. Never stack ("!!"). |
 | Emoji | Not part of the written voice. Visuals carry the playfulness; copy stays clean. |
@@ -35,16 +35,18 @@ We make **keepsakes, not noise.** The voice is warm, sincere, and calm — a tru
 
 ## Word bank
 
-**Reach for:** keepsake, treasure, hand-illustrated, story time, their very own, starring, again and again, hardcover, real artist, made just for them, cherish, gift, remember.
+**Reach for:** keepsake, treasure, animated, cinematic, scene, watch together, saved, story time, their very own, starring, again and again, made just for them, cherish, gift, remember.
 
 **Avoid:** the forbidden list above, plus generic superlatives and urgency/scarcity pressure ("Hurry!", "Don't miss out").
 
+We use professional editing tools and AI to reach the quality we want. Say so plainly and calmly when it is relevant, never as hype.
+
 ## Canonical patterns
 
-- **Primary CTA:** "Create your book" · "Start their story" · "Make their book"
-- **Secondary CTA:** "See how it works" · "See sample books"
-- **Error:** plain, warm, reassuring — no "Oh no!". e.g. *"Something went wrong while creating your book. Please try again in a moment."*
-- **Empty state:** a gentle invitation, not a joke. e.g. *"No books yet. When you create one, it'll live here, ready for story time."*
+- **Primary CTA:** "Create their video" · "Start their story" · "Make their video"
+- **Secondary CTA:** "See how it works" · "See sample videos"
+- **Error:** plain, warm, reassuring — no "Oh no!". e.g. *"Something went wrong while creating your video. Please try again in a moment."*
+- **Empty state:** a gentle invitation, not a joke. e.g. *"No videos yet. When you create one, it'll live here, ready for story time."*
 
 ## One example
 
@@ -52,14 +54,14 @@ We make **keepsakes, not noise.** The voice is warm, sincere, and calm — a tru
 > POW! Your Little Legend stars in their very own story—hand-drawn just for them!
 
 **On-brand:**
-> Your child becomes the hero of their very own story, hand-illustrated just for them.
+> Your child becomes the hero of their very own animated story, made just for them.
 
 ## Common mistakes
 
 | Mistake | Fix |
 |---------|-----|
 | Em-dash asides ("their name—woven in") | Comma or period. |
-| Title Case buttons ("Create Your Book") | Sentence case ("Create your book"). |
+| Title Case buttons ("Create Their Video") | Sentence case ("Create their video"). |
 | Comic SFX ("Pow!", "Kapow!", "Boom!") | Cut them. Playful visuals, calm words. |
 | Hype clichés ("magical journey", "unleash imagination") | Concrete specifics: name, curls, favorite animal. |
 | Cutesy error openers ("Oh no!") | Plain, warm, reassuring. |

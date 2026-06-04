@@ -22,7 +22,7 @@ depends: ["[[site-preloader]]", "[[section-waves]]"]
 invariants:
   - rule: "Internal navigation uses next/link (client-side, no full reload) — never raw <a>/motion.a for in-app routes. Animated links wrap Link via motion.create(Link); StaggerItem supports as=\"link\"."
     enforcedBy: []
-verifiedAt: b20383d
+verifiedAt: 0252759
 ---
 
 ## Purpose
@@ -50,3 +50,4 @@ Nav converted from raw `<a>`/`motion.a` to `next/link` for client-side navigatio
 (2026-06-04).
 Footer Support → "Contact us" link repointed from a dead `/#top` to the real `/contact`
 route (2026-06-04, see `[[contact]]`).
+Footer repositioned to videos + AI-crafted, dropped 'made by hand' (2026-06-04).
