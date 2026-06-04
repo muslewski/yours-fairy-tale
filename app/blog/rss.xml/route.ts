@@ -34,7 +34,7 @@ export function GET() {
   <channel>
     <title>The Journal — Yours Fairy Tale</title>
     <link>${SITE}/blog</link>
-    <description>Gentle notes on books, bedtime, and the small things worth keeping.</description>
+    <description>Gentle notes on bedtime, stories, and the small things worth keeping.</description>
     <language>en-us</language>
 ${items}
   </channel>

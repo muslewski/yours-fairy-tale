@@ -75,16 +75,16 @@ export default async function PostPage({
       {/* End CTA */}
       <div className="mt-14 rounded-3xl border-[3px] border-brand-deep bg-brand-yellow p-8 text-center shadow-comic">
         <h2 className="font-[family-name:var(--font-fredoka)] text-2xl font-bold text-brand-deep">
-          Want a book like this for your child?
+          Want a video like this for your child?
         </h2>
         <p className="mx-auto mt-2 max-w-md text-base font-medium text-brand-deep/75">
-          Add their name, choose an adventure, and we&apos;ll hand-illustrate the rest.
+          Add their name, choose an adventure, and we&apos;ll create the rest.
         </p>
         <Link
           href="/#build"
           className="mt-6 inline-flex items-center gap-2 rounded-xl border-[3px] border-brand-deep bg-brand-pink px-7 py-4 text-base font-black uppercase tracking-wide text-white shadow-comic transition-transform duration-150 active:translate-y-1 active:shadow-comic-sm"
         >
-          Create your book →
+          Create their video →
         </Link>
       </div>
 
