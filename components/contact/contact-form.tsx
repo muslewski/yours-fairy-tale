@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 
-import { CONTACT_TOPICS } from "@/lib/contact";
+import { CONTACT_TOPICS, type ContactTopic } from "@/lib/contact";
 
 type Status = "idle" | "loading" | "sent" | "error";
 
@@ -13,7 +13,7 @@ const LABEL = "block text-sm font-medium text-brand-deep mb-1";
 export function ContactForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [topic, setTopic] = useState<string>(CONTACT_TOPICS[0]);
+  const [topic, setTopic] = useState<ContactTopic>(CONTACT_TOPICS[0]);
   const [message, setMessage] = useState("");
   const [company, setCompany] = useState(""); // honeypot
   const [status, setStatus] = useState<Status>("idle");
@@ -64,7 +64,7 @@ export function ContactForm() {
   return (
     <form onSubmit={handleSubmit} noValidate style={{ fontFamily: "var(--font-quicksand)" }}>
       {/* Honeypot — hidden from real users, catches bots. */}
-      <div aria-hidden className="absolute left-[-9999px]" style={{ position: "absolute" }}>
+      <div aria-hidden className="absolute left-[-9999px]">
         <label htmlFor="company">Company</label>
         <input
           id="company"
@@ -92,7 +92,8 @@ export function ContactForm() {
 
       <div className="mb-4">
         <label htmlFor="contact-topic" className={LABEL}>What's this about?</label>
-        <select id="contact-topic" value={topic} onChange={(e) => setTopic(e.target.value)}
+        <select id="contact-topic" value={topic}
+          onChange={(e) => setTopic(e.target.value as ContactTopic)}
           className={FIELD}>
           {CONTACT_TOPICS.map((t) => (
             <option key={t} value={t}>{t}</option>
@@ -105,11 +106,14 @@ export function ContactForm() {
         <textarea id="contact-message" required rows={5}
           value={message} onChange={(e) => setMessage(e.target.value)}
           placeholder="Tell us how we can help…"
+          aria-describedby={status === "error" ? "contact-error" : undefined}
           className={`${FIELD} resize-y`} />
       </div>
 
       {status === "error" && (
-        <p role="alert" className="mb-4 text-sm text-rose-700">{errorMessage}</p>
+        <p id="contact-error" role="alert" className="mb-4 text-sm text-rose-700">
+          {errorMessage}
+        </p>
       )}
 
       <button type="submit" disabled={status === "loading" || !name || !email || !message}
