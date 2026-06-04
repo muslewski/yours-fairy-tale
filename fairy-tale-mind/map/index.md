@@ -23,6 +23,7 @@
 ## ⚠ Verification gaps
 
 - zone "app-shell": invariant "Internal navigation uses next/link (client-side, no full reload) — never raw <a>/motion.a for in-app routes. Animated links wrap Link via motion.create(Link); StaggerItem supports as="link"." has no enforcedBy
+- zone "app-shell": invariant "Social/OG images are generated via next/og (lib/og.tsx) using the Fredoka woff bundled in assets/, inlining brand PNGs as data URIs so generation needs no network and stays statically optimized. og:image/twitter:image come from the opengraph-image/twitter-image file conventions, NOT from metadata.images (avoid duplicates)." has no enforcedBy
 - zone "auth-gating": invariant "sign-in page is OUTSIDE the gated app route group — redirect can never trap it." has no enforcedBy
 - zone "checkout": invariant "The mock UI (components/checkout/*) never makes network calls or charges money — simulation only. It is NO LONGER on the live configurator flow." has no enforcedBy
 - zone "checkout": invariant "No public sign-up path exists — customer accounts come ONLY from this webhook." has no enforcedBy

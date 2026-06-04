@@ -18,11 +18,23 @@ owns:
     - "components/home/site-footer.tsx"
     - "components/motion/stagger.tsx"
     - "app/(app)/sign-in/layout.tsx"
+    - "app/manifest.json"
+    - "app/favicon.ico"
+    - "app/icon0.svg"
+    - "app/icon1.png"
+    - "app/apple-icon.png"
+    - "app/opengraph-image.tsx"
+    - "app/twitter-image.tsx"
+    - "lib/og.tsx"
+    - "assets/Fredoka-400.woff"
+    - "assets/Fredoka-600.woff"
 depends: ["[[site-preloader]]", "[[section-waves]]"]
 invariants:
   - rule: "Internal navigation uses next/link (client-side, no full reload) — never raw <a>/motion.a for in-app routes. Animated links wrap Link via motion.create(Link); StaggerItem supports as=\"link\"."
     enforcedBy: []
-verifiedAt: 0252759
+  - rule: "Social/OG images are generated via next/og (lib/og.tsx) using the Fredoka woff bundled in assets/, inlining brand PNGs as data URIs so generation needs no network and stays statically optimized. og:image/twitter:image come from the opengraph-image/twitter-image file conventions, NOT from metadata.images (avoid duplicates)."
+    enforcedBy: []
+verifiedAt: 8d49abd
 ---
 
 ## Purpose
@@ -51,3 +63,7 @@ Nav converted from raw `<a>`/`motion.a` to `next/link` for client-side navigatio
 Footer Support → "Contact us" link repointed from a dead `/#top` to the real `/contact`
 route (2026-06-04, see `[[contact]]`).
 Footer repositioned to videos + AI-crafted, dropped 'made by hand' (2026-06-04).
+Branded favicons + web manifest installed (Next 16 file conventions), full social
+metadata (metadataBase → www canonical, openGraph, twitter, appleWebApp title,
+theme-color), and dynamic next/og social images added (site-wide + per Journal post)
+(2026-06-04, see `[[branded-og-and-favicons]]`).
