@@ -19,6 +19,7 @@ import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { getPayloadClient } from "@/lib/payload";
 import { sendEmail } from "@/lib/email";
+import { renderBrandedEmail, emailParagraphs } from "@/lib/email-template";
 import type { WorldId } from "@/lib/worlds";
 
 // ---------------------------------------------------------------------------
@@ -290,31 +291,19 @@ function buildOrderConfirmationEmail({
   email: string;
   childName: string | null;
 }): string {
-  const childLine = childName
-    ? `<p>We have received your order and ${childName}'s video is now in production.</p>`
-    : `<p>We have received your order and the video is now in production.</p>`;
+  const firstLine = childName
+    ? `We have received your order and ${childName}'s video is now in production.`
+    : "We have received your order and the video is now in production.";
 
-  return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Your order is confirmed</title>
-</head>
-<body style="font-family: sans-serif; color: #1a1033; max-width: 560px; margin: 0 auto; padding: 32px 16px;">
-  <h1 style="font-size: 22px; margin-bottom: 8px;">Your order is confirmed.</h1>
-  ${childLine}
-  <p>Our team will hand-animate every scene with care. We will reach out when it is ready for you to watch.</p>
-  <p>
-    In the meantime, sign in at
-    <a href="https://yoursfairytale.com/sign-in" style="color: #17c7e2;">yoursfairytale.com/sign-in</a>
-    using this email address (${email}) to follow along with production and access your video when it is delivered.
-  </p>
-  <p>Thank you for trusting us with their story.</p>
-  <p style="margin-top: 32px; font-size: 13px; color: #888;">
-    Yours Fairy Tale &mdash; a keepsake they will ask for again and again.
-  </p>
-</body>
-</html>
-  `.trim();
+  return renderBrandedEmail({
+    preheader: "Your order is confirmed.",
+    heading: "Your order is confirmed",
+    accent: "yellow",
+    bodyHtml: emailParagraphs([
+      firstLine,
+      "We will email you the moment your preview is ready to watch.",
+      `Sign in any time with this email address (${email}) to follow along with production.`,
+    ]),
+    cta: { label: "Follow your video", href: "https://yoursfairytale.com/sign-in" },
+  });
 }

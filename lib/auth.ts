@@ -19,11 +19,15 @@
  *  - Cookies do NOT collide: Payload sets `payload-token`; BA sets
  *    `better-auth.session_token`. Distinct namespaces.
  *
- * NOTE: sendMagicLink currently console.logs the link for development. Real
- * email transport via Resend is a later task.
+ * NOTE: sendMagicLink sends the branded link via Resend (see lib/email.ts and
+ * lib/auth-emails.ts). It also console.logs the link for development and, under
+ * Playwright, persists it to a file for the e2e auth fixture.
  */
 import { betterAuth } from "better-auth";
 import { magicLink } from "better-auth/plugins/magic-link";
+
+import { buildMagicLinkEmail } from "@/lib/auth-emails";
+import { sendEmail } from "@/lib/email";
 
 import { payloadBetterAuthAdapter } from "./better-auth-payload-adapter";
 
@@ -63,8 +67,7 @@ export const auth = betterAuth({
        */
       disableSignUp: true,
       sendMagicLink: async ({ email, url }) => {
-        // DEV: log the magic link to the console.
-        // FUTURE: replace with Resend email transport (later task).
+        // DEV: log the magic link to the console (always, alongside the email).
         console.log(`[auth] Magic link for ${email}: ${url}`);
 
         // TEST-ONLY SINK: under Playwright, also persist the full link to a file
@@ -75,6 +78,16 @@ export const auth = betterAuth({
           const { mkdirSync, writeFileSync } = await import("node:fs");
           mkdirSync("e2e/.auth", { recursive: true });
           writeFileSync("e2e/.auth/last-magic-link.txt", url, "utf8");
+        }
+
+        try {
+          await sendEmail({
+            to: email,
+            subject: "Your Yours Fairy Tale sign-in link",
+            html: buildMagicLinkEmail(url),
+          });
+        } catch (err) {
+          console.error("[auth] magic-link email failed:", err);
         }
       },
     }),

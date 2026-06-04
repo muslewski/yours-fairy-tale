@@ -2,7 +2,7 @@
  * /app — the customer dashboard.
  *
  * The emotional center of the customer area: after checkout, a parent waits
- * days to weeks while the studio hand-animates their video. This page reassures
+ * days to weeks while the studio puts their video together. This page reassures
  * them through that wait. For each order it shows a comic-styled card with the
  * child's name, the chosen world, the production timeline, and a calm,
  * status-aware message.

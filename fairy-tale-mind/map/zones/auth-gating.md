@@ -51,7 +51,7 @@ invariants:
     enforcedBy: []
   - rule: "The status → stage mapping and parent-facing copy live ONLY in lib/order-stages.ts (DOM-free, tested). The timeline component and dashboard page render FROM it; they never re-derive stage indices or hardcode status copy."
     enforcedBy: ["tests/app/order-stages.test.ts"]
-verifiedAt: 7c28ccd
+verifiedAt: c51aa13
 ---
 
 ## Purpose
@@ -212,3 +212,6 @@ video player + streaming route) + 4.5 (the profile page + sign-out), all from th
 purchase → account → dashboard plan.
 The dashboard's `WORLD_LABELS` was extracted to the shared `lib/worlds.ts` (also used by
 the configurator's plot picker) when checkout was wired to real Stripe (2026-06-03).
+The magic-link sign-in email now actually sends (branded, via Resend) instead of only
+console-logging the link; the dev `console.log` + Playwright file-sink are retained
+(2026-06-04, see `[[branded-email-template]]`).
