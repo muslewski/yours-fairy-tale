@@ -48,8 +48,7 @@ export default function SignInPage() {
   }
 
   return (
-    <main className="min-h-screen bg-brand-cream flex items-center justify-center px-6 py-16">
-      <div className="w-full max-w-md">
+    <div className="mx-auto w-full max-w-md">
 
         {/* Wordmark */}
         <p
@@ -170,7 +169,6 @@ export default function SignInPage() {
           </Link>
         </div>
 
-      </div>
-    </main>
+    </div>
   );
 }
