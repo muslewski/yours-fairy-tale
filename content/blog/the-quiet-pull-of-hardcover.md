@@ -1,27 +1,27 @@
 ---
-title: "The quiet pull of a hardcover book"
-excerpt: "Screens are everywhere. A real book on real paper still does something a screen cannot."
+title: "The quiet pull of a story that's just theirs"
+excerpt: "Screens are full of things that vanish. A story made for your child is one they return to."
 date: "2026-02-24"
 category: "Keepsakes"
 author: "Jonah Reyes"
 ---
 
-A child can swipe through a hundred bright pictures on a screen in a minute. It is quick, and it is fun, and then it is gone. A hardcover book asks for something different, and gives back something different too.
+A child can swipe through a hundred bright videos in a minute. They are quick, and they are fun, and then they are gone. A story made just for your child asks for something different, and gives back something different too.
 
-## The weight of it
+## It is about them
 
-There is a reason a child holds a hardcover with both hands. It has weight. It feels like it matters, because it does. That small bit of effort, lifting the cover, turning the thick page, tells a child this is worth their attention.
+Most of what fills a screen is made for everyone, which means it is made for no one in particular. A personalized video is the opposite. Their name, their face, their favorite animal, all of it is theirs. A child can tell the difference, and they lean in when the story is truly about them.
 
 ## One thing at a time
 
-A book does only one thing: it tells the story in front of you. No notifications, no next video, no glowing button asking for one more tap. For a young mind, that focus is a gift. The story gets to be the only thing in the room.
+Endless feeds are built to keep going: another clip, another tap, another bright thing. A story with a beginning and an end is built to be finished. For a young mind, that shape is a gift. The story gets to be the only thing in the room, and then it gets to be over, which is its own kind of calm.
 
 ## It belongs to them
 
-You can hand a hardcover to a child and say, this is yours. They can keep it on their own shelf, choose it at bedtime, and carry it to a friend's house. A book becomes a small possession a child is proud of, in a way a file on a tablet never quite does.
+You can hand a child their own video and say, this one is yours. They can choose it at bedtime, watch it on the couch, and show it to grandparents on a phone. It becomes a small thing a child is proud of, in a way the next autoplay never quite does.
 
 ## It lasts
 
-Screens are replaced every few years. A well made book lasts decades. The hardcover you read tonight can sit on a shelf long after the bedtime stories end, soft at the spine, a little worn, still holding the same story and the same name.
+Most of what a child watches is forgotten by morning. A story made for them is saved, and it keeps. The video you watch together tonight can sit in a folder for years, ready to play long after the bedtimes end, still holding the same story and the same name.
 
-We are not against screens. There is a time for both. But when you want something a child will return to, and keep, and maybe one day read to a child of their own, paper still wins.
+We are not against screens. We make something you watch on one. But when you want something a child will return to, and keep, and maybe one day show to a child of their own, a story made just for them is the one that stays.

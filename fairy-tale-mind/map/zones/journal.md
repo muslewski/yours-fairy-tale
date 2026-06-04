@@ -18,7 +18,7 @@ owns:
     - "lib/blog.ts"
 depends: ["[[app-shell]]", "[[design-system]]"]
 invariants: []
-verifiedAt: 73b3cb8c3542e6bf0cf1814cde54e21b006c6158
+verifiedAt: 0252759
 ---
 
 ## Purpose
@@ -28,3 +28,4 @@ Data helpers live in `lib/blog.ts`.
 
 ## Lineage
 Seeded from the existing site at Mind setup.
+Repositioned from books to personalized videos, and from hand-illustration to crafted with editing tools + AI (2026-06-04).

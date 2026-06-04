@@ -19,7 +19,7 @@ export type Post = PostMeta & { content: string };
 /** Brand-palette + emoji per category, used for card and article accents. */
 export const CATEGORY_META: Record<string, { bg: string; emoji: string }> = {
   "Reading together": { bg: "bg-brand-blue", emoji: "📖" },
-  "Behind the scenes": { bg: "bg-brand-pink", emoji: "🎨" },
+  "Behind the scenes": { bg: "bg-brand-pink", emoji: "🎬" },
   Keepsakes: { bg: "bg-brand-yellow", emoji: "🧸" },
   Gifting: { bg: "bg-brand-blue", emoji: "🎁" },
   "For parents": { bg: "bg-brand-yellow", emoji: "🌙" },

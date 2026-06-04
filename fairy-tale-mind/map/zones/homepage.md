@@ -22,7 +22,7 @@ depends: ["[[configurator]]", "[[app-shell]]", "[[section-waves]]"]
 invariants:
   - rule: "Every CTA/nav link leads somewhere real (anchor or route), never href='#'."
     enforcedBy: []
-verifiedAt: b5a6c612bdd69b4b1eb1b4f1c1894210a3aa4dcd
+verifiedAt: 2e6be97
 ---
 
 ## Purpose
@@ -37,3 +37,5 @@ See frontmatter; the href='#' rule is currently unenforced (see tech-debt).
 
 ## Lineage
 Seeded from the existing site at Mind setup.
+Hero, CTA banner, and personalization FAQ repositioned from "hand-animate / by a real
+artist" to crafted with editing tools + AI (2026-06-04, see `[[ai-crafted-not-hand-animated]]`).

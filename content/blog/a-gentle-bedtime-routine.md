@@ -18,11 +18,11 @@ A warm bath, then soft pajamas, then a blanket. The order matters less than the 
 
 ## 3. The same few words
 
-Pick a small phrase you say every night, like "time to find our book." Children love a predictable cue. It tells them what is coming without a single argument.
+Pick a small phrase you say every night, like "time to find our story." Children love a predictable cue. It tells them what is coming without a single argument.
 
 ## 4. Read together
 
-This is the heart of it. One story, read slowly. If it is a book made for your child, even better, because they will settle into a page that is theirs. Keep your voice low and let it drop softer toward the end.
+This is the heart of it. One story, read slowly. If it is a story made for your child, even better, because they will settle into something that is theirs. Keep your voice low and let it drop softer toward the end.
 
 ## 5. End the same way
 

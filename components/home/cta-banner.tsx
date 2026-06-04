@@ -16,7 +16,7 @@ export function CtaBanner() {
           aria-hidden
           className="absolute -left-3 top-8 hidden rotate-[-12deg] rounded-2xl border-[3px] border-brand-deep bg-brand-yellow px-4 py-2 text-sm font-black uppercase shadow-comic-sm sm:block"
         >
-          ✦ Hand-animated
+          ✦ Animated
         </span>
         <span
           aria-hidden

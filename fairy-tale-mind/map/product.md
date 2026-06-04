@@ -1,10 +1,10 @@
 ---
 type: brief
-summary: "Yours Fairy Tale sells personalized, hand-animated fairy-tale videos starring a customer's child. The parent is the buyer; the child is the hero. Read this first to grasp what we're building and why."
+summary: "Yours Fairy Tale sells personalized fairy-tale videos starring a customer's child, crafted with professional editing tools and AI. The parent is the buyer; the child is the hero. Read this first to grasp what we're building and why."
 tags: [product, north-star]
 status: active
 created: 2026-06-02
-updated: 2026-06-02
+updated: 2026-06-04
 related: ["[[homepage]]", "[[configurator]]", "[[series]]", "[[journal]]", "[[checkout]]"]
 sources: ["[[pivot-to-animated-videos]]", "[[personalization-from-photos]]", "[[2026-06-02-product-brief-design]]"]
 ---
@@ -17,14 +17,19 @@ intent from markup.
 
 ## What it is
 
-A personalized, **hand-animated fairy-tale video** starring the customer's own child.
-The parent **sends a few photos** (so the animated hero carries the child's real likeness)
-plus a few light details (their name, a favorite animal, a plot), and receives a short,
-**cinematic** custom film with their child as the hero, **in HD**. The homepage says it
-plainly: *"An animated fairy tale made for them."* Social proof on the hero: *"40,000+
-children already starring."* (Personalization mechanic: `[[personalization-from-photos]]`.)
+A personalized **animated fairy-tale video** starring the customer's own child,
+**crafted with professional editing tools and AI**. The parent **sends a few photos**
+(so the animated hero carries the child's real likeness) plus a few light details (their
+name, a favorite animal, a plot), and receives a short, **cinematic** custom film with
+their child as the hero, **in HD**. The homepage says it plainly: *"An animated fairy tale
+made for them."* Social proof on the hero: *"40,000+ children already starring."*
+(Personalization mechanic: `[[personalization-from-photos]]`.)
 
-> Note: this product **pivoted from hand-illustrated hardcover books to animated videos**
+The craft is **professional editing tools and AI, guided by our team, for the highest
+quality** — not hand-animation by a single artist. We say so calmly and plainly when it's
+relevant, never as hype (see `[[ai-crafted-not-hand-animated]]`).
+
+> Note: this product **pivoted from illustrated print books to animated videos**
 > (`[[pivot-to-animated-videos]]`). Live copy and `app/layout.tsx` metadata say *videos*;
 > some older copy/docs still say *books* (tracked as `[[claude-md-says-hardcover]]` and
 > `[[checkout-readme-stale]]`). When in doubt, the product is **videos**.

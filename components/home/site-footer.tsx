@@ -66,8 +66,9 @@ export function SiteFooter({ waveFrom = "cream" }: { waveFrom?: BrandColor } = {
               </span>
             </div>
             <p className="mt-5 max-w-sm text-base font-medium text-white/70">
-              Hand-animated fairy tales starring your child. Written with care, animated by a real
-              artist, and made to be watched again and again.
+              Personalized animated fairy tales starring your child. Crafted with professional
+              editing tools and AI for a polished, cinematic result, and made to be watched again
+              and again.
             </p>
 
             <form className="mt-7 max-w-sm">
@@ -128,7 +129,7 @@ export function SiteFooter({ waveFrom = "cream" }: { waveFrom?: BrandColor } = {
 
         <div className="mt-14 flex flex-col items-start justify-between gap-5 border-t-[3px] border-dashed border-white/20 pt-7 sm:flex-row sm:items-center">
           <p className="text-sm font-semibold text-white/55">
-            © 2026 Yours Fairy Tale. Made by hand, with love.
+            © 2026 Yours Fairy Tale. Made with love, frame by frame.
           </p>
           <Stagger trigger="view" className="flex flex-wrap items-center gap-2">
             {SOCIALS.map((s) => (

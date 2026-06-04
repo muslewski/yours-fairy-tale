@@ -94,7 +94,7 @@ export function Hero() {
             <motion.div {...rise(0.24)} className="relative mt-6 inline-block max-w-xl">
               <div className="relative rounded-2xl border-[3px] border-brand-deep bg-white p-5 text-lg font-semibold shadow-comic">
                 Send us a few photos and a few details, like their name and their favorite
-                animal. We hand-animate your child into the hero of their own cinematic fairy
+                animal. We animate your child into the hero of their own cinematic fairy
                 tale, ready to watch at home.
                 <span
                   aria-hidden
@@ -174,7 +174,7 @@ export function Hero() {
             <div className="relative mx-auto aspect-square w-full max-w-[520px]">
               <Image
                 src="/astronaut.png"
-                alt="Hand-animated astronaut character"
+                alt="Animated astronaut character"
                 fill
                 priority
                 sizes="(min-width: 1024px) 520px, 90vw"

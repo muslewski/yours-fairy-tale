@@ -7,7 +7,7 @@ import { PostCard } from "@/components/blog/post-card";
 export const metadata: Metadata = {
   title: "The Journal — Yours Fairy Tale",
   description:
-    "Gentle notes on books, bedtime, and the small things worth keeping, from the studio behind your child's storybook.",
+    "Gentle notes on bedtime, stories, and the small things worth keeping, from the studio behind your child's video.",
 };
 
 export default function BlogIndex() {
@@ -27,7 +27,7 @@ export default function BlogIndex() {
           className="mt-6 font-[family-name:var(--font-fredoka)] text-4xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl"
         />
         <p className="mt-4 text-lg font-medium text-brand-deep/75">
-          Gentle thoughts on books, bedtime, and the small things worth keeping.
+          Gentle thoughts on bedtime, stories, and the small things worth keeping.
         </p>
       </header>
 
