@@ -20,6 +20,7 @@ import { stripe } from "@/lib/stripe";
 import { getPayloadClient } from "@/lib/payload";
 import { sendEmail } from "@/lib/email";
 import { renderBrandedEmail, emailParagraphs } from "@/lib/email-template";
+import { createOrderTrackingLink } from "@/lib/order-tracking-link";
 import type { WorldId } from "@/lib/worlds";
 
 // ---------------------------------------------------------------------------
@@ -180,9 +181,12 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
       : (session.payment_intent?.id ?? null);
 
   // Prefer customer_details.email (populated after checkout), fall back to
-  // customer_email (pre-filled from checkout params).
-  const email =
-    session.customer_details?.email ?? session.customer_email ?? null;
+  // customer_email (pre-filled from checkout params). Lowercase it: emails are
+  // case-insensitive, the users collection stores them lowercase, and Better Auth
+  // looks up with email.toLowerCase() — so the upsert query and the stored row
+  // must be lowercase too or sign-in later fails (new_user_signup_disabled).
+  const rawEmail = session.customer_details?.email ?? session.customer_email ?? null;
+  const email = rawEmail ? rawEmail.trim().toLowerCase() : null;
 
   const meta = session.metadata ?? {};
   const { childName, world, length, detailLevel, extraMinutes, addOns, plotNote } = meta;
@@ -266,6 +270,18 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
   });
 
   // ------------------------------------------------------------------
+  // One-click "track your order" magic link for the confirmation email.
+  // Non-fatal: if it can't be minted, fall back to the plain sign-in page.
+  // ------------------------------------------------------------------
+  const baseUrl = process.env.BETTER_AUTH_URL ?? "https://www.yoursfairytale.com";
+  let trackUrl = `${baseUrl.replace(/\/$/, "")}/sign-in`;
+  try {
+    trackUrl = await createOrderTrackingLink({ email, baseUrl });
+  } catch (err) {
+    console.error("[webhook] tracking link mint failed (using /sign-in fallback):", err);
+  }
+
+  // ------------------------------------------------------------------
   // Send the order confirmation email (non-fatal — log errors, never throw)
   // ------------------------------------------------------------------
   try {
@@ -273,7 +289,7 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
     await sendEmail({
       to: email,
       subject: `Your video${childFirstName} is on its way`,
-      html: buildOrderConfirmationEmail({ email, childName: childName ?? null }),
+      html: buildOrderConfirmationEmail({ email, childName: childName ?? null, trackUrl }),
     });
   } catch (err) {
     console.error("[webhook] Confirmation email failed (order still created):", err);
@@ -287,9 +303,11 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
 function buildOrderConfirmationEmail({
   email,
   childName,
+  trackUrl,
 }: {
   email: string;
   childName: string | null;
+  trackUrl: string;
 }): string {
   const firstLine = childName
     ? `We have received your order and ${childName}'s video is now in production.`
@@ -302,8 +320,8 @@ function buildOrderConfirmationEmail({
     bodyHtml: emailParagraphs([
       firstLine,
       "We will email you the moment your preview is ready to watch.",
-      `Sign in any time with this email address (${email}) to follow along with production.`,
+      `Use the button below to track your video's progress any time. It signs you in with this email address (${email}).`,
     ]),
-    cta: { label: "Follow your video", href: "https://yoursfairytale.com/sign-in" },
+    cta: { label: "Track your order", href: trackUrl },
   });
 }

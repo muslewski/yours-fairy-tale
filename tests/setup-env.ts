@@ -11,3 +11,9 @@ const resolvedEnvPath = existsSync(envTestPath) ? envTestPath : envPath;
 if (existsSync(resolvedEnvPath)) {
   process.loadEnvFile(resolvedEnvPath);
 }
+
+// Better Auth builds/verifies magic-link URLs from a base URL. Unit tests call
+// auth.api directly (no HTTP request to infer the host from), so default one.
+// This is vitest-only — Playwright loads .env.test in its own process and the
+// e2e server infers the host from the request, so this never reaches it.
+process.env.BETTER_AUTH_URL ??= "http://localhost:3000";
