@@ -25,6 +25,11 @@ owns:
     - "app/(app)/app/profile/page.tsx"
     - "app/(app)/api/orders/[id]/video/route.ts"
     - "app/(app)/sign-in/page.tsx"
+    - "app/(app)/sign-in/verify/page.tsx"
+    - "lib/auth-confirm-url.ts"
+    - "lib/auth.ts"
+    - "lib/auth-emails.ts"
+    - "tests/auth/auth-confirm-url.test.ts"
     - "components/app/status-timeline.tsx"
     - "components/app/photo-upload.tsx"
     - "components/app/proof-review.tsx"
@@ -49,9 +54,11 @@ invariants:
     enforcedBy: ["tests/app/video-access.test.ts"]
   - rule: "sign-in page is OUTSIDE the gated app route group — redirect can never trap it."
     enforcedBy: []
+  - rule: "Magic-link emails point at the /sign-in/verify confirmation interstitial (via toConfirmSignInUrl), NEVER the raw /api/auth/magic-link/verify endpoint. The interstitial consumes nothing on GET; a human form submit reaches verify exactly once. This stops email scanners / link-preview bots from burning the single-use token (INVALID_TOKEN)."
+    enforcedBy: ["e2e/fixtures/auth.ts", "tests/auth/auth-confirm-url.test.ts"]
   - rule: "The status → stage mapping and parent-facing copy live ONLY in lib/order-stages.ts (DOM-free, tested). The timeline component and dashboard page render FROM it; they never re-derive stage indices or hardcode status copy."
     enforcedBy: ["tests/app/order-stages.test.ts"]
-verifiedAt: c51aa13
+verifiedAt: 74abc86
 ---
 
 ## Purpose
@@ -215,3 +222,7 @@ the configurator's plot picker) when checkout was wired to real Stripe (2026-06-
 The magic-link sign-in email now actually sends (branded, via Resend) instead of only
 console-logging the link; the dev `console.log` + Playwright file-sink are retained
 (2026-06-04, see `[[branded-email-template]]`).
+Magic-link emails now point at a `/sign-in/verify` confirmation interstitial instead of
+the raw verify endpoint, so email scanners that pre-fetch the link can't burn the
+single-use token (was failing with INVALID_TOKEN in prod) (2026-06-04, see
+`[[magic-link-confirmation-interstitial]]`).
