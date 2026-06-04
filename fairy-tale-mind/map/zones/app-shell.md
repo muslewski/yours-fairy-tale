@@ -34,21 +34,24 @@ invariants:
     enforcedBy: []
   - rule: "Social/OG images are generated via next/og (lib/og.tsx) using the Fredoka woff bundled in assets/, inlining brand PNGs as data URIs so generation needs no network and stays statically optimized. og:image/twitter:image come from the opengraph-image/twitter-image file conventions, NOT from metadata.images (avoid duplicates)."
     enforcedBy: []
-verifiedAt: 8d49abd
+verifiedAt: 230939e
 ---
 
 ## Purpose
 The root layout (`app/layout.tsx`) registers fonts and wraps all pages with
 `[[site-preloader]]` — it does NOT mount the nav/footer. Each page/route that wants the
 marketing chrome mounts `<SiteNav/>` + `<SiteFooter/>` itself: the homepage (`app/page.tsx`)
-directly, and `/series`, `/blog`, and `/sign-in` via their own layouts. The gated `/app`
-dashboard deliberately has its own chrome and gets neither — which is why `/sign-in` has its
-own layout rather than one on the shared `(app)` route group.
+directly, and `/series`, `/blog`, `/sign-in`, AND the gated `/app` dashboard via their own
+layouts. `/sign-in` has its own layout (rather than one on the shared `(app)` route group)
+so the `/app` gate can never trap it.
 
-The nav's right cluster holds two buttons: a secondary **Sign in** (white, outlined →
-`/sign-in`, the returning-customer entry to `[[auth-gating]]`) and the primary **Start**
-CTA (pink → `#build`). Sign in stays visible on mobile even though the center links
-collapse, since this nav has no hamburger menu.
+The nav's right cluster holds two buttons. The first is **Sign in** (white, outlined →
+`/sign-in`) on public pages, but flips to **My account** (→ `/app/profile`) when
+`<SiteNav signedIn />` is rendered — the gated `/app` layout passes `signedIn` so a
+logged-in customer never sees "Sign in". The second is the primary **Start** CTA (pink →
+`#build`), shown in both states (a returning customer can order another video). Both stay
+visible on mobile even though the center links collapse, since this nav has no hamburger
+menu.
 
 All internal nav uses **client-side `next/link`** (no full page reload). The animated nav
 buttons (logo, Sign in, Start) are `motion.create(Link)`; the center links use the
@@ -67,3 +70,6 @@ Branded favicons + web manifest installed (Next 16 file conventions), full socia
 metadata (metadataBase → www canonical, openGraph, twitter, appleWebApp title,
 theme-color), and dynamic next/og social images added (site-wide + per Journal post)
 (2026-06-04, see `[[branded-og-and-favicons]]`).
+The gated `/app` dashboard now wears the public chrome too: its layout mounts
+`<SiteNav signedIn />` ("My account" instead of "Sign in") + `<SiteFooter/>`, and the
+dashboard/profile pages became content-only (2026-06-04).
