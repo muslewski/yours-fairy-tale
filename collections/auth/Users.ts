@@ -24,7 +24,24 @@ export const Users: CollectionConfig = {
   fields: [
     // name is optional — BA social flows may create users without one initially.
     { name: "name", type: "text" },
-    { name: "email", type: "email", required: true, unique: true, index: true },
+    {
+      name: "email",
+      type: "email",
+      required: true,
+      unique: true,
+      index: true,
+      // Canonicalize to lowercase on every write. Better Auth looks users up with
+      // email.toLowerCase(), and Postgres equality is case-sensitive — so a stored
+      // mixed-case email (e.g. from Stripe checkout) would never be found at
+      // sign-in (new_user_signup_disabled). Storing lowercase keeps storage and
+      // lookup aligned across every creation path (webhook, seed, admin).
+      hooks: {
+        beforeValidate: [
+          ({ value }) =>
+            typeof value === "string" ? value.trim().toLowerCase() : value,
+        ],
+      },
+    },
     {
       name: "emailVerified",
       type: "checkbox",

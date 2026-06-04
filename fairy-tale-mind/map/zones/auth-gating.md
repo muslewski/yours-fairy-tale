@@ -27,6 +27,10 @@ owns:
     - "app/(app)/sign-in/page.tsx"
     - "app/(app)/sign-in/verify/page.tsx"
     - "lib/auth-confirm-url.ts"
+    - "lib/order-tracking-link.ts"
+    - "collections/auth/Users.ts"
+    - "tests/auth/email-normalization.test.ts"
+    - "tests/auth/order-tracking-link.test.ts"
     - "lib/auth.ts"
     - "lib/auth-emails.ts"
     - "tests/auth/auth-confirm-url.test.ts"
@@ -56,9 +60,13 @@ invariants:
     enforcedBy: []
   - rule: "Magic-link emails point at the /sign-in/verify confirmation interstitial (via toConfirmSignInUrl), NEVER the raw /api/auth/magic-link/verify endpoint. The interstitial consumes nothing on GET; a human form submit reaches verify exactly once. This stops email scanners / link-preview bots from burning the single-use token (INVALID_TOKEN)."
     enforcedBy: ["e2e/fixtures/auth.ts", "tests/auth/auth-confirm-url.test.ts"]
+  - rule: "User emails are stored LOWERCASE (Users.email beforeValidate hook + the webhook lowercases at resolution). Better Auth looks up users with email.toLowerCase() and Postgres equality is case-sensitive, so a mixed-case stored email would fail sign-in (new_user_signup_disabled). Storage and lookup MUST stay lowercase-aligned."
+    enforcedBy: ["tests/auth/email-normalization.test.ts"]
+  - rule: "The order-confirmation 'track your order' link (lib/order-tracking-link.ts) mints a verification in Better Auth's exact magic-link format (plain token identifier, value JSON {email}, expiresAt) and wraps it through toConfirmSignInUrl. It MUST stay consumable by BA's real verify endpoint."
+    enforcedBy: ["tests/auth/order-tracking-link.test.ts"]
   - rule: "The status → stage mapping and parent-facing copy live ONLY in lib/order-stages.ts (DOM-free, tested). The timeline component and dashboard page render FROM it; they never re-derive stage indices or hardcode status copy."
     enforcedBy: ["tests/app/order-stages.test.ts"]
-verifiedAt: 74abc86
+verifiedAt: 721196d
 ---
 
 ## Purpose
