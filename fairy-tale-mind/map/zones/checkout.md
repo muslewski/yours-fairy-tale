@@ -65,7 +65,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
     enforcedBy: ["tests/app/status-emails.test.ts"]
-verifiedAt: c51aa13
+verifiedAt: 721196d
 ---
 
 ## Purpose
@@ -133,3 +133,8 @@ extraMinutes, addOns, and plotNote fields added to metadata → webhook → Orde
 Order confirmation + status emails re-skinned through the shared branded template
 (`lib/email-template.ts`) and now send from `hello@yoursfairytale.com`; `sendEmail` gained
 `replyTo` (2026-06-04, see `[[branded-email-template]]`).
+Webhook now lowercases the resolved email before upsert/create, and the order
+confirmation email carries a one-click "track your order" magic link
+(`lib/order-tracking-link.ts`) instead of a plain /sign-in link (2026-06-04, see
+`[[email-lowercase-and-order-tracking-link]]`). The prod Stripe webhook endpoint
+delivery (test-mode endpoint) is documented in `[[stripe-webhook-test-mode]]`.
