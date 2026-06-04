@@ -1,80 +1,24 @@
-/**
- * /app — the customer dashboard.
- *
- * The emotional center of the customer area: after checkout, a parent waits
- * days to weeks while the studio puts their video together. This page reassures
- * them through that wait. For each order it shows a comic-styled card with the
- * child's name, the chosen world, the production timeline, and a calm,
- * status-aware message.
- *
- * The session is already verified by the (app) layout, so this server component
- * trusts it exists and reads owner-scoped orders via getOrdersForCurrentCustomer().
- *
- * Per-status ACTIONS (photo upload, proof approval, the video player) live in
- * dedicated components rendered from the ACTION slot below.
- *
- * Copy is parent-facing and runs through the brand-voice guide.
- */
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import { getOrdersForCurrentCustomer } from "@/lib/customer-data";
-import { getPayloadClient } from "@/lib/payload";
 import {
   messageForStatus,
   stageForStatus,
   type OrderStatus,
 } from "@/lib/order-stages";
 import { StatusTimeline } from "@/components/app/status-timeline";
-import { PhotoUpload } from "@/components/app/photo-upload";
-import { ProofReview } from "@/components/app/proof-review";
-import { VideoPlayer } from "@/components/app/video-player";
 import { WORLD_LABELS, type WorldId } from "@/lib/worlds";
 
 export const metadata: Metadata = {
   title: "Your videos — Yours Fairy Tale",
 };
 
-/** The shape we actually read off an order doc (depth 0 from Payload). */
 interface OrderLike {
   id: string;
   childName?: string | null;
   world?: string | null;
   status: OrderStatus;
-  proof?: string | null;
-  finalVideo?: string | null;
-}
-
-/** The proof media fields the proof-review action needs to render it. */
-interface ProofMedia {
-  url?: string | null;
-  mimeType?: string | null;
-  alt?: string | null;
-}
-
-/**
- * Resolve a proof media id to the fields the review component renders. Read via
- * the Local API with overrideAccess (media is staff-only). Returns null if
- * there is no proof yet or it cannot be loaded.
- */
-async function loadProof(proofId?: string | null): Promise<ProofMedia | null> {
-  if (!proofId) return null;
-  try {
-    const payload = await getPayloadClient();
-    const media = await payload.findByID({
-      collection: "media",
-      id: proofId,
-      depth: 0,
-      overrideAccess: true,
-    });
-    return {
-      url: media.url ?? null,
-      mimeType: media.mimeType ?? null,
-      alt: media.alt ?? null,
-    };
-  } catch {
-    return null;
-  }
 }
 
 export default async function AppPage() {
@@ -82,150 +26,75 @@ export default async function AppPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-6">
-        <header className="mb-10">
-          <h1
-            className="text-4xl text-brand-deep md:text-5xl"
-            style={{ fontFamily: "var(--font-fredoka)" }}
-          >
-            Your videos
-          </h1>
-          <p
-            className="mt-2 text-lg text-brand-deep/70"
-            style={{ fontFamily: "var(--font-quicksand)" }}
-          >
-            Follow every step as we bring their story to life.
-          </p>
-        </header>
+      <header className="mb-10">
+        <h1 className="text-4xl text-brand-deep md:text-5xl" style={{ fontFamily: "var(--font-fredoka)" }}>
+          Your videos
+        </h1>
+        <p className="mt-2 text-lg text-brand-deep/70" style={{ fontFamily: "var(--font-quicksand)" }}>
+          Follow every step as we bring their story to life.
+        </p>
+      </header>
 
-        {orders.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <ul className="flex flex-col gap-8">
-            {await Promise.all(
-              orders.map(async (order) => (
-                <li key={order.id}>
-                  <OrderCard
-                    order={order}
-                    proof={
-                      order.status === "proof_ready"
-                        ? await loadProof(order.proof)
-                        : null
-                    }
-                  />
-                </li>
-              )),
-            )}
-          </ul>
-        )}
-      </div>
+      {orders.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <ul className="flex flex-col gap-8">
+          {orders.map((order) => (
+            <li key={order.id} className="group">
+              <OrderSummaryCard order={order} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
-function OrderCard({
-  order,
-  proof,
-}: {
-  order: OrderLike;
-  proof: ProofMedia | null;
-}) {
+function OrderSummaryCard({ order }: { order: OrderLike }) {
   const childName = order.childName?.trim() || undefined;
-  const title = childName
-    ? `${childName}'s fairy tale`
-    : "Your fairy tale";
+  const title = childName ? `${childName}'s fairy tale` : "Your fairy tale";
   const world = order.world ? WORLD_LABELS[order.world as WorldId] : undefined;
   const message = messageForStatus(order.status, childName);
-  const result = stageForStatus(order.status);
-  const onHappyPath = "activeIndex" in result;
+  const onHappyPath = "activeIndex" in stageForStatus(order.status);
 
   return (
-    <article className="rounded-3xl border-2 border-brand-deep bg-white p-6 shadow-comic md:p-8">
-      <header className="mb-6">
-        <h2
-          className="text-2xl text-brand-deep md:text-3xl"
-          style={{ fontFamily: "var(--font-fredoka)" }}
+    <Link
+      href={`/app/orders/${order.id}`}
+      className="block rounded-3xl border-2 border-brand-deep bg-white p-6 shadow-comic transition-shadow group-hover:shadow-comic-lg md:p-8"
+    >
+      <header className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl text-brand-deep md:text-3xl" style={{ fontFamily: "var(--font-fredoka)" }}>
+            {title}
+          </h2>
+          {world ? (
+            <p
+              className="mt-1 text-sm font-semibold uppercase tracking-widest text-brand-pink"
+              style={{ fontFamily: "var(--font-quicksand)" }}
+            >
+              {world}
+            </p>
+          ) : null}
+        </div>
+        <span
+          className="shrink-0 pt-1 text-sm font-bold text-brand-deep/60"
+          style={{ fontFamily: "var(--font-quicksand)" }}
         >
-          {title}
-        </h2>
-        {world ? (
-          <p
-            className="mt-1 text-sm font-semibold uppercase tracking-widest text-brand-pink"
-            style={{ fontFamily: "var(--font-quicksand)" }}
-          >
-            {world}
-          </p>
-        ) : null}
+          View details →
+        </span>
       </header>
 
       {onHappyPath ? (
-        <StatusTimeline
-          status={order.status}
-          childName={childName}
-          className="mb-7"
-        />
+        <StatusTimeline status={order.status} childName={childName} className="mb-6" />
       ) : null}
 
-      {/* Status-aware message — the calm, reassuring note for this moment. */}
       <div className="rounded-2xl border-2 border-brand-deep bg-brand-cream p-5">
-        <h3
-          className="text-lg text-brand-deep"
-          style={{ fontFamily: "var(--font-fredoka)" }}
-        >
+        <h3 className="text-lg text-brand-deep" style={{ fontFamily: "var(--font-fredoka)" }}>
           {message.headline}
         </h3>
-        <p
-          className="mt-1 text-brand-deep/80"
-          style={{ fontFamily: "var(--font-quicksand)" }}
-        >
-          {message.body}
-        </p>
       </div>
-
-      {/*
-        Per-status ACTION slot.
-          • awaiting_assets → photo upload      (task 4.2)
-          • proof_ready     → proof review      (task 4.3)
-          • delivered       → final video player (task 4.4)
-      */}
-      <ActionSlot order={order} childName={childName} proof={proof} />
-    </article>
+    </Link>
   );
-}
-
-/**
- * The per-status action. awaiting_assets, proof_ready, and delivered render the
- * real customer actions (photo upload, proof review, the finished-film player).
- * Other statuses render nothing.
- */
-function ActionSlot({
-  order,
-  childName,
-  proof,
-}: {
-  order: OrderLike;
-  childName?: string;
-  proof: ProofMedia | null;
-}) {
-  if (order.status === "awaiting_assets") {
-    return <PhotoUpload orderId={order.id} childName={childName} />;
-  }
-
-  if (order.status === "proof_ready") {
-    return (
-      <ProofReview orderId={order.id} childName={childName} proof={proof} />
-    );
-  }
-
-  if (order.status === "delivered") {
-    return (
-      <VideoPlayer
-        orderId={order.id}
-        childName={childName}
-        hasVideo={Boolean(order.finalVideo)}
-      />
-    );
-  }
-
-  return null;
 }
 
 function EmptyState() {
