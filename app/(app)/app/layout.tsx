@@ -14,6 +14,8 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { getCustomerSession } from "@/lib/customer-data";
+import { SiteNav } from "@/components/home/site-nav";
+import { SiteFooter } from "@/components/home/site-footer";
 
 export default async function AppLayout({
   children,
@@ -30,5 +32,17 @@ export default async function AppLayout({
     redirect(`/sign-in?next=${encodeURIComponent(pathname)}`);
   }
 
-  return <>{children}</>;
+  // The gated dashboard wears the same marketing chrome as the public site. The
+  // nav is in its signed-in variant ("My account" instead of "Sign in"); the
+  // layout's <main> owns the cream background, the fixed-nav clearance, and the
+  // footer, so each /app page renders content-only.
+  return (
+    <>
+      <SiteNav signedIn />
+      <main className="min-h-screen bg-brand-cream pb-24 pt-28 font-[family-name:var(--font-quicksand)] text-brand-deep sm:pt-32">
+        {children}
+      </main>
+      <SiteFooter />
+    </>
+  );
 }
