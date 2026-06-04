@@ -27,6 +27,7 @@ import { betterAuth } from "better-auth";
 import { magicLink } from "better-auth/plugins/magic-link";
 
 import { buildMagicLinkEmail } from "@/lib/auth-emails";
+import { toConfirmSignInUrl } from "@/lib/auth-confirm-url";
 import { sendEmail } from "@/lib/email";
 
 import { payloadBetterAuthAdapter } from "./better-auth-payload-adapter";
@@ -67,24 +68,30 @@ export const auth = betterAuth({
        */
       disableSignUp: true,
       sendMagicLink: async ({ email, url }) => {
-        // DEV: log the magic link to the console (always, alongside the email).
-        console.log(`[auth] Magic link for ${email}: ${url}`);
+        // Send a link to our confirmation interstitial (/sign-in/verify), NOT the
+        // raw verify endpoint. The raw endpoint consumes the single-use token on
+        // the first GET, so email scanners / link-preview bots that fetch the link
+        // would burn it before the human clicks (→ INVALID_TOKEN). The interstitial
+        // consumes nothing on GET; a human form submit finishes sign-in.
+        const link = toConfirmSignInUrl(url);
 
-        // TEST-ONLY SINK: under Playwright, also persist the full link to a file
-        // so the auth fixture can read it back (version-proof — never parse
-        // hashed tokens out of the DB). Gated strictly on PLAYWRIGHT_TEST === "1"
+        // DEV: log the link to the console (always, alongside the email).
+        console.log(`[auth] Magic link for ${email}: ${link}`);
+
+        // TEST-ONLY SINK: under Playwright, also persist the link to a file so the
+        // auth fixture can read it back. Gated strictly on PLAYWRIGHT_TEST === "1"
         // so production/dev behavior is unchanged.
         if (process.env.PLAYWRIGHT_TEST === "1") {
           const { mkdirSync, writeFileSync } = await import("node:fs");
           mkdirSync("e2e/.auth", { recursive: true });
-          writeFileSync("e2e/.auth/last-magic-link.txt", url, "utf8");
+          writeFileSync("e2e/.auth/last-magic-link.txt", link, "utf8");
         }
 
         try {
           await sendEmail({
             to: email,
             subject: "Your Yours Fairy Tale sign-in link",
-            html: buildMagicLinkEmail(url),
+            html: buildMagicLinkEmail(link),
           });
         } catch (err) {
           console.error("[auth] magic-link email failed:", err);
