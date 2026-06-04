@@ -4,6 +4,7 @@ import {
   buildContactEmail,
   submitContactMessage,
   CONTACT_TOPICS,
+  type ContactValue,
 } from "@/lib/contact";
 
 vi.mock("@/lib/email", () => ({ sendEmail: vi.fn().mockResolvedValue(undefined) }));
@@ -11,7 +12,7 @@ import { sendEmail } from "@/lib/email";
 
 beforeEach(() => vi.clearAllMocks());
 
-const valid = {
+const valid: ContactValue = {
   name: "Ada Parent",
   email: "ada@example.com",
   topic: "Order help",
