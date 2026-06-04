@@ -170,6 +170,19 @@ export const Orders: CollectionConfig = {
       },
     },
     {
+      name: "customerNotes",
+      type: "array",
+      labels: { singular: "Customer note", plural: "Customer notes" },
+      admin: {
+        description:
+          "Notes the parent added from their order page. Read-only history; newest last.",
+      },
+      fields: [
+        { name: "message", type: "textarea", required: true },
+        { name: "createdAt", type: "date", admin: { readOnly: true } },
+      ],
+    },
+    {
       name: "status",
       type: "select",
       required: true,
