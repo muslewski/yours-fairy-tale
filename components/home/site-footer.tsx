@@ -19,7 +19,7 @@ const COLUMNS = [
     title: "Support",
     links: [
       { label: "FAQ", href: "/#faq" },
-      { label: "Contact us", href: "/#top" },
+      { label: "Contact us", href: "/contact" },
       { label: "Delivery", href: "/#faq" },
       { label: "Track your order", href: "/#top" },
     ],
