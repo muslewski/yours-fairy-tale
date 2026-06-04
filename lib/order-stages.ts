@@ -137,7 +137,7 @@ export function messageForStatus(
     case "in_production":
       return {
         headline: "In the studio",
-        body: `We are hand-animating ${possessive} story right now. This part takes a little time, and it is worth it. We will email you the moment your preview is ready.`,
+        body: `We are putting ${possessive} story together right now, scene by scene. This part takes a little time, and it is worth it. We will email you the moment your preview is ready.`,
       };
     case "proof_ready":
       return {

@@ -17,6 +17,7 @@
  */
 
 import { sendEmail } from "@/lib/email";
+import { renderBrandedEmail, emailParagraphs } from "@/lib/email-template";
 import { messageForStatus, type OrderStatus } from "@/lib/order-stages";
 
 /** Statuses that warrant a proactive "heads-up" email to the customer. */
@@ -57,10 +58,19 @@ export async function sendStatusTransitionEmail({
 }): Promise<void> {
   const { headline, body } = messageForStatus(newStatus, childName ?? undefined);
 
-  const signInLine =
-    `<p>Sign in at <a href="https://yoursfairytale.com/sign-in" style="color:#17c7e2;">yoursfairytale.com/sign-in</a> to view it.</p>`;
+  const accent = newStatus === "delivered" ? "blue" : "pink";
+  const cta =
+    newStatus === "delivered"
+      ? { label: "Watch now", href: "https://yoursfairytale.com/sign-in" }
+      : { label: "Watch your preview", href: "https://yoursfairytale.com/sign-in" };
 
-  const html = buildStatusEmail({ headline, body, signInLine });
+  const html = renderBrandedEmail({
+    preheader: headline,
+    heading: headline,
+    accent,
+    bodyHtml: emailParagraphs([body]),
+    cta,
+  });
 
   try {
     await sendEmail({ to: ownerEmail, subject: headline, html });
@@ -72,40 +82,3 @@ export async function sendStatusTransitionEmail({
   }
 }
 
-// ---------------------------------------------------------------------------
-// Email HTML — brand-voice: calm, warm, parent-facing, American English
-// ---------------------------------------------------------------------------
-
-function buildStatusEmail({
-  headline,
-  body,
-  signInLine,
-}: {
-  headline: string;
-  body: string;
-  signInLine: string;
-}): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>${escapeHtml(headline)}</title>
-</head>
-<body style="font-family: sans-serif; color: #1a1033; max-width: 560px; margin: 0 auto; padding: 32px 16px;">
-  <h1 style="font-size: 22px; margin-bottom: 8px;">${escapeHtml(headline)}</h1>
-  <p>${escapeHtml(body)}</p>
-  ${signInLine}
-  <p style="margin-top: 32px; font-size: 13px; color: #888;">
-    Yours Fairy Tale &mdash; a keepsake they will ask for again and again.
-  </p>
-</body>
-</html>`;
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
