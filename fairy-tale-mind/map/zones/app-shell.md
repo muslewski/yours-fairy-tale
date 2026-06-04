@@ -17,16 +17,21 @@ owns:
     - "components/home/site-nav.tsx"
     - "components/home/site-footer.tsx"
     - "components/motion/stagger.tsx"
+    - "app/(app)/sign-in/layout.tsx"
 depends: ["[[site-preloader]]", "[[section-waves]]"]
 invariants:
   - rule: "Internal navigation uses next/link (client-side, no full reload) — never raw <a>/motion.a for in-app routes. Animated links wrap Link via motion.create(Link); StaggerItem supports as=\"link\"."
     enforcedBy: []
-verifiedAt: 9dad9e2
+verifiedAt: 80fdc1e
 ---
 
 ## Purpose
-The root layout (`app/layout.tsx`) registers fonts, wraps all pages with `[[site-preloader]]`, and mounts the fixed-pill nav and footer.
-Sub-layouts for `/series` and `/blog` extend the shell with route-specific chrome.
+The root layout (`app/layout.tsx`) registers fonts and wraps all pages with
+`[[site-preloader]]` — it does NOT mount the nav/footer. Each page/route that wants the
+marketing chrome mounts `<SiteNav/>` + `<SiteFooter/>` itself: the homepage (`app/page.tsx`)
+directly, and `/series`, `/blog`, and `/sign-in` via their own layouts. The gated `/app`
+dashboard deliberately has its own chrome and gets neither — which is why `/sign-in` has its
+own layout rather than one on the shared `(app)` route group.
 
 The nav's right cluster holds two buttons: a secondary **Sign in** (white, outlined →
 `/sign-in`, the returning-customer entry to `[[auth-gating]]`) and the primary **Start**
