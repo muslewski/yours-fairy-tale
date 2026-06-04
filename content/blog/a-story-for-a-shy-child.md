@@ -18,10 +18,10 @@ A story can have adventure without being loud about it. Soft settings help: a fo
 
 ## Let them be the hero, gently
 
-When a shy child becomes the hero of their own book, something kind happens. They get to try on bravery in a safe place. They see their name beside a small, courageous act, and they get to imagine being that person, with no audience and no pressure.
+When a shy child becomes the hero of their own story, something kind happens. They get to try on bravery in a safe place. They see their name beside a small, courageous act, and they get to imagine being that person, with no audience and no pressure.
 
 We often suggest the bedtime and the woodland stories for quieter kids. Both end on a calm, settled note, which is exactly where a soft heart likes to land.
 
 ## A note for the grown-ups
 
-You know your child best. If a page feels like too much, skip it. If they want to whisper the story back to you, let them. The goal is not to make a quiet child louder. It is to hand them a story where being themselves is the whole point.
+You know your child best. If a moment feels like too much, skip it. If they want to whisper the story back to you, let them. The goal is not to make a quiet child louder. It is to hand them a story where being themselves is the whole point.

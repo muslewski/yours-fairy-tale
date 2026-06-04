@@ -25,7 +25,7 @@ These are easy to keep, and they add up:
 - Use a quieter voice as the story winds down.
 - End on the same closing line each time, like a soft door clicking shut.
 
-## When their name is in the book
+## When the story is made for them
 
 If you are reading a story made for your child, lean into the moments that are theirs. Read their name a little more tenderly. Watch them recognize themselves. Those few seconds are often the part they remember in the morning.
 
