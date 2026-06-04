@@ -77,14 +77,15 @@ export default function SignInPage() {
             Your stories live here. Sign in with the email you used at checkout, and
             pick up right where you left off.
           </p>
-          <div className="mt-auto flex justify-center pt-8">
+          <div className="pointer-events-none mt-auto flex justify-center">
             <Image
               src="/astronaut.png"
               alt=""
-              width={320}
-              height={320}
+              width={820}
+              height={820}
               unoptimized
-              className="h-72 w-72 object-contain drop-shadow-[6px_6px_0_rgba(0,0,0,0.25)] xl:h-80 xl:w-80"
+              priority
+              className="-mb-20 -ml-6 h-[42rem] w-[42rem] -rotate-[12deg] object-contain drop-shadow-[10px_10px_0_rgba(0,0,0,0.3)] xl:-mb-24 xl:h-[48rem] xl:w-[48rem]"
             />
           </div>
         </div>
