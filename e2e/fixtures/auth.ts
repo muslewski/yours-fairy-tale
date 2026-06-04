@@ -43,9 +43,16 @@ setup("authenticate the test customer", async ({ page }) => {
   expect(
     url,
     "magic link was not captured to e2e/.auth/last-magic-link.txt",
-  ).toMatch(/\/api\/auth\/magic-link\/verify/);
+  ).toMatch(/\/sign-in\/verify/);
 
-  await page.goto(url); // verify → session cookie → /app
+  // Simulate an email scanner / link-preview bot fetching the link FIRST. The
+  // confirmation interstitial consumes nothing on GET, so this must NOT burn the
+  // single-use token (the bug this fixes: a pre-fetch used to cause INVALID_TOKEN).
+  await page.request.get(url);
+
+  // Human flow: open the interstitial and press Confirm → real verify → /app.
+  await page.goto(url);
+  await page.getByRole("button", { name: "Confirm sign-in" }).click();
   await expect(page).toHaveURL(/\/app(\b|\/|\?|$)/);
   await page.context().storageState({ path: AUTH_FILE });
 });
