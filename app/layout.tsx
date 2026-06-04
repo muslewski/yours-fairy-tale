@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fredoka, Quicksand, Fraunces } from "next/font/google";
 import "./globals.css";
 import { SitePreloader } from "@/components/site-preloader";
+import { ScrollToTop } from "@/components/scroll-to-top";
 
 const fredoka = Fredoka({
   variable: "--font-fredoka",
@@ -36,6 +37,7 @@ export default function RootLayout({
         className={`${fredoka.variable} ${quicksand.variable} ${fraunces.variable} min-h-full antialiased`}
       >
         <SitePreloader />
+        <ScrollToTop />
         {children}
       </body>
     </html>
