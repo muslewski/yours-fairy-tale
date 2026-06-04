@@ -9,6 +9,7 @@
  */
 import { escapeHtml } from "@/lib/utils";
 import { sendEmail } from "@/lib/email";
+import { renderBrandedEmail } from "@/lib/email-template";
 
 export const CONTACT_TOPICS = [
   "Order help",
@@ -71,26 +72,23 @@ export function buildContactEmail(value: ContactValue): string {
   const safeName = escapeHtml(value.name);
   const safeEmail = escapeHtml(value.email);
   const safeTopic = escapeHtml(value.topic);
-  // `white-space: pre-wrap` on the <p> below preserves the newlines, so we must
-  // NOT also convert them to <br /> — that would double the line breaks.
+  // `white-space: pre-wrap` on the message paragraph preserves newlines, so we
+  // must NOT also convert them to <br /> — that would double the line breaks.
   const safeMessage = escapeHtml(value.message);
 
-  return `
-<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8" /><title>New contact message</title></head>
-<body style="font-family: sans-serif; color: #1a1033; max-width: 560px; margin: 0 auto; padding: 32px 16px;">
-  <h1 style="font-size: 20px; margin-bottom: 8px;">New contact message</h1>
-  <p style="margin: 4px 0;"><strong>Topic:</strong> ${safeTopic}</p>
-  <p style="margin: 4px 0;"><strong>From:</strong> ${safeName} &lt;${safeEmail}&gt;</p>
-  <hr style="border: none; border-top: 1px solid #eee; margin: 16px 0;" />
-  <p style="white-space: pre-wrap; line-height: 1.5;">${safeMessage}</p>
-  <p style="margin-top: 24px; font-size: 13px; color: #888;">
-    Reply directly to ${safeEmail} to respond.
-  </p>
-</body>
-</html>
-  `.trim();
+  const bodyHtml = [
+    `<p style="margin: 0 0 12px;"><strong>Topic:</strong> ${safeTopic}</p>`,
+    `<p style="margin: 0 0 12px;"><strong>From:</strong> ${safeName} (${safeEmail})</p>`,
+    `<p style="margin: 0; white-space: pre-wrap;">${safeMessage}</p>`,
+  ].join("\n");
+
+  return renderBrandedEmail({
+    preheader: `New contact message — ${value.topic}`,
+    heading: "New contact message",
+    accent: "yellow",
+    bodyHtml,
+    footerNote: `Reply to ${value.email} to respond.`,
+  });
 }
 
 export type SubmitResult = { ok: true } | { ok: false; error: string };
@@ -104,6 +102,7 @@ export async function submitContactMessage(input: ContactInput): Promise<SubmitR
     to: inbox,
     subject: `New contact message — ${result.value.topic}`,
     html: buildContactEmail(result.value),
+    replyTo: result.value.email,
   });
   return { ok: true };
 }

@@ -61,6 +61,7 @@ test("submitContactMessage sends to the inbox on valid input", async () => {
   expect(sendEmail).toHaveBeenCalledTimes(1);
   const arg = (sendEmail as unknown as { mock: { calls: any[][] } }).mock.calls[0][0];
   expect(arg.to).toBe("hello@yoursfairytale.com");
+  expect(arg.replyTo).toBe("ada@example.com");
   expect(arg.subject).toContain("Order help");
 });
 
