@@ -81,30 +81,20 @@ export default async function AppPage() {
   const orders = (await getOrdersForCurrentCustomer()) as OrderLike[];
 
   return (
-    <main className="min-h-screen bg-brand-cream px-6 py-16">
-      <div className="mx-auto max-w-2xl">
-        <header className="mb-10 flex items-start justify-between gap-4">
-          <div>
-            <h1
-              className="text-4xl text-brand-deep md:text-5xl"
-              style={{ fontFamily: "var(--font-fredoka)" }}
-            >
-              Your videos
-            </h1>
-            <p
-              className="mt-2 text-lg text-brand-deep/70"
-              style={{ fontFamily: "var(--font-quicksand)" }}
-            >
-              Follow every step as we bring their story to life.
-            </p>
-          </div>
-          <Link
-            href="/app/profile"
-            className="mt-1 shrink-0 rounded-full border-2 border-brand-deep bg-white px-5 py-2 text-sm font-bold text-brand-deep shadow-comic-sm transition-shadow hover:shadow-comic"
+    <div className="mx-auto max-w-2xl px-6">
+        <header className="mb-10">
+          <h1
+            className="text-4xl text-brand-deep md:text-5xl"
             style={{ fontFamily: "var(--font-fredoka)" }}
           >
-            Profile
-          </Link>
+            Your videos
+          </h1>
+          <p
+            className="mt-2 text-lg text-brand-deep/70"
+            style={{ fontFamily: "var(--font-quicksand)" }}
+          >
+            Follow every step as we bring their story to life.
+          </p>
         </header>
 
         {orders.length === 0 ? (
@@ -128,7 +118,6 @@ export default async function AppPage() {
           </ul>
         )}
       </div>
-    </main>
   );
 }
 

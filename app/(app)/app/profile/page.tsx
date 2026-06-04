@@ -25,8 +25,7 @@ export default async function ProfilePage() {
   const email = user?.email ?? null;
 
   return (
-    <main className="min-h-screen bg-brand-cream px-6 py-16">
-      <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl px-6">
         <header className="mb-10 flex items-start justify-between gap-4">
           <div>
             <h1
@@ -96,6 +95,5 @@ export default async function ProfilePage() {
           <SignOutButton />
         </div>
       </div>
-    </main>
   );
 }

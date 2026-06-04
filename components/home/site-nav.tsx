@@ -22,7 +22,7 @@ const NAV = [
  * transparent gutters never block hovering the hero behind it; only the pill
  * itself is interactive.
  */
-export function SiteNav() {
+export function SiteNav({ signedIn = false }: { signedIn?: boolean } = {}) {
   const reduce = useReducedMotion();
 
   return (
@@ -77,8 +77,10 @@ export function SiteNav() {
         </Stagger>
 
         <div className="flex shrink-0 items-center gap-2">
+          {/* Signed-in customers (/app) see "My account" → /app/profile (which
+              holds sign-out); public visitors see "Sign in" → /sign-in. */}
           <MotionLink
-            href="/sign-in"
+            href={signedIn ? "/app/profile" : "/sign-in"}
             {...(reduce
               ? {}
               : {
@@ -90,7 +92,7 @@ export function SiteNav() {
                 })}
             className="inline-flex rounded-lg border-[3px] border-brand-deep bg-white px-3 py-2 text-sm font-bold text-brand-deep shadow-comic-sm transition-colors hover:bg-brand-yellow active:translate-y-0.5 sm:px-4"
           >
-            Sign in
+            {signedIn ? "My account" : "Sign in"}
           </MotionLink>
 
           <MotionLink
