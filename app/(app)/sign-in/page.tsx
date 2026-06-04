@@ -54,40 +54,42 @@ export default function SignInPage() {
       <div className="grid overflow-hidden rounded-[28px] border-[3px] border-brand-deep shadow-comic-lg lg:grid-cols-2">
         {/* ── Left: brand welcome panel (lg+ only) ───────────────────────────── */}
         <div
-          className="relative hidden flex-col bg-brand-deep p-9 text-white sm:p-10 lg:flex"
+          className="relative hidden min-h-[34rem] flex-col overflow-hidden bg-brand-deep p-9 text-white sm:p-10 lg:flex"
           style={{
             backgroundImage:
               "radial-gradient(circle at 10px 10px, rgba(255,249,238,0.10) 2px, transparent 0)",
             backgroundSize: "28px 28px",
           }}
         >
-          <p
-            className="text-xs font-bold uppercase tracking-widest text-white/60"
-            style={{ fontFamily: "var(--font-quicksand)" }}
-          >
-            Yours Fairy Tale
-          </p>
-          <p className="mt-6 font-[family-name:var(--font-fredoka)] text-5xl font-bold leading-[0.95]">
-            Welcome back.
-          </p>
-          <p
-            className="mt-4 max-w-xs text-white/75"
-            style={{ fontFamily: "var(--font-quicksand)" }}
-          >
-            Your stories live here. Sign in with the email you used at checkout, and
-            pick up right where you left off.
-          </p>
-          <div className="pointer-events-none mt-auto flex justify-center">
-            <Image
-              src="/astronaut.png"
-              alt=""
-              width={820}
-              height={820}
-              unoptimized
-              priority
-              className="-mb-20 -ml-6 h-[42rem] w-[42rem] -rotate-[12deg] object-contain drop-shadow-[10px_10px_0_rgba(0,0,0,0.3)] xl:-mb-24 xl:h-[48rem] xl:w-[48rem]"
-            />
+          <div className="relative z-10">
+            <p
+              className="text-xs font-bold uppercase tracking-widest text-white/60"
+              style={{ fontFamily: "var(--font-quicksand)" }}
+            >
+              Yours Fairy Tale
+            </p>
+            <p className="mt-6 font-[family-name:var(--font-fredoka)] text-5xl font-bold leading-[0.95]">
+              Welcome back.
+            </p>
+            <p
+              className="mt-4 max-w-xs text-white/75"
+              style={{ fontFamily: "var(--font-quicksand)" }}
+            >
+              Your stories live here. Sign in with the email you used at checkout, and
+              pick up right where you left off.
+            </p>
           </div>
+          {/* Big character, anchored bottom and free of flex so it isn't shrunk to
+              the panel width; overflow-hidden on the panel clips the bleed. */}
+          <Image
+            src="/astronaut.png"
+            alt=""
+            width={1000}
+            height={1000}
+            unoptimized
+            priority
+            className="pointer-events-none absolute -bottom-44 left-1/2 h-[44rem] w-[44rem] max-w-none -translate-x-1/2 -rotate-[10deg] object-contain drop-shadow-[10px_10px_0_rgba(0,0,0,0.3)] xl:-bottom-52 xl:h-[50rem] xl:w-[50rem]"
+          />
         </div>
 
         {/* ── Right: form + no-account explainer ─────────────────────────────── */}
