@@ -84,7 +84,7 @@ export default function SignInPage() {
               width={320}
               height={320}
               unoptimized
-              className="h-44 w-44 object-contain drop-shadow-[6px_6px_0_rgba(0,0,0,0.25)]"
+              className="h-72 w-72 object-contain drop-shadow-[6px_6px_0_rgba(0,0,0,0.25)] xl:h-80 xl:w-80"
             />
           </div>
         </div>
