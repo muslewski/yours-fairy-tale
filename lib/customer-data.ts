@@ -57,3 +57,33 @@ export async function getOrdersForCurrentCustomer() {
   if (!session) return [];
   return getOrdersForOwner(session.user.id);
 }
+
+/**
+ * Fetch a single order by id, but ONLY if `ownerId` owns it. Returns the doc or
+ * null (unknown id, or owned by someone else). The owner scope is an explicit
+ * part of the query — the security boundary for the order detail page. Unknown
+ * ids never throw: a bad id reads as "not found".
+ */
+export async function getOrderForOwner(ownerId: string, orderId: string) {
+  const payload = await getPayloadClient();
+  const result = await payload.find({
+    collection: "orders",
+    where: {
+      and: [{ id: { equals: orderId } }, { owner: { equals: ownerId } }],
+    },
+    overrideAccess: true,
+    depth: 0,
+    limit: 1,
+  });
+  return result.docs[0] ?? null;
+}
+
+/**
+ * Returns the given order if it belongs to the currently signed-in customer,
+ * else null (no session, or not theirs).
+ */
+export async function getOrderForCurrentCustomer(orderId: string) {
+  const session = await getCustomerSession();
+  if (!session) return null;
+  return getOrderForOwner(session.user.id, orderId);
+}
