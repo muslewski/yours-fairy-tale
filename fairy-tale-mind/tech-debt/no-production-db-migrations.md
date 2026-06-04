@@ -36,7 +36,21 @@ Adopt Payload migrations for prod:
    step or a one-off authorized run with the prod `POSTGRES_URL`.
 Until then, schema changes require a manual, authorized push/ALTER against prod `neondb`.
 
-## Immediate follow-up (this change)
-The Orders columns from the wizard work (`extra_minutes`, `plot_note`, `orders_add_ons`)
-must be applied to prod `neondb` before a real purchase or a logged-in dashboard view will
-work in production. This is a prod DB write and needs explicit authorization.
+## Update 2026-06-04 — prod was entirely unschema'd; initialized via push
+Investigation found the prod DB (the Neon project's **`main`** branch, what the Vercel
+integration uses) had **zero tables** — it had never been schema'd at all, so the whole
+account/order/admin layer had never worked in production (all prior verification ran against
+local/test DBs). The wizard columns were just the trigger that exposed it.
+
+Because the `payload` CLI does not run on this stack (extensionless-ESM + `loadEnvConfig`
+resolution errors under tsx — it has never been used here; the repo relies on `next dev`
+push), the schema was applied by **booting Payload in non-production against the prod
+connection string via Vitest's loader** (a throwaway `getPayloadClient()` test), which runs
+Drizzle push. Result: all 16 tables created on prod `main`, matching the code (incl.
+`extra_minutes`, `plot_note`, `orders_texts`). Verified by introspection.
+
+Caveat: prod was initialized by **push, not by `payload migrate`** — so `payload_migrations`
+on prod is empty and the committed `migrations/` are not recorded as applied there (they're
+idempotent, so a future `payload migrate` is safe). The real fix remains: get the migrate
+CLI working and run migrations on deploy, so future schema changes reach prod without a
+manual push.
