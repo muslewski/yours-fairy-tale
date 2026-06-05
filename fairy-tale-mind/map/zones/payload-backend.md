@@ -17,6 +17,9 @@ owns:
   anchors: []
   globs:
     - "payload.config.ts"
+    - "migrations/index.ts"
+    - "migrations/20260604_000000_wizard_order_fields.ts"
+    - "migrations/20260605_000000_order_customer_notes.ts"
     - "collections/Admins.ts"
     - "lib/payload.ts"
     - "app/(payload)/layout.tsx"
@@ -42,7 +45,7 @@ invariants:
     enforcedBy: ["tests/auth/adapter.test.ts"]
   - rule: "Never hardcode the connection string or secret — read process.env.DATABASE_URI / PAYLOAD_SECRET."
     enforcedBy: []
-verifiedAt: ab3d8fa
+verifiedAt: ab028c3
 ---
 
 ## Purpose

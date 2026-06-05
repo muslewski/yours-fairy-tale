@@ -4,8 +4,8 @@ summary: "No production DB migration strategy — Payload only pushes schema whe
 tags: [database, deployment, payload]
 status: open
 created: 2026-06-04
-updated: 2026-06-04
-related: ["[[payload-backend]]", "[[checkout]]"]
+updated: 2026-06-05
+related: ["[[payload-backend]]", "[[checkout]]", "[[prod-customer-notes-table-applied-manually]]"]
 sources: []
 severity: high
 effort: medium
@@ -54,3 +54,16 @@ on prod is empty and the committed `migrations/` are not recorded as applied the
 idempotent, so a future `payload migrate` is safe). The real fix remains: get the migrate
 CLI working and run migrations on deploy, so future schema changes reach prod without a
 manual push.
+
+## Update 2026-06-05 — second occurrence: orders_customer_notes
+The `customerNotes` array field (order-detail/notes feature) shipped after the 2026-06-04
+push with no migration, so prod `main` was missing the `orders_customer_notes` table.
+Because every order read joins it, the signed-in dashboard `/app` and `/app/orders/[id]`
+500'd in prod with `relation "orders_customer_notes" does not exist` (42P01) — diagnosed
+from live Vercel runtime logs (digest `2312598320`). Fixed by committing
+`migrations/20260605_000000_order_customer_notes.ts` and applying it directly to prod `main`
+via the locally authenticated `neonctl` (project `ancient-sea-80588068`, db `neondb`), since
+the migrate CLI still doesn't run here and `vercel env pull` returns the Neon creds blank.
+See [[prod-customer-notes-table-applied-manually]]. prod `payload_migrations` remains empty.
+This is the predicted second instance — the debt is now twice-realized; the real fix
+(migrate-on-deploy) is overdue.
