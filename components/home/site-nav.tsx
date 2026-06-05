@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
 import { Stagger, StaggerItem, hoverPop, tapPop } from "@/components/motion/stagger";
+import { authClient } from "@/lib/auth-client";
 
 /** Next.js <Link> with motion props — client-side navigation, no full page reload. */
 const MotionLink = motion.create(Link);
@@ -20,9 +21,18 @@ const NAV = [
  * Fixed floating navigation. The outer wrapper is pointer-events-none so the
  * transparent gutters never block hovering the hero behind it; only the pill
  * itself is interactive.
+ *
+ * Auth state: public pages (homepage, series, blog, contact, sign-in) are static,
+ * so the nav resolves "signed in?" CLIENT-side via Better Auth's `useSession()` —
+ * a signed-in visitor sees "My account" instead of "Sign in" without making those
+ * pages dynamic. Routes that already KNOW the state (the `/app` gate) pass the
+ * `signedIn` prop to override the hook, so there's no first-paint flash there.
  */
-export function SiteNav({ signedIn = false }: { signedIn?: boolean } = {}) {
+export function SiteNav({ signedIn: signedInProp }: { signedIn?: boolean } = {}) {
   const reduce = useReducedMotion();
+  const { data: session } = authClient.useSession();
+  // Explicit prop wins (gated routes); otherwise derive from the client session.
+  const signedIn = signedInProp ?? Boolean(session?.user);
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-4 z-50 px-4 sm:px-6">
