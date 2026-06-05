@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Stagger, StaggerItem, hoverPop, tapPop } from "@/components/motion/stagger";
 import { SectionWave, type BrandColor } from "@/components/home/section-wave";
 
@@ -36,6 +37,12 @@ const COLUMNS = [
 ];
 
 const SOCIALS = ["Instagram", "TikTok", "Pinterest"];
+
+const LEGAL = [
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
+  { label: "Refund Policy", href: "/refund" },
+];
 
 /**
  * The footer owns its own entry wave: every page that renders <SiteFooter />
@@ -127,24 +134,37 @@ export function SiteFooter({ waveFrom = "cream" }: { waveFrom?: BrandColor } = {
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col items-start justify-between gap-5 border-t-[3px] border-dashed border-white/20 pt-7 sm:flex-row sm:items-center">
-          <p className="text-sm font-semibold text-white/55">
-            © 2026 Yours Fairy Tale. Made with love, frame by frame.
-          </p>
-          <Stagger trigger="view" className="flex flex-wrap items-center gap-2">
-            {SOCIALS.map((s) => (
-              <StaggerItem
-                key={s}
-                as="a"
-                href="#"
-                whileHover={hoverPop}
-                whileTap={tapPop}
-                className="rounded-lg border-[3px] border-white/30 px-3 py-1.5 text-xs font-black uppercase tracking-wide text-white/70 transition-colors hover:border-white hover:text-white"
+        <div className="mt-14 flex flex-col gap-6 border-t-[3px] border-dashed border-white/20 pt-7">
+          <div className="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
+            <p className="text-sm font-semibold text-white/55">
+              © 2026 Yours Fairy Tale. Made with love, frame by frame.
+            </p>
+            <Stagger trigger="view" className="flex flex-wrap items-center gap-2">
+              {SOCIALS.map((s) => (
+                <StaggerItem
+                  key={s}
+                  as="a"
+                  href="#"
+                  whileHover={hoverPop}
+                  whileTap={tapPop}
+                  className="rounded-lg border-[3px] border-white/30 px-3 py-1.5 text-xs font-black uppercase tracking-wide text-white/70 transition-colors hover:border-white hover:text-white"
+                >
+                  {s}
+                </StaggerItem>
+              ))}
+            </Stagger>
+          </div>
+          <nav className="flex flex-wrap gap-x-6 gap-y-2">
+            {LEGAL.map((link) => (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="text-xs font-semibold text-white/50 underline-offset-4 transition-colors hover:text-white hover:underline"
               >
-                {s}
-              </StaggerItem>
+                {link.label}
+              </Link>
             ))}
-          </Stagger>
+          </nav>
         </div>
       </div>
     </footer>
