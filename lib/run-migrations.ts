@@ -62,7 +62,31 @@ export async function runProductionMigrations(): Promise<void> {
     const client = await db.pool.connect();
     try {
       await client.query("SELECT pg_advisory_lock($1)", [MIGRATION_LOCK_KEY]);
+
+      // Payload writes a `dev` marker (batch -1) into payload_migrations when the
+      // schema is dev-pushed (this prod DB was push-initialized). With that marker
+      // present, payload.db.migrate() triggers an INTERACTIVE confirm prompt —
+      // which in this non-TTY server context resolves to "no" and calls
+      // process.exit(0), silently aborting WITHOUT running migrations and without
+      // throwing. Drop the marker first so migrate() runs the committed files
+      // non-interactively. Our migrations are idempotent (CREATE/ALTER ... IF NOT
+      // EXISTS), so re-running them against the already-pushed schema is a no-op.
+      const hasTable = (
+        await client.query(
+          "SELECT to_regclass('public.payload_migrations') IS NOT NULL AS e",
+        )
+      ).rows[0].e;
+      if (hasTable) {
+        const res = await client.query(
+          "DELETE FROM payload_migrations WHERE batch = -1",
+        );
+        if (res.rowCount) {
+          console.log(`[migrate-on-boot] cleared ${res.rowCount} dev-push marker(s)`);
+        }
+      }
+
       await db.migrate();
+      console.log("[migrate-on-boot] migrations up to date");
     } finally {
       try {
         await client.query("SELECT pg_advisory_unlock($1)", [MIGRATION_LOCK_KEY]);
