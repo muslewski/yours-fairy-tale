@@ -13,6 +13,7 @@
 import type { Pool } from "pg";
 
 import { getPayloadClient } from "@/lib/payload";
+import { migrations } from "@/migrations";
 
 /**
  * A fixed, app-wide key for the Postgres advisory lock that serializes migration
@@ -36,7 +37,7 @@ export function shouldRunMigrations(env: {
 /** The slice of the Payload postgres adapter this runner needs. */
 interface MigratableDb {
   pool: Pool;
-  migrate: (args?: { migrations?: unknown[] }) => Promise<void>;
+  migrate: (args?: { migrations?: typeof migrations }) => Promise<void>;
 }
 
 /**
@@ -85,7 +86,11 @@ export async function runProductionMigrations(): Promise<void> {
         }
       }
 
-      await db.migrate();
+      // Pass the bundled migrations explicitly. Otherwise Payload calls
+      // readMigrationFiles(), which imports the .ts files from disk at runtime —
+      // and Node can't load .ts in the bundled (CommonJS) Vercel function. The
+      // index is compiled into the bundle by Next, so its up/down fns are ready.
+      await db.migrate({ migrations });
       console.log("[migrate-on-boot] migrations up to date");
     } finally {
       try {
