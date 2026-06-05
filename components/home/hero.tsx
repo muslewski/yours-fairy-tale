@@ -58,24 +58,24 @@ export function Hero() {
             </motion.div>
 
             {reduce ? (
-              <h1 className="mt-6 font-[family-name:var(--font-fredoka)] text-5xl font-bold uppercase leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl xl:text-[88px]">
-                <span className="block whitespace-nowrap">An animated</span>
+              <h1 className="mt-6 font-[family-name:var(--font-fredoka)] text-[clamp(2.25rem,9vw,3.75rem)] font-bold uppercase leading-[0.95] tracking-tight lg:text-7xl xl:text-[88px]">
+                <span className="block lg:whitespace-nowrap">An animated</span>
                 <span
                   className="block whitespace-nowrap text-brand-pink"
                   style={{ WebkitTextStroke: "2px var(--color-brand-deep)" }}
                 >
                   fairy tale
                 </span>
-                <span className="block whitespace-nowrap">made for them</span>
+                <span className="block lg:whitespace-nowrap">made for them</span>
               </h1>
             ) : (
               <motion.h1
                 variants={headlineContainer}
                 initial="hidden"
                 animate="show"
-                className="mt-6 font-[family-name:var(--font-fredoka)] text-5xl font-bold uppercase leading-[0.95] tracking-tight sm:text-6xl lg:text-7xl xl:text-[88px]"
+                className="mt-6 font-[family-name:var(--font-fredoka)] text-[clamp(2.25rem,9vw,3.75rem)] font-bold uppercase leading-[0.95] tracking-tight lg:text-7xl xl:text-[88px]"
               >
-                <motion.span variants={headlineLine} className="block whitespace-nowrap">
+                <motion.span variants={headlineLine} className="block lg:whitespace-nowrap">
                   An animated
                 </motion.span>
                 <motion.span
@@ -85,7 +85,7 @@ export function Hero() {
                 >
                   fairy tale
                 </motion.span>
-                <motion.span variants={headlineLine} className="block whitespace-nowrap">
+                <motion.span variants={headlineLine} className="block lg:whitespace-nowrap">
                   made for them
                 </motion.span>
               </motion.h1>
@@ -153,7 +153,7 @@ export function Hero() {
                   animate: { opacity: 1, scale: 1, y: 0 },
                   transition: { type: "spring", stiffness: 160, damping: 16, mass: 0.9, delay: 0.2 },
                 })}
-            className="relative"
+            className="relative order-first mx-auto w-full max-w-[280px] sm:max-w-[380px] lg:order-none lg:mx-0 lg:max-w-none"
           >
             <div
               aria-hidden
@@ -177,7 +177,7 @@ export function Hero() {
                 alt="Animated astronaut character"
                 fill
                 priority
-                sizes="(min-width: 1024px) 520px, 90vw"
+                sizes="(min-width: 1024px) 520px, (min-width: 640px) 380px, 280px"
                 className="object-contain drop-shadow-[6px_6px_0_var(--color-brand-deep)] animate-[float_6s_ease-in-out_infinite]"
               />
             </div>
