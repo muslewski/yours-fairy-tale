@@ -1,10 +1,10 @@
 ---
 type: zone
-summary: "Two-layer /app gating: optimistic proxy cookie check + authoritative layout session check. Magic-link sign-in page. Owner-scoped order reads."
+summary: "Two-layer /app gating: optimistic proxy cookie check + authoritative layout session check. Magic-link sign-in page. Owner-scoped order reads (list + single order). Per-order detail page with a customer→studio notes thread."
 tags: [auth, security, customer-area]
 status: active
 created: 2026-06-03
-updated: 2026-06-03
+updated: 2026-06-04
 related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]", "[[video-ownership-route-over-static-url]]", "[[local-disk-video-delivery]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
@@ -18,10 +18,13 @@ owns:
     - "lib/customer-data.ts"
     - "lib/order-stages.ts"
     - "lib/order-actions.ts"
+    - "lib/order-notes-shared.ts"
+    - "lib/order-options.ts"
     - "lib/order-upload-validation.ts"
     - "lib/video-access.ts"
     - "app/(app)/app/layout.tsx"
     - "app/(app)/app/page.tsx"
+    - "app/(app)/app/orders/[id]/page.tsx"
     - "app/(app)/app/profile/page.tsx"
     - "app/(app)/api/orders/[id]/video/route.ts"
     - "app/(app)/sign-in/page.tsx"
@@ -38,8 +41,11 @@ owns:
     - "components/app/photo-upload.tsx"
     - "components/app/proof-review.tsx"
     - "components/app/video-player.tsx"
+    - "components/app/order-notes.tsx"
     - "components/app/sign-out-button.tsx"
     - "tests/auth/gating.test.ts"
+    - "tests/auth/order-detail-read.test.ts"
+    - "tests/auth/add-order-note.test.ts"
     - "tests/app/order-stages.test.ts"
     - "tests/app/order-actions.test.ts"
     - "tests/app/video-access.test.ts"
@@ -50,10 +56,10 @@ depends: ["[[payload-backend]]"]
 invariants:
   - rule: "proxy.ts is PRESENCE-ONLY (no DB hit). The authoritative DB check is app/(app)/app/layout.tsx only."
     enforcedBy: ["tests/auth/gating.test.ts"]
-  - rule: "Customer order reads are ALWAYS owner-scoped via explicit where { owner: { equals: userId } } + overrideAccess:true. Never rely on Payload req.user."
-    enforcedBy: ["tests/auth/gating.test.ts"]
-  - rule: "Every mutating customer order action (lib/order-actions.ts) starts with assertOwnsOrder(orderId), which throws unless the signed-in customer owns the order. A customer can never mutate another customer's order."
-    enforcedBy: ["tests/app/order-actions.test.ts"]
+  - rule: "Customer order reads are ALWAYS owner-scoped via explicit where { owner: { equals: userId } } + overrideAccess:true. Never rely on Payload req.user. The single-order read (getOrderForOwner) adds the order id to the same where (and:[{id},{owner}]) so the /app/orders/[id] detail page can only load the signed-in customer's own order; a non-owned/unknown id reads as null → notFound()."
+    enforcedBy: ["tests/auth/gating.test.ts", "tests/auth/order-detail-read.test.ts"]
+  - rule: "Every mutating customer order action (lib/order-actions.ts) starts with assertOwnsOrder(orderId), which throws unless the signed-in customer owns the order. A customer can never mutate another customer's order. addOrderNote follows this too: it guards, then appends to customerNotes (validated, ≤ MAX_NOTE_LENGTH) and revalidates the detail path — it NEVER changes status and is available at any status."
+    enforcedBy: ["tests/app/order-actions.test.ts", "tests/auth/add-order-note.test.ts"]
   - rule: "The delivered film is served ONLY through the ownership-checked route (app/(app)/api/orders/[id]/video) via resolveOwnedVideo → assertOwnsOrder. Never a direct/guessable media URL; media stays read: adminOnly. A non-owner can never fetch another customer's video."
     enforcedBy: ["tests/app/video-access.test.ts"]
   - rule: "sign-in page is OUTSIDE the gated app route group — redirect can never trap it."
@@ -66,7 +72,7 @@ invariants:
     enforcedBy: ["tests/auth/order-tracking-link.test.ts"]
   - rule: "The status → stage mapping and parent-facing copy live ONLY in lib/order-stages.ts (DOM-free, tested). The timeline component and dashboard page render FROM it; they never re-derive stage indices or hardcode status copy."
     enforcedBy: ["tests/app/order-stages.test.ts"]
-verifiedAt: 230939e
+verifiedAt: c5eb0aa
 ---
 
 ## Purpose
@@ -82,21 +88,43 @@ The layout calls `getCustomerSession()` → `auth.api.getSession({ headers })`. 
 - `getCustomerSession()` — wraps `auth.api.getSession({ headers: await headers() })`.
 - `getOrdersForOwner(ownerId)` — Payload `find({ where: { owner: { equals: ownerId } }, overrideAccess: true })`. Testable without a session mock.
 - `getOrdersForCurrentCustomer()` — composes the two above.
+- `getOrderForOwner(ownerId, orderId)` — single-order read scoped by BOTH id and
+  owner (`where: { and: [{ id }, { owner }] }`, `limit: 1`); returns the doc or
+  `null` (unknown id / not theirs — never throws). The detail page's security
+  boundary.
+- `getOrderForCurrentCustomer(orderId)` — composes session + `getOrderForOwner`;
+  `null` when unauthenticated.
 
 ### Dashboard view (app/(app)/app/page.tsx + the timeline)
-The `/app` page lists the customer's orders as comic-styled cards (`bg-white`,
-`border-2 border-brand-deep`, `shadow-comic`): child's name + chosen world, the
-production timeline, and a calm status-aware message. Empty state links to the
-homepage configurator (`/#build`). The per-status ACTION slot now renders the
-real customer actions: photo upload for `awaiting_assets`, proof review for
-`proof_ready`, and the finished-film player for `delivered` (below). The header
-carries a **Profile** link to `/app/profile`.
+The `/app` page lists the customer's orders as compact, comic-styled **link
+cards** (`bg-white`, `border-2 border-brand-deep`, `shadow-comic`) — each a
+`<Link href="/app/orders/{id}">` wrapped in `<li className="group">` that lifts
+on hover via `group-hover:shadow-comic-lg` (shadow only on the stable ancestor —
+no movement on the hover target, per the edge-jitter rule). A card shows the
+child's name + chosen world, the production timeline, the status-message
+**headline** only, and a "View details →" affordance. The per-status ACTIONS no
+longer live here — they moved to the detail page (below), which is why the card
+can be a single Link with no nested interactive controls. Empty state links to
+the homepage configurator (`/#build`).
+
+### Order detail page (app/(app)/app/orders/[id]/page.tsx)
+The full home for one order. Server component: reads
+`getOrderForCurrentCustomer(id)`, `notFound()` on null (owner-scoped — see the
+read invariant). Renders the status timeline + the full status message (headline
++ body), the relocated per-status ACTION slot (photo upload / proof review /
+finished-film player — same components as before), a read-only **"Your story"**
+panel (world, length, detail level, extra minutes, add-ons, the parent's original
+`plotNote`; labels from `lib/order-options.ts`), and the **notes thread**
+(`components/app/order-notes.tsx`). Lives under the `(app)` group so it inherits
+the gate + chrome with no new gate code.
 
 ### Customer order actions (lib/order-actions.ts — `"use server"`)
 Server-only mutations the dashboard calls. **Security invariant:** each begins
 with `assertOwnsOrder(orderId)` — loads the order (Local API, `overrideAccess`)
 and throws unless the signed-in customer owns it (`order.owner` id ===
-`session.user.id`). All three end with `revalidatePath("/app")`.
+`session.user.id`). Each revalidates BOTH `"/app"` and `"/app/orders/{id}"` so
+the change shows immediately whether the action ran from the list or the detail
+page.
 - `uploadOrderAssets(orderId, formData)` — Task 4.2. Validates every file is an
   image ≤ 15 MB (rejects the whole batch with a clear message otherwise),
   creates one `media` doc per file, appends the ids to `order.assets`, and on
@@ -104,12 +132,23 @@ and throws unless the signed-in customer owns it (`order.owner` id ===
   `[[upload-auto-advances-to-production]]`).
 - `approveProof(orderId)` — Task 4.3. Sets `status: approved`.
 - `requestProofChange(orderId, note)` — Task 4.3. Sets `status: revisions` and
-  saves the note to the new Orders `revisionNote` textarea field.
+  saves the note to the Orders `revisionNote` textarea field.
+- `addOrderNote(orderId, message)` — the parent's note to the studio from the
+  detail page. Guards, validates (non-empty, ≤ `MAX_NOTE_LENGTH`), appends
+  `{ message, createdAt }` to the Orders `customerNotes` array preserving prior
+  rows, then `revalidatePath("/app/orders/{id}")`. Available at ANY status; does
+  NOT change status. Returns a typed `AddNoteResult` (`{ ok } | { ok, error }`)
+  the dialog surfaces. The studio reads the thread inline in `/admin`.
 
-The pure file-validation predicate (`validateUploadFile`, `MAX_UPLOAD_BYTES`)
-lives in **lib/order-upload-validation.ts** — kept out of the `"use server"`
-file (whose exports must all be async) so it is shared by both the action and
-the client upload component, and unit-tested directly.
+Two pure (non-`"use server"`) sidecars hold values that can't be exported from a
+`"use server"` file (whose exports must all be async functions):
+- **lib/order-upload-validation.ts** — `validateUploadFile`, `MAX_UPLOAD_BYTES`,
+  shared by the action and the client upload component; unit-tested directly.
+- **lib/order-notes-shared.ts** — `MAX_NOTE_LENGTH` (2000) + the `AddNoteResult`
+  type, imported by both `order-actions.ts` and the `OrderNotes` dialog. (A
+  re-export of these through the `"use server"` module breaks `next build` —
+  Next 16 emits a runtime reference for the re-exported type. So the test + UI
+  import them straight from the sidecar.)
 
 ### Action components (components/app/{photo-upload,proof-review}.tsx — `"use client"`)
 - **PhotoUpload** — file input (`accept="image/*"`, multiple), client-side
@@ -126,6 +165,12 @@ Both guard Motion with `useReducedMotion()` and use brand tokens only.
   order is `delivered` but `finalVideo` is not attached yet (`hasVideo` false),
   it renders a gentle "your video is being finalized" fallback instead of an
   empty player.
+- **OrderNotes** (`components/app/order-notes.tsx`, `"use client"`) — the detail
+  page's notes thread. Renders existing `customerNotes` as a chronological log
+  (message + friendly date) and an "Add a note" Motion dialog (reduced-motion
+  guarded; Escape / backdrop / successful send close it) whose textarea (capped
+  at `MAX_NOTE_LENGTH`) submits via `addOrderNote`. No optimistic update — the
+  new note appears after the server round-trip + `revalidatePath`.
 
 ### Delivered video — gated streaming (Task 4.4)
 - **`lib/video-access.ts`** — `resolveOwnedVideo(orderId)` runs `assertOwnsOrder`
@@ -234,3 +279,8 @@ Magic-link emails now point at a `/sign-in/verify` confirmation interstitial ins
 the raw verify endpoint, so email scanners that pre-fetch the link can't burn the
 single-use token (was failing with INVALID_TOKEN in prod) (2026-06-04, see
 `[[magic-link-confirmation-interstitial]]`).
+Each order got its own owner-scoped detail page at `/app/orders/[id]`: the dashboard
+list became compact link cards (per-status actions relocated to the detail page), and
+the detail page added a read-only "Your story" panel + a customer→studio notes thread
+(append-only `customerNotes` on the order, shown back to the parent, visible to the
+studio in `/admin`) (2026-06-04, see `[[order-detail-subpage-and-notes]]`).
