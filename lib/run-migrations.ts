@@ -90,6 +90,7 @@ export async function runProductionMigrations(): Promise<void> {
       // readMigrationFiles(), which imports the .ts files from disk at runtime —
       // and Node can't load .ts in the bundled (CommonJS) Vercel function. The
       // index is compiled into the bundle by Next, so its up/down fns are ready.
+      console.log(`[migrate-on-boot] applying ${migrations.length} migration(s)`);
       await db.migrate({ migrations });
       console.log("[migrate-on-boot] migrations up to date");
     } finally {
