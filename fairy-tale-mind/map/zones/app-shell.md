@@ -4,7 +4,7 @@ summary: "Nav, footer, root layout and fonts — the chrome wrapping every page.
 tags: [infrastructure, layout]
 status: active
 created: 2026-06-02
-updated: 2026-06-02
+updated: 2026-06-05
 related: ["[[site-preloader]]", "[[section-waves]]", "[[auth-gating]]"]
 sources: []
 owns:
@@ -34,7 +34,7 @@ invariants:
     enforcedBy: []
   - rule: "Social/OG images are generated via next/og (lib/og.tsx) using the Fredoka woff bundled in assets/, inlining brand PNGs as data URIs so generation needs no network and stays statically optimized. og:image/twitter:image come from the opengraph-image/twitter-image file conventions, NOT from metadata.images (avoid duplicates)."
     enforcedBy: []
-verifiedAt: 230939e
+verifiedAt: 407d101
 ---
 
 ## Purpose
@@ -46,12 +46,16 @@ layouts. `/sign-in` has its own layout (rather than one on the shared `(app)` ro
 so the `/app` gate can never trap it.
 
 The nav's right cluster holds two buttons. The first is **Sign in** (white, outlined →
-`/sign-in`) on public pages, but flips to **My account** (→ `/app/profile`) when
-`<SiteNav signedIn />` is rendered — the gated `/app` layout passes `signedIn` so a
-logged-in customer never sees "Sign in". The second is the primary **Start** CTA (pink →
-`#build`), shown in both states (a returning customer can order another video). Both stay
-visible on mobile even though the center links collapse, since this nav has no hamburger
-menu.
+`/sign-in`), which flips to **My account** (→ `/app/profile`) for a logged-in customer. The
+signed-in check is **client-side**: `SiteNav` reads `authClient.useSession()`, so the static
+public pages (homepage, series, blog, contact, sign-in) show the right button for a logged-in
+visitor without becoming dynamically rendered. An optional `signedIn` prop overrides the hook;
+the gated `/app` layout passes `<SiteNav signedIn />` so behind the gate the correct state
+shows on first paint with no flash. On a cold public-page load the initial HTML shows "Sign
+in" until the session resolves (in-app client navigation has the session cached, so no flash).
+The second button is the primary **Start** CTA (pink → `#build`), shown in both states (a
+returning customer can order another video). Both stay visible on mobile even though the
+center links collapse, since this nav has no hamburger menu.
 
 All internal nav uses **client-side `next/link`** (no full page reload). The animated nav
 buttons (logo, Sign in, Start) are `motion.create(Link)`; the center links use the
@@ -73,3 +77,7 @@ theme-color), and dynamic next/og social images added (site-wide + per Journal p
 The gated `/app` dashboard now wears the public chrome too: its layout mounts
 `<SiteNav signedIn />` ("My account" instead of "Sign in") + `<SiteFooter/>`, and the
 dashboard/profile pages became content-only (2026-06-04).
+Nav signed-in state moved from a per-route prop (which hardcoded `false` on every public
+page, so a logged-in visitor saw "Sign in" on the homepage) to a client-side
+`authClient.useSession()` check, keeping public pages static; the `signedIn` prop remains as
+an override for the gated `/app` layout (2026-06-05).
