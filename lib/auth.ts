@@ -44,6 +44,7 @@ if (!secret) {
 // production domains and cover preview/dev without relying on a dynamic env var
 // that might be stale or missing.
 const trustedOrigins = [
+  "http://localhost:1234",
   "http://localhost:3000",
   "http://localhost:3002",
   "https://yoursfairytale.com",

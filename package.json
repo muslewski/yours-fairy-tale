@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --no-server-fast-refresh",
+    "dev": "next dev --no-server-fast-refresh -p 1234",
     "build": "next build",
     "prebuild": "node scripts/mind/generate.mjs",
     "mind": "node scripts/mind/generate.mjs",
