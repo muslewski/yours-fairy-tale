@@ -4,7 +4,7 @@
 
 | Zone | Status | Freshness | Summary |
 |---|---|---|---|
-| [[app-shell]] | active | ✓ fresh | Nav, footer, root layout and fonts — the chrome wrapping every page. |
+| [[app-shell]] | active | ✓ fresh | Nav, footer, root layout and fonts — the chrome wrapping every page. Also owns the site-wide error/404 boundaries, sitemap/robots, security headers, and the legal pages (privacy/terms/refund). |
 | [[auth-gating]] | active | ⚠ stale | Two-layer /app gating: optimistic proxy cookie check + authoritative layout session check. Magic-link sign-in page. Owner-scoped order reads (list + single order). Per-order detail page with a customer→studio notes thread. |
 | [[checkout]] | active | ⚠ stale | Stripe checkout integration — mock UI simulation + real Checkout Session route + webhook that creates accounts, orders, sends confirmation email, and syncs refund/dispute status. |
 | [[configurator]] | active | ✓ fresh | The personalized video builder — the homepage's conversion centerpiece (#build). |
@@ -30,6 +30,7 @@
 - zone "configurator": invariant "World ids match collections/Orders.ts world options and lib/worlds.ts WORLD_LABELS; childName is optional (empty is allowed, parent adds it later)." has no enforcedBy
 - zone "design-system": invariant "Never hardcode hex — use brand tokens / CSS vars." has no enforcedBy
 - zone "homepage": invariant "Every CTA/nav link leads somewhere real (anchor or route), never href='#'." has no enforcedBy
+- zone "homepage": invariant "The hero headline must not overflow on mobile: it scales fluidly (clamp) and wraps below lg; whitespace-nowrap is restored only at lg+. The character column moves above the headline on mobile (order-first) at a capped width, restored to the right column at lg." has no enforcedBy
 - zone "payload-backend": invariant "Never hardcode the connection string or secret — read process.env.DATABASE_URI / PAYLOAD_SECRET." has no enforcedBy
 
 ## Attic

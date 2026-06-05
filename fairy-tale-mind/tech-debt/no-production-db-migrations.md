@@ -2,14 +2,22 @@
 type: debt
 summary: "No production DB migration strategy — Payload only pushes schema when NODE_ENV !== production, and there's no migrations/ dir. Schema changes (new collection fields) do NOT reach the prod Neon DB automatically; real reads/writes of the changed collection break on prod."
 tags: [database, deployment, payload]
-status: open
+status: resolved
 created: 2026-06-04
 updated: 2026-06-05
-related: ["[[payload-backend]]", "[[checkout]]", "[[prod-customer-notes-table-applied-manually]]"]
+related: ["[[payload-backend]]", "[[checkout]]", "[[prod-customer-notes-table-applied-manually]]", "[[migrate-on-deploy-via-instrumentation]]"]
 sources: []
 severity: high
 effort: medium
 ---
+
+## Resolved 2026-06-05
+Closed by [[migrate-on-deploy-via-instrumentation]]: `instrumentation.ts` now runs
+`payload.db.migrate()` on production boot (guarded to prod Node runtime, advisory-
+locked, dev-marker dropped, bundled migrations passed). Verified in prod —
+`payload_migrations` records both committed migrations at batch 1, and the
+previously-empty tracking table is reconciled. New schema changes authored as
+committed migrations in `migrations/` now reach prod automatically on deploy.
 
 ## Problem
 `payload.config.ts` configures `postgresAdapter` with no explicit `push` and no

@@ -1,6 +1,6 @@
 ---
 type: zone
-summary: "Nav, footer, root layout and fonts — the chrome wrapping every page."
+summary: "Nav, footer, root layout and fonts — the chrome wrapping every page. Also owns the site-wide error/404 boundaries, sitemap/robots, security headers, and the legal pages (privacy/terms/refund)."
 tags: [infrastructure, layout]
 status: active
 created: 2026-06-02
@@ -16,6 +16,17 @@ owns:
     - "app/blog/layout.tsx"
     - "components/home/site-nav.tsx"
     - "components/home/site-footer.tsx"
+    - "app/error.tsx"
+    - "app/global-error.tsx"
+    - "app/not-found.tsx"
+    - "app/sitemap.ts"
+    - "app/robots.ts"
+    - "next.config.ts"
+    - "app/(legal)/layout.tsx"
+    - "app/(legal)/privacy/page.tsx"
+    - "app/(legal)/terms/page.tsx"
+    - "app/(legal)/refund/page.tsx"
+    - "components/legal/legal-page.tsx"
     - "components/motion/stagger.tsx"
     - "app/(app)/sign-in/layout.tsx"
     - "app/manifest.json"
@@ -34,7 +45,7 @@ invariants:
     enforcedBy: []
   - rule: "Social/OG images are generated via next/og (lib/og.tsx) using the Fredoka woff bundled in assets/, inlining brand PNGs as data URIs so generation needs no network and stays statically optimized. og:image/twitter:image come from the opengraph-image/twitter-image file conventions, NOT from metadata.images (avoid duplicates)."
     enforcedBy: []
-verifiedAt: 407d101
+verifiedAt: 7033caf
 ---
 
 ## Purpose
@@ -81,3 +92,9 @@ Nav signed-in state moved from a per-route prop (which hardcoded `false` on ever
 page, so a logged-in visitor saw "Sign in" on the homepage) to a client-side
 `authClient.useSession()` check, keeping public pages static; the `signedIn` prop remains as
 an override for the gated `/app` layout (2026-06-05).
+Trust/quality pass (2026-06-05): branded `error.tsx` / `global-error.tsx` / `not-found.tsx`
+(brand voice, error digest shown as a support reference); SEO `sitemap.ts` + `robots.ts`;
+baseline security headers + `poweredByHeader: false` in `next.config.ts`; and the legal
+pages (privacy, terms, refund) under a shared `(legal)` route group, linked in the footer
+bottom bar (legal copy has placeholders + needs review, see
+`[[legal-pages-need-entity-and-review]]`).

@@ -4,7 +4,7 @@ summary: "The live marketing homepage — hero, categories grid, configurator, s
 tags: [surface, marketing]
 status: active
 created: 2026-06-02
-updated: 2026-06-02
+updated: 2026-06-05
 related: ["[[configurator]]", "[[app-shell]]", "[[section-waves]]"]
 sources: []
 owns:
@@ -22,7 +22,9 @@ depends: ["[[configurator]]", "[[app-shell]]", "[[section-waves]]"]
 invariants:
   - rule: "Every CTA/nav link leads somewhere real (anchor or route), never href='#'."
     enforcedBy: []
-verifiedAt: 2e6be97
+  - rule: "The hero headline must not overflow on mobile: it scales fluidly (clamp) and wraps below lg; whitespace-nowrap is restored only at lg+. The character column moves above the headline on mobile (order-first) at a capped width, restored to the right column at lg."
+    enforcedBy: []
+verifiedAt: 7033caf
 ---
 
 ## Purpose
