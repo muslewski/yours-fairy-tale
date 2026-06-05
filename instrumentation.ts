@@ -9,6 +9,10 @@
  * fairy-tale-mind/specs/2026-06-05-migrate-on-deploy-design.md.
  */
 export async function register(): Promise<void> {
+  // Temporary diagnostic: confirms register runs and shows the env the guard sees.
+  console.log(
+    `[instrument] register runtime=${process.env.NEXT_RUNTIME} env=${process.env.VERCEL_ENV}`,
+  );
   // Inline guard mirrors shouldRunMigrations(); kept here so the edge runtime and
   // non-prod envs skip the dynamic import of the Payload-heavy migration module.
   if (
