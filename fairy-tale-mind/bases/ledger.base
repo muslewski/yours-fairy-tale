@@ -1,0 +1,88 @@
+# Ledger dashboard — tech-debt board · decisions log · spec → plan pipeline · briefs.
+# Each view filters the typed-note corpus by frontmatter `type`. Templates carry real
+# `type:` values in their stubs, so a global filter excludes the templates/ folder.
+#
+# Ambiguity note: the bare name `type` is the one property whose plain form can collide
+# with Bases' own reserved sense. If a view shows ALL notes or errors on the `type`
+# filter when opened in Obsidian, switch every `type == "..."` to `note.type == "..."`
+# (the always-valid explicit form). Nothing else should need changing.
+
+filters:
+  and:
+    - not:
+        - 'file.inFolder("templates")'
+
+formulas:
+  sev_label: 'if(severity == "critical", "1 · critical", if(severity == "high", "2 · high", if(severity == "medium", "3 · medium", "4 · low")))'
+
+properties:
+  severity:
+    displayName: Severity
+  status:
+    displayName: Status
+  decided:
+    displayName: Decided
+  related:
+    displayName: Related
+  updated:
+    displayName: Updated
+  summary:
+    displayName: Summary
+  formula.sev_label:
+    displayName: Urgency
+
+views:
+  - type: table
+    name: "Tech-debt board"
+    filters:
+      and:
+        - 'type == "debt"'
+        - 'status != "done"'
+        - 'status != "wontfix"'
+    order:
+      - file.name
+      - severity
+      - status
+      - summary
+    groupBy:
+      property: formula.sev_label
+      direction: ASC
+
+  - type: table
+    name: "Decisions log"
+    filters:
+      and:
+        - 'type == "decision"'
+    order:
+      - file.name
+      - decided
+      - status
+      - related
+      - summary
+
+  - type: table
+    name: "Spec → Plan pipeline"
+    filters:
+      or:
+        - 'type == "spec"'
+        - 'type == "plan"'
+    order:
+      - file.name
+      - type
+      - status
+      - updated
+      - summary
+    groupBy:
+      property: status
+      direction: ASC
+
+  - type: table
+    name: "Briefs"
+    filters:
+      and:
+        - 'type == "brief"'
+    order:
+      - file.name
+      - status
+      - updated
+      - summary

@@ -1,0 +1,37 @@
+# Map dashboard — the zone atlas. Aggregates every `type: zone` card in the vault,
+# grouped by status. Templates carry real `type:` values in their stubs, so a global
+# filter excludes the templates/ folder.
+#
+# Ambiguity note: the bare name `type` is the one property whose plain form can collide
+# with Bases' own reserved sense. If the Atlas shows ALL notes or errors on the `type`
+# filter when opened in Obsidian, switch `type == "zone"` to `note.type == "zone"`
+# (the always-valid explicit form). Nothing else should need changing.
+
+filters:
+  and:
+    - not:
+        - 'file.inFolder("templates")'
+    - 'type == "zone"'
+
+properties:
+  status:
+    displayName: Status
+  summary:
+    displayName: Summary
+  depends:
+    displayName: Depends on
+  tags:
+    displayName: Tags
+
+views:
+  - type: table
+    name: "Atlas"
+    order:
+      - file.name
+      - status
+      - summary
+      - depends
+      - tags
+    groupBy:
+      property: status
+      direction: ASC
