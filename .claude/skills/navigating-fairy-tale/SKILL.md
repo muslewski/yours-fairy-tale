@@ -19,5 +19,10 @@ Orient via the Mind before touching code. Do not restate the Map here — go rea
 5. **Conventions** live in `CLAUDE.md` (design system, brand voice, the Mind rule) and the
    `brand-voice` / `section-waves` skills.
 
+**Authoring the vault:** for file-format syntax — Obsidian Flavored Markdown, `.base`
+dashboards (`fairy-tale-mind/bases/`), `.canvas` maps — use the `obsidian-markdown` /
+`obsidian-bases` / `json-canvas` skills (third-party craft; they describe syntax, never a
+zone).
+
 On finish, maintain the Mind (see the CLAUDE.md "The Mind" rule): update zone cards,
 re-stamp `verifiedAt`, add decisions/tech-debt, `npm run mind`, commit `index.md`.
