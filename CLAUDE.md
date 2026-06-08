@@ -17,6 +17,12 @@ maintain on finish; don't work blind; don't leave ghosts.**
   writing-plans output → `fairy-tale-mind/plans/YYYY-MM-DD-<name>.md` (NOT `docs/`).
 - The Map is PRESENT tense (mutable); the Ledger is PAST tense (read-only — supersede,
   don't edit; tombstone, don't delete).
+- **File-format craft:** when authoring any Mind note or a `.base`/`.canvas` dashboard,
+  reach for the vendored obsidian-skills (`obsidian-markdown`, `obsidian-bases`,
+  `json-canvas`, `obsidian-cli`, `defuddle`) — third-party practice for the vault's own
+  file formats. Bases aggregate frontmatter into live views but **never replace the
+  generator** (which verifies cards against real code), and `.base`/`.canvas` files live
+  in `fairy-tale-mind/bases/` — outside `map/` and outside every generator glob.
 
 # Yours Fairy Tale
 
