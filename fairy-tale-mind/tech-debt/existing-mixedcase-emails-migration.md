@@ -1,5 +1,5 @@
 ---
-type: tech-debt
+type: debt
 summary: "Existing user rows with a mixed-case email (created before the lowercase fix) can't sign in. A one-time UPDATE users SET email = lower(email) is needed. Low priority: the field hook fixes all new accounts and no known mixed-case account exists."
 tags: [auth, data-migration]
 status: open

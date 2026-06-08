@@ -1,5 +1,5 @@
 ---
-type: tech-debt
+type: debt
 summary: "BETTER_AUTH_URL is not set in production. Better Auth logs 'Base URL could not be determined' and infers the host from the request — works today, but fragile for callbacks/redirects."
 tags: [auth, config, hardening]
 status: open
