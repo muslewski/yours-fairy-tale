@@ -49,3 +49,12 @@ sources: []       # lineage [[wikilinks]]
 - `route:<path>` — resolves to an `app/**/page.tsx|route.ts`.
 
 Do not hand-edit `map/index.md` — it is generated. Run `npm run mind` (or `/map-sync`).
+
+## Dashboards
+Live, frontmatter-driven views over the structured corpus (open in Obsidian; require the
+**Bases** core plugin). They aggregate the `type:`-tagged notes and **complement** the
+code-verifying generator — they never replace it, and live in `bases/` (outside `map/` and
+every generator glob).
+
+- [[ledger.base]] — tech-debt board · decisions log · spec → plan pipeline · briefs
+- [[map.base]] — zone atlas (grouped by status)
