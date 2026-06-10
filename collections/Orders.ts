@@ -199,6 +199,25 @@ export const Orders: CollectionConfig = {
         { label: "Cancelled", value: "cancelled" },
       ],
     },
+    {
+      name: "amountTotalCents",
+      type: "number",
+      min: 0,
+      admin: {
+        description:
+          "What Stripe actually charged, in cents. Set by the checkout webhook. " +
+          "Not recomputed from pricing (prices can change; the charge is history).",
+      },
+    },
+    {
+      name: "promisedBy",
+      type: "date",
+      admin: {
+        description:
+          "The delivery promise shown to the parent. Auto-set from film length " +
+          "at purchase (lib/delivery.ts); the studio may adjust it per order.",
+      },
+    },
   ],
   timestamps: true,
 };
