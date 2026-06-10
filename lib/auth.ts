@@ -9,8 +9,10 @@
  * AUTH MODEL: magic-link sign-in only — no emailAndPassword, no social providers.
  * Accounts are NEVER created via the client sign-up path; they are created
  * server-side by the Stripe checkout webhook (a future task). Therefore
- * `disableSignUp: true` on the magicLink plugin: requesting a link for an
- * unknown email returns an error rather than auto-creating a user.
+ * `disableSignUp: true` on the magicLink plugin: the REQUEST endpoint always
+ * returns success (enumeration-safe); unknown emails are rejected only at VERIFY
+ * time (better-auth surfaces new_user_signup_disabled) — no account is ever
+ * created from the client path.
  *
  * Coexistence with Payload (verified pattern from delieta reference):
  *  - Payload admin UI:   /admin          (Payload's OWN auth, `admins` collection)
@@ -61,11 +63,14 @@ export const auth = betterAuth({
     magicLink({
       /**
        * Sign-up is DISABLED: only webhook-created users (Stripe checkout) can
-       * receive a magic link. Requesting a link for an email that has no existing
-       * user record returns an error instead of silently creating an account.
+       * sign in via magic link. The REQUEST endpoint always returns success so
+       * callers cannot enumerate whether an email is registered. The unknown-email
+       * rejection (new_user_signup_disabled) is enforced at VERIFY time — i.e.
+       * when the link is clicked — so no account is ever created from the client
+       * path. Verified against better-auth@1.6.x magic-link plugin behaviour
+       * (request always calls sendMagicLink; verify checks disableSignUp).
        *
-       * Option confirmed against better-auth@1.6.14 magic-link plugin types:
-       * `disableSignUp?: boolean` on MagicLinkOptions (index.d.mts line 46).
+       * Option type: `disableSignUp?: boolean` on MagicLinkOptions (index.d.mts).
        */
       disableSignUp: true,
       sendMagicLink: async ({ email, url }) => {

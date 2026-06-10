@@ -30,11 +30,19 @@ export async function sendEmail({ to, subject, html, replyTo }: SendEmailOptions
   const override = process.env.RESEND_TO_OVERRIDE;
   const actualTo = override || to;
   const actualSubject = override ? `[→ ${to}] ${subject}` : subject;
-  const from = process.env.RESEND_FROM ?? "onboarding@resend.dev";
+  const from = process.env.RESEND_FROM;
+  if (!from) {
+    // Same contract as RESEND_API_KEY above: boot validation guarantees this in
+    // production; the resend.dev sandbox sender is a dev-only convenience.
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("[email] RESEND_FROM is not set in production.");
+    }
+    console.warn("[email] RESEND_FROM is not set — using the resend.dev sandbox sender (dev only).");
+  }
 
   const resend = new Resend(apiKey);
   await resend.emails.send({
-    from,
+    from: from ?? "onboarding@resend.dev",
     to: actualTo,
     subject: actualSubject,
     html,
