@@ -5,9 +5,9 @@
 import { STATUS_CHIPS } from "@/lib/studio-workflow";
 import type { OrderStatus } from "@/lib/order-stages";
 
-const TONE_CLASSES: Record<string, string> = {
+const TONE_CLASSES: Record<(typeof STATUS_CHIPS)[OrderStatus]["tone"], string> = {
   yellow: "bg-brand-yellow text-brand-deep",
-  pink: "bg-brand-pink text-white",
+  pink: "bg-brand-pink text-brand-deep",
   blue: "bg-brand-blue text-brand-deep",
   plain: "bg-white text-brand-deep/70",
 };

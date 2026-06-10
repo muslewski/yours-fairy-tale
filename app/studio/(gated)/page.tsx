@@ -41,7 +41,7 @@ export default async function StudioDashboardPage() {
       </section>
       <p className="mb-8 text-xs text-brand-deep/50">
         {totals.hasUnrecordedAmounts
-          ? "Older orders without recorded amounts are not counted. Refunded and disputed orders are left out."
+          ? "Older orders without recorded amounts add $0 to these totals. Refunded and disputed orders are left out."
           : "Refunded and disputed orders are left out."}
       </p>
 
@@ -50,7 +50,7 @@ export default async function StudioDashboardPage() {
           <h2 className="mb-4 text-2xl text-brand-deep" style={{ fontFamily: "var(--font-fredoka)" }}>
             Needs your attention{" "}
             {attention.length > 0 ? (
-              <span className="ml-1 inline-block rounded-full bg-brand-pink px-2.5 py-0.5 align-middle text-sm font-bold text-white">
+              <span className="ml-1 inline-block rounded-full bg-brand-pink px-2.5 py-0.5 align-middle text-sm font-bold text-brand-deep">
                 {attention.length}
               </span>
             ) : null}
@@ -62,8 +62,8 @@ export default async function StudioDashboardPage() {
               <img
                 src="/mascot/builder-360.webp"
                 alt=""
-                width={180}
-                height={180}
+                width={224}
+                height={360}
                 loading="lazy"
                 className="h-44 w-auto"
               />
