@@ -1,6 +1,6 @@
 import { test } from "vitest";
 
-import { seedCustomer, seedOrder } from "./seed";
+import { seedAdmin, seedCustomer, seedOrder } from "./seed";
 import type { OrderStatus } from "@/lib/order-stages";
 
 /**
@@ -15,6 +15,9 @@ import type { OrderStatus } from "@/lib/order-stages";
  *   • Optionally: when E2E_SEED_STATUS is set, also seed one order for that
  *     customer with the given status and (optional) E2E_SEED_CHILD name. This
  *     is what the Layer B dashboard spec uses to stage per-status fixtures.
+ *   • Optionally: when E2E_SEED_ADMIN_EMAIL and E2E_SEED_ADMIN_PASSWORD are
+ *     both set, also seed a staff account in the `admins` collection. The
+ *     Layer B studio spec uses this to sign in through /studio/sign-in.
  *
  * Not part of `npm test`: the dedicated config's `include` scopes Vitest to
  * this file only, and the default suite never references this config.
@@ -33,5 +36,12 @@ test("seed the e2e customer", async () => {
       `[seed.runner] seeded order ${order.id} status=${status}` +
         (child ? ` child=${child}` : ""),
     );
+  }
+
+  const adminEmail = process.env.E2E_SEED_ADMIN_EMAIL;
+  const adminPassword = process.env.E2E_SEED_ADMIN_PASSWORD;
+  if (adminEmail && adminPassword) {
+    const admin = await seedAdmin(adminEmail, adminPassword);
+    console.log(`[seed.runner] seeded admin ${admin.id} <${adminEmail}>`);
   }
 });

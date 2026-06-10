@@ -17,6 +17,22 @@ export async function seedCustomer(email: string) {
   });
 }
 
+export async function seedAdmin(email: string, password: string) {
+  const p = await getPayloadClient();
+  const found = await p.find({
+    collection: "admins",
+    where: { email: { equals: email } },
+    limit: 1,
+    overrideAccess: true,
+  });
+  if (found.totalDocs > 0) return found.docs[0];
+  return p.create({
+    collection: "admins",
+    data: { email, password, name: "E2E Studio Admin" },
+    overrideAccess: true,
+  });
+}
+
 export async function seedOrder(
   ownerId: string | number,
   status: OrderStatus,
