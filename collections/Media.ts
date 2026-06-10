@@ -32,6 +32,10 @@ export const Media: CollectionConfig = {
   },
   upload: {
     staticDir: path.resolve(dirname, "../media"),
+    // The studio panel uploads big videos straight to Vercel Blob from the
+    // browser, then registers the blob here as a metadata-only doc (filename
+    // == blob pathname). Payload must therefore allow file-less creates.
+    filesRequiredOnCreate: false,
   },
   fields: [
     {

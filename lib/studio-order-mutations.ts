@@ -101,3 +101,61 @@ export async function applyPromisedByCore(
   }
   return { ok: true };
 }
+
+export type VideoKind = "proof" | "finalVideo";
+
+export interface BlobMeta {
+  pathname: string;
+  contentType: string;
+  size: number;
+}
+
+/**
+ * Core: register an already-uploaded blob as a media doc (metadata only —
+ * the bytes are in Vercel Blob; filename == blob pathname is what the video
+ * proxy's head(filename) resolves) and link it to the order's proof/finalVideo.
+ * Auth-skipping ON PURPOSE (DB tests) — actions wrap it with requireStudioUser.
+ */
+export async function attachVideoCore(args: {
+  orderId: string;
+  kind: VideoKind;
+  blob: BlobMeta;
+}): Promise<StudioActionResult> {
+  const { orderId, kind, blob } = args;
+  if (kind !== "proof" && kind !== "finalVideo") {
+    return { ok: false, error: "Unknown video slot." };
+  }
+  if (!blob.contentType.startsWith("video/")) {
+    return { ok: false, error: "That file is not a video." };
+  }
+
+  const payload = await getPayloadClient();
+  const order = await payload.findByID({
+    collection: "orders",
+    id: orderId,
+    depth: 0,
+    overrideAccess: true,
+    disableErrors: true,
+  });
+  if (!order) {
+    return { ok: false, error: "We could not find that order." };
+  }
+
+  const media = await payload.create({
+    collection: "media",
+    data: {
+      filename: blob.pathname,
+      mimeType: blob.contentType,
+      filesize: blob.size,
+    },
+    overrideAccess: true,
+  });
+
+  await payload.update({
+    collection: "orders",
+    id: orderId,
+    data: { [kind]: media.id },
+    overrideAccess: true,
+  });
+  return { ok: true };
+}

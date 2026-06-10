@@ -1,8 +1,8 @@
 /**
  * /studio/orders/[id] — the order workstation.
  * Left: what they ordered (story, photos, notes — read-only).
- * Right: the work (workflow controls, delivery promise, proof + final film).
- * The video upload slots arrive in the next task; this page mounts placeholders.
+ * Right: the work (workflow controls, delivery promise, proof + final film
+ * upload slots — browser → Blob in prod, server action locally).
  */
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -18,6 +18,8 @@ import {
 import { StatusChip } from "@/components/studio/status-chip";
 import { WorkflowCard } from "@/components/studio/workflow-card";
 import { PromisedByEditor } from "@/components/studio/promised-by-editor";
+import { VideoUpload } from "@/components/studio/video-upload";
+import { isBlobStorageEnabled } from "@/lib/video-access";
 import { WORLD_LABELS, type WorldId } from "@/lib/worlds";
 import { LENGTH_LABELS, DETAIL_LEVEL_LABELS } from "@/lib/order-options";
 import type { OrderStatus } from "@/lib/order-stages";
@@ -295,9 +297,26 @@ export default async function StudioOrderPage({
             promisedBy={(order.promisedBy as string | null) ?? null}
           />
 
-          {/* Video upload slots mount here in the uploads task: */}
-          <VideoSlotPlaceholder title="Preview film" media={proof} />
-          <VideoSlotPlaceholder title="Final film" media={finalVideo} />
+          <VideoUpload
+            orderId={String(order.id)}
+            kind="proof"
+            title="Preview film"
+            hint="Sharing the proof emails the parent automatically."
+            blobEnabled={isBlobStorageEnabled()}
+            current={proof ? { filename: proof.filename ?? null, url: proof.url ?? null } : null}
+          />
+          <VideoUpload
+            orderId={String(order.id)}
+            kind="finalVideo"
+            title="Final film"
+            hint="Marking the order delivered emails the parent automatically."
+            blobEnabled={isBlobStorageEnabled()}
+            current={
+              finalVideo
+                ? { filename: finalVideo.filename ?? null, url: finalVideo.url ?? null }
+                : null
+            }
+          />
         </div>
       </div>
     </div>
@@ -313,23 +332,3 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-/** Read-only slot until the uploads task replaces it with VideoUpload. */
-function VideoSlotPlaceholder({ title, media }: { title: string; media: MediaDoc | null }) {
-  return (
-    <section
-      aria-label={title}
-      className="rounded-3xl border-2 border-brand-deep bg-white p-5 shadow-comic"
-    >
-      <h2 className="text-lg text-brand-deep" style={{ fontFamily: "var(--font-fredoka)" }}>
-        {title}
-      </h2>
-      {media ? (
-        <p className="mt-2 text-sm text-brand-deep/70">
-          {media.filename ?? "attached"} — uploads move here in the next task.
-        </p>
-      ) : (
-        <p className="mt-2 text-sm text-brand-deep/60">Nothing attached yet.</p>
-      )}
-    </section>
-  );
-}

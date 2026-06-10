@@ -12,12 +12,16 @@
  */
 import { revalidatePath } from "next/cache";
 
+import { getPayloadClient } from "@/lib/payload";
 import { requireStudioUser } from "@/lib/studio-auth";
 import {
   applyOrderStatusCore,
   applyPromisedByCore,
+  attachVideoCore,
   type StudioActionResult,
+  type VideoKind,
 } from "@/lib/studio-order-mutations";
+import { isBlobStorageEnabled } from "@/lib/video-access";
 import type { OrderStatus } from "@/lib/order-stages";
 
 const GENERIC_ERROR =
@@ -59,6 +63,101 @@ export async function setPromisedBy(
     return result;
   } catch (err) {
     console.error("[studio] setPromisedBy failed:", err);
+    return { ok: false, error: GENERIC_ERROR };
+  }
+}
+
+/**
+ * Action: after the browser finishes a direct-to-Blob upload, verify the blob
+ * really exists (head by pathname — same resolution the playback proxy uses)
+ * and attach it. Replacing simply links a new media doc; the old blob stays
+ * orphaned and invisible (cleanup is a filed tech-debt note).
+ */
+export async function attachUploadedVideo(args: {
+  orderId: string;
+  kind: VideoKind;
+  pathname: string;
+}): Promise<StudioActionResult> {
+  await requireStudioUser();
+  try {
+    const { head, BlobNotFoundError } = await import("@vercel/blob");
+    let blob;
+    try {
+      blob = await head(args.pathname);
+    } catch (err) {
+      if (err instanceof BlobNotFoundError) {
+        return {
+          ok: false,
+          error: "We could not find that upload. Please try again.",
+        };
+      }
+      throw err;
+    }
+    const result = await attachVideoCore({
+      orderId: args.orderId,
+      kind: args.kind,
+      blob: {
+        pathname: blob.pathname,
+        contentType: blob.contentType,
+        size: blob.size,
+      },
+    });
+    if (result.ok) revalidateStudioAndCustomer(args.orderId);
+    return result;
+  } catch (err) {
+    console.error("[studio] attachUploadedVideo failed:", err);
+    return { ok: false, error: GENERIC_ERROR };
+  }
+}
+
+/**
+ * Action: dev fallback when no Blob token is configured — a plain server-side
+ * upload into Payload's local-disk media storage. Local only: no request-body
+ * cap applies off Vercel. Mirrors the dual-path convention in lib/video-access.
+ */
+export async function uploadVideoDirect(
+  orderId: string,
+  kind: VideoKind,
+  formData: FormData,
+): Promise<StudioActionResult> {
+  await requireStudioUser();
+  if (isBlobStorageEnabled()) {
+    return {
+      ok: false,
+      error: "Direct upload is a local-dev fallback. Use the browser upload.",
+    };
+  }
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, error: "Please choose a video file." };
+  }
+  if (!file.type.startsWith("video/")) {
+    return { ok: false, error: "That file is not a video." };
+  }
+
+  try {
+    const payload = await getPayloadClient();
+    const media = await payload.create({
+      collection: "media",
+      data: {},
+      file: {
+        data: Buffer.from(await file.arrayBuffer()),
+        name: file.name,
+        mimetype: file.type,
+        size: file.size,
+      },
+      overrideAccess: true,
+    });
+    await payload.update({
+      collection: "orders",
+      id: orderId,
+      data: { [kind]: media.id },
+      overrideAccess: true,
+    });
+    revalidateStudioAndCustomer(orderId);
+    return { ok: true };
+  } catch (err) {
+    console.error("[studio] uploadVideoDirect failed:", err);
     return { ok: false, error: GENERIC_ERROR };
   }
 }

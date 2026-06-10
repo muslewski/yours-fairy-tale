@@ -61,6 +61,10 @@ export default buildConfig({
       enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
       collections: { media: true },
       token: process.env.BLOB_READ_WRITE_TOKEN,
+      // Admin-panel uploads go browser → Blob directly (bypasses Vercel's
+      // ~4.5MB request cap — final films are hundreds of MB). The /studio
+      // panel has its own client-upload route for the same reason.
+      clientUploads: true,
     }),
   ],
   editor: lexicalEditor(),
