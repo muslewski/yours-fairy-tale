@@ -45,27 +45,29 @@ export interface OwnedVideo {
 }
 
 /**
- * Resolve the delivered video for `orderId`, but ONLY after proving the
- * signed-in customer owns the order.
+ * Resolve a video attached to `orderId` — the delivered `finalVideo` (default)
+ * or the `proof` preview — but ONLY after proving the signed-in customer owns
+ * the order.
  *
  * - Throws (via `assertOwnsOrder`) if there is no session or the caller is not
  *   the owner — a non-owner learns nothing about the file.
- * - Returns null if the order has no `finalVideo` yet, the media doc is gone, or
- *   it has no filename (so the route can answer 404 and the UI a gentle
- *   "being finalized" fallback rather than crash).
+ * - Returns null if the order has no media in that field yet, the media doc is
+ *   gone, or it has no filename (so the route can answer 404 and the UI a
+ *   gentle "being finalized" fallback rather than crash).
  */
 export async function resolveOwnedVideo(
   orderId: string,
+  field: "finalVideo" | "proof" = "finalVideo",
 ): Promise<OwnedVideo | null> {
   const { order, payload } = await assertOwnsOrder(orderId);
 
-  // owner is normalized inside assertOwnsOrder; finalVideo is an id at depth 0.
-  const finalVideo = (order as { finalVideo?: unknown }).finalVideo;
+  // owner is normalized inside assertOwnsOrder; the relation is an id at depth 0.
+  const value = (order as Record<string, unknown>)[field];
   const mediaId =
-    typeof finalVideo === "object" && finalVideo !== null
-      ? String((finalVideo as { id: string }).id)
-      : finalVideo
-        ? String(finalVideo)
+    typeof value === "object" && value !== null
+      ? String((value as { id: string }).id)
+      : value
+        ? String(value)
         : null;
 
   if (!mediaId) return null;

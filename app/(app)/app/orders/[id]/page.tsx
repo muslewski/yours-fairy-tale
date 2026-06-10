@@ -35,7 +35,10 @@ interface ProofMedia {
   alt?: string | null;
 }
 
-async function loadProof(proofId?: string | null): Promise<ProofMedia | null> {
+async function loadProof(
+  orderId: string,
+  proofId?: string | null,
+): Promise<ProofMedia | null> {
   if (!proofId) return null;
   try {
     const payload = await getPayloadClient();
@@ -45,7 +48,13 @@ async function loadProof(proofId?: string | null): Promise<ProofMedia | null> {
       depth: 0,
       overrideAccess: true,
     });
-    return { url: media.url ?? null, mimeType: media.mimeType ?? null, alt: media.alt ?? null };
+    return {
+      // The ownership-gated route — NOT media.url, whose adminOnly read 403s
+      // for parents (spec addendum, 2026-06-10).
+      url: `/api/orders/${orderId}/video?kind=proof`,
+      mimeType: media.mimeType ?? null,
+      alt: media.alt ?? null,
+    };
   } catch {
     return null;
   }
@@ -70,7 +79,10 @@ export default async function OrderDetailPage({
   const message = messageForStatus(status, childName);
   const result = stageForStatus(status);
   const onHappyPath = "activeIndex" in result;
-  const proof = status === "proof_ready" ? await loadProof(order.proof as string | null) : null;
+  const proof =
+    status === "proof_ready"
+      ? await loadProof(String(order.id), order.proof as string | null)
+      : null;
   const notes = (Array.isArray(order.customerNotes) ? order.customerNotes : []) as CustomerNote[];
 
   return (

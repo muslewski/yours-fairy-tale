@@ -142,4 +142,27 @@ describe("resolveOwnedVideo — ownership gate", () => {
     const video = await resolveOwnedVideo(orderId);
     expect(video).toBeNull();
   });
+
+  test("resolveOwnedVideo can resolve the proof field for the owner", async () => {
+    // A proof_ready order whose preview film is `proof` (no finalVideo yet) —
+    // the customer's proof player streams through the same ownership gate.
+    const order = await payload.create({
+      collection: "orders",
+      data: {
+        owner: userAId,
+        childName: "Mia",
+        status: "proof_ready",
+        proof: videoMediaId,
+      },
+    });
+    createdOrderIds.push(String(order.id));
+    mockGetCustomerSession.mockResolvedValue(sessionFor(userAId));
+
+    const resolved = await resolveOwnedVideo(String(order.id), "proof");
+    expect(resolved?.mimeType).toBe("video/mp4");
+    expect(resolved?.filename).toBe("mia-final.mp4");
+
+    // The default field remains finalVideo — and this order has none.
+    expect(await resolveOwnedVideo(String(order.id))).toBeNull();
+  });
 });

@@ -1,8 +1,9 @@
 /**
  * Ownership-gated delivery of an order's finished film (Task 4.4).
  *
- * GET /api/orders/[id]/video         → streams the delivered video inline
- * GET /api/orders/[id]/video?download → same bytes, as an attachment download
+ * GET /api/orders/[id]/video             → streams the delivered video inline
+ * GET /api/orders/[id]/video?download    → same bytes, as an attachment download
+ * GET /api/orders/[id]/video?kind=proof  → streams the proof preview instead
  *
  * Why a route handler instead of a direct media URL: the `media` collection is
  * `read: adminOnly`, so Payload's own /api/media/file/<name> endpoint refuses a
@@ -39,10 +40,17 @@ export async function GET(
 ) {
   const { id } = await params;
 
+  // ?kind=proof streams the preview film through the same ownership gate;
+  // anything else (or nothing) streams the delivered final film.
+  const kind =
+    request.nextUrl.searchParams.get("kind") === "proof"
+      ? ("proof" as const)
+      : ("finalVideo" as const);
+
   // Ownership gate. Throws for a missing session or a non-owner → 403.
   let video;
   try {
-    video = await resolveOwnedVideo(id);
+    video = await resolveOwnedVideo(id, kind);
   } catch {
     return new Response("You do not have access to this video.", {
       status: 403,
