@@ -9,6 +9,7 @@ import {
   countdownState,
   formatPromisedDate,
 } from "@/lib/delivery";
+import { LENGTHS } from "@/lib/pricing";
 
 const NOW = new Date("2026-06-10T12:00:00.000Z");
 
@@ -30,6 +31,15 @@ describe("promisedByForLength", () => {
     expect(promisedByForLength(undefined, NOW)).toBeNull();
     expect(promisedByForLength("epic", NOW)).toBeNull();
     expect(promisedByForLength(null, NOW)).toBeNull();
+  });
+
+  test("every pricing length tier has a production window", () => {
+    for (const { id } of LENGTHS) {
+      expect(
+        PRODUCTION_DAYS[id as keyof typeof PRODUCTION_DAYS],
+        `PRODUCTION_DAYS is missing the "${id}" tier`,
+      ).toBeGreaterThan(0);
+    }
   });
 });
 
@@ -86,6 +96,42 @@ describe("countdownState", () => {
         promisedBy: "2026-06-09T12:00:00.000Z", // passed
       }).kind,
     ).toBe("overdue");
+  });
+
+  test("boundaries: exactly at the promise → overdue; exactly 24h → soon; 24h + 1ms → counting 2 days", () => {
+    expect(
+      countdownState({ ...base, status: "approved", promisedBy: NOW.toISOString() }).kind,
+    ).toBe("overdue");
+    expect(
+      countdownState({ ...base, status: "approved", promisedBy: "2026-06-11T12:00:00.000Z" }).kind,
+    ).toBe("soon");
+    const justOver = countdownState({
+      ...base,
+      status: "approved",
+      promisedBy: "2026-06-11T12:00:00.001Z",
+    });
+    expect(justOver.kind).toBe("counting");
+    if (justOver.kind === "counting") expect(justOver.days).toBe(2);
+  });
+
+  test("missing or invalid createdAt → counting with fractionElapsed 0; future createdAt clamps to 0", () => {
+    for (const createdAt of [null, "garbage", undefined] as const) {
+      const state = countdownState({
+        status: "in_production",
+        promisedBy: "2026-06-20T12:00:00.000Z",
+        createdAt,
+        now: NOW,
+      });
+      expect(state.kind).toBe("counting");
+      if (state.kind === "counting") expect(state.fractionElapsed).toBe(0);
+    }
+    const clamped = countdownState({
+      status: "in_production",
+      promisedBy: "2026-06-20T12:00:00.000Z",
+      createdAt: "2026-06-12T12:00:00.000Z", // "created" after now → negative elapsed
+      now: NOW,
+    });
+    if (clamped.kind === "counting") expect(clamped.fractionElapsed).toBe(0);
   });
 });
 

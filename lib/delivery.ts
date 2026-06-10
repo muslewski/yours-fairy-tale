@@ -63,21 +63,26 @@ export function countdownState(args: {
   const days = Math.ceil(remainingMs / DAY_MS);
   if (days <= 1) return { kind: "soon", promisedBy: target };
 
+  let fractionElapsed = 0;
   const created = createdAt ? new Date(createdAt) : null;
-  const spanMs =
-    created && !Number.isNaN(created.getTime())
-      ? target.getTime() - created.getTime()
-      : null;
-  const fractionElapsed =
-    spanMs && spanMs > 0
-      ? Math.min(1, Math.max(0, (now.getTime() - (created as Date).getTime()) / spanMs))
-      : 0;
-
+  if (created && !Number.isNaN(created.getTime())) {
+    const spanMs = target.getTime() - created.getTime();
+    if (spanMs > 0) {
+      fractionElapsed = Math.min(
+        1,
+        Math.max(0, (now.getTime() - created.getTime()) / spanMs),
+      );
+    }
+  }
   return { kind: "counting", days, fractionElapsed, promisedBy: target };
 }
 
-/** "Saturday, June 20" — UTC so server timezone never shifts the promise. */
+/**
+ * "Saturday, June 20" — UTC so server timezone never shifts the promise.
+ * Invalid dates render as an empty string rather than throwing.
+ */
 export function formatPromisedDate(date: Date): string {
+  if (Number.isNaN(date.getTime())) return "";
   return new Intl.DateTimeFormat("en-US", {
     weekday: "long",
     month: "long",
