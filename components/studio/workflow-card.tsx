@@ -44,6 +44,7 @@ export function WorkflowCard({
         setError(result.error);
         return;
       }
+      setFallback("");
       router.refresh();
     });
   }

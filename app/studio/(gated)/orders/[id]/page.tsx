@@ -61,17 +61,14 @@ export default async function StudioOrderPage({
   const { id } = await params;
   const payload = await getPayloadClient();
 
-  let order;
-  try {
-    order = await payload.findByID({
-      collection: "orders",
-      id,
-      depth: 0,
-      overrideAccess: true,
-    });
-  } catch {
-    notFound();
-  }
+  const order = await payload.findByID({
+    collection: "orders",
+    id,
+    depth: 0,
+    overrideAccess: true,
+    disableErrors: true,
+  });
+  if (!order) notFound();
 
   const status = order.status as OrderStatus;
   const childName = (order.childName as string | null)?.trim() || "Unnamed hero";
@@ -210,17 +207,26 @@ export default async function StudioOrderPage({
                     {/* Staff browsers carry the payload-token cookie, so the
                         adminOnly-gated media URL serves for us (and 403s for
                         everyone else). */}
-                    <a href={m.url ?? "#"} target="_blank" rel="noopener noreferrer">
-                      {/* eslint-disable-next-line @next/next/no-img-element -- gated dynamic media URL */}
-                      <img
-                        src={m.url ?? ""}
-                        alt={m.filename ?? "customer photo"}
-                        width={96}
-                        height={96}
-                        loading="lazy"
-                        className="h-24 w-24 rounded-xl border-2 border-brand-deep object-cover"
-                      />
-                    </a>
+                    {m.url ? (
+                      <a href={m.url} target="_blank" rel="noopener noreferrer">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- gated dynamic media URL */}
+                        <img
+                          src={m.url}
+                          alt={m.filename ?? "customer photo"}
+                          width={96}
+                          height={96}
+                          loading="lazy"
+                          className="h-24 w-24 rounded-xl border-2 border-brand-deep object-cover"
+                        />
+                      </a>
+                    ) : (
+                      <div
+                        title={m.filename ?? "photo"}
+                        className="flex h-24 w-24 items-center justify-center rounded-xl border-2 border-dashed border-brand-deep/30 text-center text-xs text-brand-deep/50"
+                      >
+                        file missing
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>

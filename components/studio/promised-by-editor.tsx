@@ -104,6 +104,17 @@ export function PromisedByEditor({
         >
           +2 weeks
         </button>
+        <button
+          type="button"
+          disabled={pending || !value}
+          onClick={() => {
+            setValue("");
+            save("");
+          }}
+          className="rounded-full border-2 border-brand-deep/40 bg-white px-3 py-1 text-brand-deep/60 hover:shadow-comic-sm disabled:opacity-50"
+        >
+          Clear
+        </button>
       </div>
 
       {message ? (
