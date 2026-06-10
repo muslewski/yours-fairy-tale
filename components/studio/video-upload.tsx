@@ -117,6 +117,7 @@ export function VideoUpload({
         type="file"
         accept="video/*"
         className="sr-only"
+        disabled={state.phase === "uploading"}
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) void handleFile(file);

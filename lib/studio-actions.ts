@@ -121,6 +121,9 @@ export async function uploadVideoDirect(
   formData: FormData,
 ): Promise<StudioActionResult> {
   await requireStudioUser();
+  if (kind !== "proof" && kind !== "finalVideo") {
+    return { ok: false, error: "Unknown video slot." };
+  }
   if (isBlobStorageEnabled()) {
     return {
       ok: false,

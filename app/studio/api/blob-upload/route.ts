@@ -49,6 +49,16 @@ export async function POST(request: Request): Promise<NextResponse> {
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Upload could not start.";
-    return NextResponse.json({ error: message }, { status: 400 });
+    // Relay only known, intentionally-thrown messages; anything else (e.g. a
+    // DB failure inside the auth check) stays in the logs.
+    const known =
+      message.startsWith("You need to be signed in") ||
+      message.toLowerCase().includes("content type") ||
+      message.toLowerCase().includes("size");
+    if (!known) console.error("[studio] blob-upload token route failed:", err);
+    return NextResponse.json(
+      { error: known ? message : "Upload could not start." },
+      { status: 400 },
+    );
   }
 }
