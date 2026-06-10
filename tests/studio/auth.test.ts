@@ -13,7 +13,7 @@ async function seedAdminWithToken() {
   const payload = await getPayloadClient();
   const email = `studio-auth-${Date.now()}@example.com`;
   const password = `pw-${Date.now()}-secret`;
-  await payload.create({
+  const admin = await payload.create({
     collection: "admins",
     data: { email, password, name: "Studio Test Admin" },
     overrideAccess: true,
@@ -23,17 +23,21 @@ async function seedAdminWithToken() {
     data: { email, password },
   });
   if (!login.token) throw new Error("login returned no token");
-  return { email, token: login.token };
+  return { id: admin.id, email, token: login.token };
 }
 
 describe("getStudioUserFromHeaders", () => {
   test("a real admins token resolves to the staff user", async () => {
-    const { email, token } = await seedAdminWithToken();
-    const user = await getStudioUserFromHeaders(
-      new Headers({ cookie: `payload-token=${token}` }),
-    );
-    expect(user).not.toBeNull();
-    expect(user?.email).toBe(email);
+    const { id: adminId, email, token } = await seedAdminWithToken();
+    try {
+      const user = await getStudioUserFromHeaders(
+        new Headers({ cookie: `payload-token=${token}` }),
+      );
+      expect(user).not.toBeNull();
+      expect(user?.email).toBe(email);
+    } finally {
+      await (await getPayloadClient()).delete({ collection: "admins", id: adminId, overrideAccess: true }).catch(() => {});
+    }
   });
 
   test("no cookie → null", async () => {

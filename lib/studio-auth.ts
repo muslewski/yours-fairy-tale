@@ -30,6 +30,8 @@ export async function getStudioUserFromHeaders(
 ): Promise<StudioUser | null> {
   const payload = await getPayloadClient();
   const { user } = await payload.auth({ headers: h });
+  // Defense-in-depth: admins is currently the ONLY auth: true collection, so
+  // payload.auth can't mint anything else today — the check guards config drift.
   if (!user || user.collection !== "admins") return null;
   return {
     id: String(user.id),
