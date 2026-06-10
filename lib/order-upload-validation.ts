@@ -11,6 +11,14 @@
 /** Max bytes per uploaded photo. Generous for phone photos, sane as a cap. */
 export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024; // 15 MB
 
+/**
+ * Max bytes per upload REQUEST. Vercel rejects request bodies over ~4.5 MB,
+ * and each photo travels in its own server-action call (see photo-upload.tsx),
+ * so every file must fit under this after client-side re-encoding. Kept below
+ * the platform cap to leave room for multipart overhead.
+ */
+export const MAX_REQUEST_BYTES = 3.5 * 1024 * 1024; // 3.5 MB
+
 /** The minimal shape we validate before uploading — a real File satisfies it. */
 export interface UploadCandidate {
   type: string;

@@ -19,6 +19,7 @@ import { motion, useReducedMotion } from "motion/react";
 
 import { uploadOrderAssets } from "@/lib/order-actions";
 import { validateUploadFile } from "@/lib/order-upload-validation";
+import { prepareForUpload } from "@/components/app/prepare-upload";
 
 interface PhotoUploadProps {
   orderId: string;
@@ -56,16 +57,29 @@ export function PhotoUpload({ orderId, childName }: PhotoUploadProps) {
     setError(null);
     setDone(null);
 
-    const formData = new FormData();
-    for (const file of files) formData.append("files", file);
-
     startTransition(async () => {
-      const result = await uploadOrderAssets(orderId, formData);
-      if (result.error) {
-        setError(result.error);
-        return;
+      let added = 0;
+      for (const file of files) {
+        const prepared = await prepareForUpload(file);
+        if (!prepared.ok) {
+          setError(prepared.error);
+          return;
+        }
+        // One file per request keeps every call under the platform body cap.
+        const formData = new FormData();
+        formData.append("files", prepared.file);
+        const result = await uploadOrderAssets(orderId, formData);
+        if (result.error) {
+          setError(
+            added > 0
+              ? `We saved ${added} photo${added === 1 ? "" : "s"}, then hit a snag. ${result.error}`
+              : result.error,
+          );
+          return;
+        }
+        added += result.added;
       }
-      setDone(result.added);
+      setDone(added);
       setFiles([]);
       if (inputRef.current) inputRef.current.value = "";
     });

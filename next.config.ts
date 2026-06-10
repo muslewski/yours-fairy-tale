@@ -24,6 +24,13 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Photos travel one-per-request from the order page (see
+  // components/app/photo-upload.tsx); 5mb leaves headroom over
+  // MAX_REQUEST_BYTES + multipart overhead. Vercel's ~4.5MB platform cap is
+  // the real ceiling.
+  experimental: {
+    serverActions: { bodySizeLimit: "5mb" },
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
