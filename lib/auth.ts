@@ -47,6 +47,11 @@ if (!secret) {
 // deployment URLs (VERCEL_URL / VERCEL_BRANCH_URL), injected per-deploy by
 // Vercel. NEVER use a `*.vercel.app` wildcard — anyone can host there, which
 // would hand CSRF/origin trust to arbitrary third parties.
+//
+// NOTE: this env loop is best-effort breadth, not the load-bearing mechanism —
+// Better Auth always trusts its resolved base URL (BETTER_AUTH_URL, required
+// in prod) per request, so a preview served from a host outside this list
+// still works as long as BETTER_AUTH_URL is set correctly per environment.
 const trustedOrigins = [
   "http://localhost:1234",
   "http://localhost:3000",
