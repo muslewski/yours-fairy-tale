@@ -1,4 +1,4 @@
-# CI — runs vitest (84 unit/DB tests) + Playwright Layer A & B on every PR and main push.
+# CI — typecheck, vitest, and Playwright Layer A & B on every PR and main push.
 #
 # Required GitHub repo secrets (Settings → Secrets and variables → Actions):
 #   TEST_DATABASE_URI          — Neon test-branch connection string
@@ -36,6 +36,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
 
       - name: Write .env.test
         run: |

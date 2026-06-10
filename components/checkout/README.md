@@ -14,7 +14,7 @@ contract (`open` / `cart` / `onClose`):
 import { Checkout, type CheckoutCart } from "@/components/checkout";
 
 const [open, setOpen] = useState(false);
-const cart: CheckoutCart = { items: [{ label: "Hardcover", amount: 49 }], total: 49 };
+const cart: CheckoutCart = { items: [{ label: "Personalized video", amount: 49 }], total: 49 };
 
 <button onClick={() => setOpen(true)}>Create your book</button>
 <Checkout open={open} cart={cart} onClose={() => setOpen(false)} />

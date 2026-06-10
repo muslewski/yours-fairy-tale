@@ -26,7 +26,10 @@ maintain on finish; don't work blind; don't leave ghosts.**
 
 # Yours Fairy Tale
 
-Personalized, hand-illustrated hardcover storybooks starring a customer's child. Parents add their child's name, hair color, favorite animal, etc., and receive a custom illustrated keepsake book.
+Personalized animated fairy-tale videos starring a customer's child. Parents
+share a few photos and light details (name, favorite animal, a plot idea) and
+receive a short, cinematic film with their child as the hero: a keepsake to
+watch again and again.
 
 ## Project structure
 
