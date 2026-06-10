@@ -47,7 +47,7 @@ export default function StudioSignInPage() {
           width={120}
           height={120}
           unoptimized
-          className="mx-auto -mt-16 h-28 w-28 object-contain drop-shadow-[4px_4px_0_rgba(26,16,51,0.2)]"
+          className="mx-auto -mt-16 h-28 w-28 object-contain drop-shadow-[4px_4px_0_color-mix(in_srgb,var(--color-brand-deep)_20%,transparent)]"
         />
         <h1
           className="mt-2 text-center text-3xl text-brand-deep"
@@ -87,7 +87,7 @@ export default function StudioSignInPage() {
           </label>
 
           {status === "error" ? (
-            <p role="alert" className="text-sm font-semibold text-brand-pink">
+            <p role="alert" className="text-sm font-semibold text-rose-700">
               That email and password did not match. Please try again.
             </p>
           ) : null}
@@ -98,7 +98,7 @@ export default function StudioSignInPage() {
             className="rounded-full border-2 border-brand-deep bg-brand-yellow px-6 py-3 font-bold text-brand-deep shadow-comic-sm transition-shadow hover:shadow-comic disabled:opacity-60"
             style={{ fontFamily: "var(--font-fredoka)" }}
           >
-            {status === "loading" ? "Signing in..." : "Sign in"}
+            {status === "loading" ? "Signing in…" : "Sign in"}
           </button>
         </form>
       </div>
