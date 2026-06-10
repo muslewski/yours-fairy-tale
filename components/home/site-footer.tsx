@@ -151,6 +151,7 @@ export function SiteFooter({ waveFrom = "cream" }: { waveFrom?: BrandColor } = {
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label={`${s.label} (opens in a new tab)`}
                   whileHover={hoverPop}
                   whileTap={tapPop}
                   className="rounded-lg border-[3px] border-white/30 px-3 py-1.5 text-xs font-black uppercase tracking-wide text-white/70 transition-colors hover:border-white hover:text-white"
