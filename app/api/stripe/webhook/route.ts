@@ -91,6 +91,13 @@ export async function POST(req: NextRequest) {
  * guarantee event ordering. (Events missing a payment_intent can never match
  * later, so those are warn-and-return.)
  *
+ * ACCEPTED FAILURE MODE: an event that will NEVER match (e.g. a refund for an
+ * unrelated/pre-launch charge in this Stripe account) retries for Stripe's
+ * full backoff window (~3 days), logging "no order yet" each attempt, then
+ * surfaces as a failed webhook in the Stripe dashboard. That noise is benign
+ * and self-resolving — do not page on it; investigate only if the
+ * payment_intent should have a real order.
+ *
  * Unknown event types are silently ignored (return undefined).
  */
 export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
