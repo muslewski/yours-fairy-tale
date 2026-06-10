@@ -3,10 +3,13 @@
  * header check (tested separately in tests/studio/auth.test.ts); guardrails and
  * persistence are what's under test here.
  */
-import { describe, expect, test } from "vitest";
+import { afterAll, describe, expect, test } from "vitest";
 
-import { applyOrderStatusCore, applyPromisedByCore } from "@/lib/studio-actions";
+import { applyOrderStatusCore, applyPromisedByCore } from "@/lib/studio-order-mutations";
 import { getPayloadClient } from "@/lib/payload";
+
+/** Docs seeded by tests, deleted (reverse order) in afterAll. */
+const created: { collection: "users" | "orders" | "media"; id: string }[] = [];
 
 async function seedOrder(status: string) {
   const payload = await getPayloadClient();
@@ -18,13 +21,24 @@ async function seedOrder(status: string) {
     },
     overrideAccess: true,
   });
+  created.push({ collection: "users", id: String(user.id) });
   const order = await payload.create({
     collection: "orders",
     data: { owner: user.id, status, childName: "Guard" },
     overrideAccess: true,
   });
+  created.push({ collection: "orders", id: String(order.id) });
   return { payload, order };
 }
+
+afterAll(async () => {
+  const payload = await getPayloadClient();
+  for (const doc of created.reverse()) {
+    await payload
+      .delete({ collection: doc.collection, id: doc.id, overrideAccess: true })
+      .catch(() => {});
+  }
+});
 
 describe("applyOrderStatusCore", () => {
   test("happy path: paid → in_production persists", async () => {
@@ -74,6 +88,7 @@ describe("applyOrderStatusCore", () => {
       },
       overrideAccess: true,
     });
+    created.push({ collection: "media", id: String(media.id) });
     await payload.update({
       collection: "orders",
       id: order.id,
