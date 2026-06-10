@@ -39,5 +39,5 @@ section waves) live in `CLAUDE.md` and `.claude/skills/`.
 ## Deploying
 
 Production deploys run DB migrations automatically on boot
-(`instrumentation.ts`) and fail closed if any required env var from
-`.env.example` is missing in the Vercel project settings.
+(`instrumentation.ts`) and fail closed if any required production env var
+(see `lib/required-env.ts`) is missing in the Vercel project settings.
