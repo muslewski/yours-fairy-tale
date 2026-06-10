@@ -18,7 +18,7 @@ export async function prepareForUpload(file: File): Promise<PreparedUpload> {
   if (file.size <= MAX_REQUEST_BYTES) return { ok: true, file };
 
   try {
-    const bitmap = await createImageBitmap(file);
+    const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
     const scale = Math.min(1, MAX_DIMENSION / Math.max(bitmap.width, bitmap.height));
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(bitmap.width * scale));

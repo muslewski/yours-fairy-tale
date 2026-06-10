@@ -78,6 +78,9 @@ export function PhotoUpload({ orderId, childName }: PhotoUploadProps) {
           return;
         }
         added += result.added;
+        // Drop the sent file from the selection so a retry after a mid-batch
+        // failure only re-sends what has not landed yet.
+        setFiles((prev) => prev.filter((f) => f !== file));
       }
       setDone(added);
       setFiles([]);
