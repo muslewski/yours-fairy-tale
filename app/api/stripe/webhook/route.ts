@@ -85,6 +85,12 @@ export async function POST(req: NextRequest) {
  *   - charge.refunded             → set order status to "refunded"
  *   - charge.dispute.created      → set order status to "cancelled"
  *
+ * For charge.refunded / charge.dispute.created with no matching order, the
+ * handler THROWS (→ POST 500 → Stripe retries): the event may have arrived
+ * before checkout.session.completed created the order, since Stripe does not
+ * guarantee event ordering. (Events missing a payment_intent can never match
+ * later, so those are warn-and-return.)
+ *
  * Unknown event types are silently ignored (return undefined).
  */
 export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
@@ -112,10 +118,13 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
     });
 
     if (existing.totalDocs === 0) {
-      console.warn(
-        `[webhook] charge.refunded: no order found for payment_intent ${paymentIntentId}`,
+      // Out-of-order delivery: Stripe does not guarantee event ordering, so this
+      // refund may arrive before checkout.session.completed has created the
+      // order. THROW (→ 500 → Stripe retries with backoff) instead of returning
+      // 200, which would permanently drop the refund and leave the order "paid".
+      throw new Error(
+        `charge.refunded: no order yet for payment_intent ${paymentIntentId} — failing so Stripe retries`,
       );
-      return;
     }
 
     const order = existing.docs[0];
@@ -152,10 +161,10 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
     });
 
     if (existing.totalDocs === 0) {
-      console.warn(
-        `[webhook] charge.dispute.created: no order found for payment_intent ${paymentIntentId}`,
+      // Same out-of-order rationale as charge.refunded above.
+      throw new Error(
+        `charge.dispute.created: no order yet for payment_intent ${paymentIntentId} — failing so Stripe retries`,
       );
-      return;
     }
 
     const order = existing.docs[0];

@@ -237,19 +237,21 @@ describe("Part B — refund / dispute status sync", () => {
     expect(refreshed.status).toBe("cancelled");
   });
 
-  test("charge.refunded for unknown paymentIntentId does not throw and changes nothing", async () => {
+  test("charge.refunded for unknown paymentIntentId throws so Stripe retries", async () => {
     const unknownPi = `pi_unknown_${Date.now()}`;
 
+    // Out-of-order delivery: the order may simply not exist YET, so the
+    // handler must throw (→ 500 → Stripe retry) rather than ack and drop it.
     await expect(
       handleStripeEvent(chargeRefundedEvent(unknownPi)),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow(/no order yet/);
   });
 
-  test("charge.dispute.created for unknown paymentIntentId does not throw and changes nothing", async () => {
+  test("charge.dispute.created for unknown paymentIntentId throws so Stripe retries", async () => {
     const unknownPi = `pi_unknown_dispute_${Date.now()}`;
 
     await expect(
       handleStripeEvent(disputeCreatedEvent(unknownPi)),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow(/no order yet/);
   });
 });

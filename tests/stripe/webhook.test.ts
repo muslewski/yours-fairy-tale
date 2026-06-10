@@ -212,6 +212,57 @@ test("checkout.session.completed with no email throws (Stripe will retry)", asyn
 });
 
 // ---------------------------------------------------------------------------
+// Out-of-order delivery: refund/dispute events may arrive BEFORE the order
+// exists (Stripe does not guarantee event ordering relative to
+// checkout.session.completed). The handler must THROW so the POST returns 500
+// and Stripe retries — a silent 200 would drop the status change forever.
+// ---------------------------------------------------------------------------
+
+test("charge.refunded with no matching order throws so Stripe retries", async () => {
+  const ev = {
+    id: "evt_test_orphan_refund",
+    type: "charge.refunded",
+    object: "event",
+    api_version: "2026-05-27.dahlia",
+    created: Math.floor(Date.now() / 1000),
+    livemode: false,
+    pending_webhooks: 0,
+    request: null,
+    data: {
+      object: {
+        id: "ch_orphan",
+        object: "charge",
+        payment_intent: "pi_orphan_never_existed",
+        refunded: true,
+      },
+    },
+  } as unknown as Stripe.Event;
+  await expect(handleStripeEvent(ev)).rejects.toThrow(/no order yet/);
+});
+
+test("charge.dispute.created with no matching order throws so Stripe retries", async () => {
+  const ev = {
+    id: "evt_test_orphan_dispute",
+    type: "charge.dispute.created",
+    object: "event",
+    api_version: "2026-05-27.dahlia",
+    created: Math.floor(Date.now() / 1000),
+    livemode: false,
+    pending_webhooks: 0,
+    request: null,
+    data: {
+      object: {
+        id: "dp_orphan",
+        object: "dispute",
+        payment_intent: "pi_orphan_never_existed",
+        status: "needs_response",
+      },
+    },
+  } as unknown as Stripe.Event;
+  await expect(handleStripeEvent(ev)).rejects.toThrow(/no order yet/);
+});
+
+// ---------------------------------------------------------------------------
 // HTTP layer — the signature security boundary (rejection paths + happy path)
 // ---------------------------------------------------------------------------
 
