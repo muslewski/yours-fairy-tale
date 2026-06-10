@@ -16,8 +16,8 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
       "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
       "email" varchar NOT NULL,
       "source" varchar,
-      "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
-      "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
+      "created_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
+      "updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL
     );
 
     CREATE UNIQUE INDEX IF NOT EXISTS "waitlist_email_idx"

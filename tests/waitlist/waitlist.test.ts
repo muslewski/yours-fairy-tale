@@ -20,6 +20,11 @@ test("rejects an invalid email", () => {
   expect(validateWaitlistInput({}).ok).toBe(false);
 });
 
+test("rejects an over-long email", () => {
+  const r = validateWaitlistInput({ email: `${"a".repeat(250)}@example.com` });
+  expect(r.ok).toBe(false);
+});
+
 test("normalizes email to trimmed lowercase", () => {
   const r = validateWaitlistInput({ email: "  Ada@Example.COM " });
   expect(r).toEqual({ ok: true, email: "ada@example.com" });

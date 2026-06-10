@@ -7,6 +7,7 @@
 import { sendEmail } from "@/lib/email";
 import { renderBrandedEmail, emailParagraphs } from "@/lib/email-template";
 import { getPayloadClient } from "@/lib/payload";
+import { ValidationError } from "payload";
 
 export interface WaitlistInput {
   email?: string;
@@ -26,6 +27,9 @@ export function validateWaitlistInput(
     return { ok: false, error: "We couldn't add you to the list just now." };
   }
   const email = (input.email ?? "").trim().toLowerCase();
+  if (email.length > 254) {
+    return { ok: false, error: "Please add a valid email address." };
+  }
   if (!EMAIL_RE.test(email)) {
     return { ok: false, error: "Please add a valid email address." };
   }
@@ -67,11 +71,19 @@ export async function submitWaitlistSignup(
     return { ok: true };
   }
 
-  await payload.create({
-    collection: "waitlist",
-    data: { email: v.email, source: "series" },
-    overrideAccess: true,
-  });
+  try {
+    await payload.create({
+      collection: "waitlist",
+      data: { email: v.email, source: "series" },
+      overrideAccess: true,
+    });
+  } catch (err) {
+    // Lost a race with a concurrent first-time signup: the unique email index
+    // means the row exists, so this is a success — and the winning request
+    // sends the thank-you email.
+    if (err instanceof ValidationError) return { ok: true };
+    throw err;
+  }
 
   // Thank-you email is non-fatal: the signup is saved either way.
   try {
