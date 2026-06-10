@@ -29,6 +29,10 @@ import {
   resolveOwnedVideo,
 } from "@/lib/video-access";
 
+// Streaming a full-length film as a single response (the ?download path) can
+// outlive shorter defaults; pin the route to the platform maximum.
+export const maxDuration = 300;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -77,8 +81,26 @@ export async function GET(
     const upstream = await fetch(blobUrl, {
       headers: range ? { range } : undefined,
     });
+
+    if (upstream.status === 416) {
+      // Bad client range — relay it (the local-disk path does the same).
+      const contentRange = upstream.headers.get("content-range");
+      return new Response("Requested range not satisfiable.", {
+        status: 416,
+        headers: contentRange ? { "Content-Range": contentRange } : undefined,
+      });
+    }
+
     if (upstream.status !== 200 && upstream.status !== 206) {
-      return new Response("This video is not ready yet.", { status: 404 });
+      // A missing blob is already a BlobNotFoundError 404 above; anything else
+      // here is a Blob availability problem — surface it as a 500 so an outage
+      // doesn't read as "every order is unfinalized".
+      console.error(
+        `[video] Blob fetch for ${video.filename} returned ${upstream.status}`,
+      );
+      return new Response("We could not load this video right now.", {
+        status: 500,
+      });
     }
 
     const headers = new Headers({
