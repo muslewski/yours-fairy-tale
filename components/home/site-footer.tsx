@@ -36,7 +36,11 @@ const COLUMNS = [
   },
 ];
 
-const SOCIALS = ["Instagram", "TikTok", "Pinterest"];
+const SOCIALS = [
+  { label: "Instagram", href: "https://www.instagram.com/yoursfairytale7/" },
+  { label: "Facebook", href: "https://www.facebook.com/yoursfairytale7/" },
+  { label: "TikTok", href: "https://www.tiktok.com/@yoursfairytale7" },
+];
 
 const LEGAL = [
   { label: "Privacy Policy", href: "/privacy" },
@@ -142,14 +146,16 @@ export function SiteFooter({ waveFrom = "cream" }: { waveFrom?: BrandColor } = {
             <Stagger trigger="view" className="flex flex-wrap items-center gap-2">
               {SOCIALS.map((s) => (
                 <StaggerItem
-                  key={s}
+                  key={s.label}
                   as="a"
-                  href="#"
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   whileHover={hoverPop}
                   whileTap={tapPop}
                   className="rounded-lg border-[3px] border-white/30 px-3 py-1.5 text-xs font-black uppercase tracking-wide text-white/70 transition-colors hover:border-white hover:text-white"
                 >
-                  {s}
+                  {s.label}
                 </StaggerItem>
               ))}
             </Stagger>
