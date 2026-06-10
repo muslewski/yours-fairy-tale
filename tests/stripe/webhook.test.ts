@@ -182,6 +182,50 @@ test("same email, second distinct session — 2 orders, 1 user", async () => {
   expect(orders.totalDocs).toBe(2);
 });
 
+test("checkout.session.completed stores the charged amount and a delivery promise", async () => {
+  const email = `wh-amount-${Date.now()}@example.com`;
+  const sessionId = `cs_amount_${Date.now()}`;
+  const event = completedEvent(email, sessionId);
+  (event.data.object as unknown as Record<string, unknown>).amount_total = 51000;
+
+  await handleStripeEvent(event);
+
+  const payload = await getPayloadClient();
+  const orders = await payload.find({
+    collection: "orders",
+    where: { stripeSessionId: { equals: sessionId } },
+    limit: 1,
+    overrideAccess: true,
+  });
+  expect(orders.totalDocs).toBe(1);
+  const order = orders.docs[0] as Record<string, unknown>;
+
+  expect(order.amountTotalCents).toBe(51000);
+
+  // completedEvent uses length: "short" → promise lands 7 days out from the
+  // moment the webhook ran (60s tolerance for test runtime).
+  const promised = new Date(order.promisedBy as string).getTime();
+  const expected = Date.now() + 7 * 24 * 60 * 60 * 1000;
+  expect(Math.abs(promised - expected)).toBeLessThan(60_000);
+});
+
+test("checkout.session.completed without amount_total leaves the amount unrecorded", async () => {
+  const email = `wh-noamount-${Date.now()}@example.com`;
+  const sessionId = `cs_noamount_${Date.now()}`;
+  // completedEvent sets no amount_total — exactly the case under test.
+  await handleStripeEvent(completedEvent(email, sessionId));
+
+  const payload = await getPayloadClient();
+  const orders = await payload.find({
+    collection: "orders",
+    where: { stripeSessionId: { equals: sessionId } },
+    limit: 1,
+    overrideAccess: true,
+  });
+  const order = orders.docs[0] as Record<string, unknown>;
+  expect(order.amountTotalCents ?? null).toBeNull();
+});
+
 test("unknown event type is ignored without error", async () => {
   const unknownEvent = {
     id: "evt_unknown",

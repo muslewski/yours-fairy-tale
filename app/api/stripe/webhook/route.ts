@@ -21,6 +21,7 @@ import { getPayloadClient } from "@/lib/payload";
 import { sendEmail } from "@/lib/email";
 import { renderBrandedEmail, emailParagraphs } from "@/lib/email-template";
 import { createOrderTrackingLink } from "@/lib/order-tracking-link";
+import { promisedByForLength, formatPromisedDate } from "@/lib/delivery";
 import type { WorldId } from "@/lib/worlds";
 
 // ---------------------------------------------------------------------------
@@ -262,6 +263,15 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
     userId = newUser.id;
   }
 
+  // What Stripe actually charged (cents). Stored verbatim — the studio
+  // dashboard's revenue numbers come from here, never from pricing math.
+  const amountTotalCents =
+    typeof session.amount_total === "number" ? session.amount_total : undefined;
+
+  // The delivery promise: purchase time + the film length's production window.
+  // No length recorded → no automatic promise (studio can set one by hand).
+  const promisedBy = promisedByForLength(length, new Date());
+
   // ------------------------------------------------------------------
   // Create the Order
   // ------------------------------------------------------------------
@@ -280,6 +290,8 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
       extraMinutes: extraMinutes ? parseInt(extraMinutes, 10) || 0 : undefined,
       addOns: addOns ? addOns.split(",").filter(Boolean) : undefined,
       plotNote: plotNote || undefined,
+      amountTotalCents,
+      promisedBy: promisedBy ? promisedBy.toISOString() : undefined,
       // status defaults to "paid" via the collection schema
     },
     overrideAccess: true,
@@ -305,7 +317,12 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
     await sendEmail({
       to: email,
       subject: `Your video${childFirstName} is on its way`,
-      html: buildOrderConfirmationEmail({ email, childName: childName ?? null, trackUrl }),
+      html: buildOrderConfirmationEmail({
+        email,
+        childName: childName ?? null,
+        trackUrl,
+        promisedBy,
+      }),
     });
   } catch (err) {
     console.error("[webhook] Confirmation email failed (order still created):", err);
@@ -320,24 +337,35 @@ function buildOrderConfirmationEmail({
   email,
   childName,
   trackUrl,
+  promisedBy,
 }: {
   email: string;
   childName: string | null;
   trackUrl: string;
+  promisedBy: Date | null;
 }): string {
   const firstLine = childName
     ? `We have received your order and ${childName}'s video is now in production.`
     : "We have received your order and the video is now in production.";
 
+  const paragraphs = [
+    firstLine,
+    "We will email you the moment your preview is ready to watch.",
+  ];
+  if (promisedBy) {
+    paragraphs.push(
+      `We expect it to be ready by ${formatPromisedDate(promisedBy)}.`,
+    );
+  }
+  paragraphs.push(
+    `Use the button below to track your video's progress any time. It signs you in with this email address (${email}).`,
+  );
+
   return renderBrandedEmail({
     preheader: "Your order is confirmed.",
     heading: "Your order is confirmed",
     accent: "yellow",
-    bodyHtml: emailParagraphs([
-      firstLine,
-      "We will email you the moment your preview is ready to watch.",
-      `Use the button below to track your video's progress any time. It signs you in with this email address (${email}).`,
-    ]),
+    bodyHtml: emailParagraphs(paragraphs),
     cta: { label: "Track your order", href: trackUrl },
   });
 }
