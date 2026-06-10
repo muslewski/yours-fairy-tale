@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 
 import { postgresAdapter } from "@payloadcms/db-postgres";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
+import { vercelBlobStorage } from "@payloadcms/storage-vercel-blob";
 import { buildConfig } from "payload";
 
 import { Admins } from "./collections/Admins";
@@ -47,6 +48,20 @@ export default buildConfig({
     Orders,
     Waitlist,
     Media,
+  ],
+  plugins: [
+    // Media storage. Pass-through mode (disablePayloadAccessControl NOT set):
+    // file URLs stay on Payload's /api/media/file/* endpoint, so the
+    // collection's `read: adminOnly` keeps gating every byte; Payload streams
+    // from Blob behind the scenes. Customer-facing delivery goes through the
+    // ownership-checked video route, which proxies from Blob directly.
+    // In dev with no token the plugin is disabled and local-disk staticDir
+    // (collections/Media.ts) still applies.
+    vercelBlobStorage({
+      enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
+      collections: { media: true },
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    }),
   ],
   editor: lexicalEditor(),
   secret,

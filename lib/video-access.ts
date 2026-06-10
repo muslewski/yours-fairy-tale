@@ -11,13 +11,12 @@
  * Access is gated by ownership, not by a guessable static URL.
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * PRODUCTION NOTE (MVP shortcut — flagged out-of-scope infra in the spec):
- * This streams a file off LOCAL DISK behind an ownership check. That is fine for
- * dev, but a real deployment must use access-controlled / signed delivery:
- *   - a managed video host (Mux or Cloudflare Stream) with signed playback URLs,
- *   - or private Vercel Blob storage + short-lived signed URLs.
- * The ownership gate (resolveOwnedVideo) stays; only the byte delivery changes.
- * Tracked in fairy-tale-mind/tech-debt/local-disk-video-delivery.md.
+ * PRODUCTION NOTE: when BLOB_READ_WRITE_TOKEN is set (see isBlobStorageEnabled),
+ * media lives in Vercel Blob and the route proxies bytes from Blob behind the
+ * same ownership gate; local disk is only the no-token dev fallback. Remaining
+ * future work: private Blob storage + short-lived signed playback URLs (or a
+ * managed video host like Mux / Cloudflare Stream) — tracked in
+ * fairy-tale-mind/tech-debt/local-disk-video-delivery.md.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 import path from "path";
@@ -31,6 +30,11 @@ import { getPayloadClient } from "@/lib/payload";
  * sync here so the streaming route can locate the file by filename.
  */
 export const MEDIA_STATIC_DIR = path.resolve(process.cwd(), "media");
+
+/** True when media is stored in Vercel Blob (token present) instead of local disk. */
+export function isBlobStorageEnabled(): boolean {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+}
 
 /** The media fields the streaming route needs to serve the file. */
 export interface OwnedVideo {

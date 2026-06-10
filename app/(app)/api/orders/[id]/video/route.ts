@@ -11,11 +11,11 @@
  * order they own. Access is gated by ownership, never by a guessable static URL.
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * PRODUCTION NOTE (MVP shortcut, out-of-scope infra per the spec): this streams a
- * file off LOCAL DISK. A real deployment must use access-controlled / signed
- * delivery — Mux or Cloudflare Stream with signed playback URLs, or private
- * Vercel Blob + short-lived signed URLs. The ownership gate stays; only the byte
- * source changes. See lib/video-access.ts and the tech-debt note.
+ * PRODUCTION NOTE: when BLOB_READ_WRITE_TOKEN is set, media lives in Vercel Blob
+ * and Blob-backed delivery proxies through this same ownership gate (the Blob
+ * URL never reaches the client); local disk is the dev fallback only. Future:
+ * private Blob storage + short-lived signed playback URLs. See
+ * lib/video-access.ts and the tech-debt note.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 import { createReadStream } from "fs";
@@ -23,7 +23,11 @@ import { stat } from "fs/promises";
 import type { ReadStream } from "fs";
 import type { NextRequest } from "next/server";
 
-import { mediaFilePath, resolveOwnedVideo } from "@/lib/video-access";
+import {
+  isBlobStorageEnabled,
+  mediaFilePath,
+  resolveOwnedVideo,
+} from "@/lib/video-access";
 
 export async function GET(
   request: NextRequest,
@@ -47,6 +51,50 @@ export async function GET(
     return new Response("This video is not ready yet.", { status: 404 });
   }
 
+  const download = request.nextUrl.searchParams.has("download");
+  const disposition = download
+    ? `attachment; filename="${encodeURIComponent(video.filename)}"`
+    : "inline";
+
+  if (isBlobStorageEnabled()) {
+    // Blob mode: resolve the stored file by pathname (== filename: no prefix,
+    // no random suffix configured) and proxy the bytes. The Blob URL never
+    // reaches the client — ownership stays the only door. Range is forwarded
+    // so <video> seeking works.
+    const { head, BlobNotFoundError } = await import("@vercel/blob");
+    let blobUrl: string;
+    try {
+      const blob = await head(video.filename);
+      blobUrl = blob.url;
+    } catch (err) {
+      if (err instanceof BlobNotFoundError) {
+        return new Response("This video is not ready yet.", { status: 404 });
+      }
+      throw err;
+    }
+
+    const range = request.headers.get("range");
+    const upstream = await fetch(blobUrl, {
+      headers: range ? { range } : undefined,
+    });
+    if (upstream.status !== 200 && upstream.status !== 206) {
+      return new Response("This video is not ready yet.", { status: 404 });
+    }
+
+    const headers = new Headers({
+      "Content-Type": video.mimeType,
+      "Content-Disposition": disposition,
+      "Accept-Ranges": "bytes",
+      "Cache-Control": "private, max-age=0, no-store",
+    });
+    for (const h of ["content-length", "content-range"] as const) {
+      const value = upstream.headers.get(h);
+      if (value) headers.set(h, value);
+    }
+    return new Response(upstream.body, { status: upstream.status, headers });
+  }
+
+  // Local-disk fallback (dev without a Blob token).
   const filePath = mediaFilePath(video.filename);
   if (!filePath) {
     return new Response("This video is not ready yet.", { status: 404 });
@@ -59,11 +107,6 @@ export async function GET(
   } catch {
     return new Response("This video is not ready yet.", { status: 404 });
   }
-
-  const download = request.nextUrl.searchParams.has("download");
-  const disposition = download
-    ? `attachment; filename="${encodeURIComponent(video.filename)}"`
-    : "inline";
 
   const baseHeaders: Record<string, string> = {
     "Content-Type": video.mimeType,

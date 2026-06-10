@@ -9,14 +9,15 @@ const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
 /**
- * Upload collection for customer-submitted photos and generated book assets.
+ * Upload collection for customer-submitted photos and delivered videos.
  *
- * Dev: uses Payload's default local-disk storage (`staticDir: "media"`).
- * Prod: wire `@payloadcms/storage-vercel-blob` in a later slice once the
- * BLOB_READ_WRITE_TOKEN env var is available.
+ * Storage: Vercel Blob in any env where BLOB_READ_WRITE_TOKEN is set (see the
+ * vercelBlobStorage plugin in payload.config.ts — pass-through mode, so the
+ * adminOnly read rule below still gates the file URLs). Local-disk staticDir
+ * is the no-token dev fallback only.
  *
- * Access is staff-only; the customer-facing UI will pre-sign uploads
- * server-side in a later slice.
+ * Access is staff-only; customers receive bytes ONLY via the ownership-gated
+ * route app/(app)/api/orders/[id]/video/route.ts.
  */
 export const Media: CollectionConfig = {
   slug: "media",
