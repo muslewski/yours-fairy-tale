@@ -4,7 +4,7 @@ summary: "Nav, footer, root layout and fonts — the chrome wrapping every page.
 tags: [infrastructure, layout]
 status: active
 created: 2026-06-02
-updated: 2026-06-05
+updated: 2026-06-10
 related: ["[[site-preloader]]", "[[section-waves]]", "[[auth-gating]]"]
 sources: []
 owns:
@@ -45,7 +45,9 @@ invariants:
     enforcedBy: []
   - rule: "Social/OG images are generated via next/og (lib/og.tsx) using the Fredoka woff bundled in assets/, inlining brand PNGs as data URIs so generation needs no network and stays statically optimized. og:image/twitter:image come from the opengraph-image/twitter-image file conventions, NOT from metadata.images (avoid duplicates)."
     enforcedBy: []
-verifiedAt: 7033caf
+  - rule: "Footer social icons link to the REAL profiles (Instagram, Facebook, TikTok — yoursfairytale7), open in a new tab with rel='noopener noreferrer', and announce the new-tab behavior to assistive tech. Never href='#'."
+    enforcedBy: []
+verifiedAt: 76b1727
 ---
 
 ## Purpose
@@ -98,3 +100,9 @@ baseline security headers + `poweredByHeader: false` in `next.config.ts`; and th
 pages (privacy, terms, refund) under a shared `(legal)` route group, linked in the footer
 bottom bar (legal copy has placeholders + needs review, see
 `[[legal-pages-need-entity-and-review]]`).
+Launch hardening (2026-06-10): the footer's `href="#"` social placeholders became real
+external profile links (Instagram/Facebook/TikTok `yoursfairytale7`, new-tab +
+`rel="noopener noreferrer"`, new-tab behavior announced to assistive tech; Facebook
+replaced the Pinterest placeholder), closing the `footer-dead-links` debt. `next.config.ts`
+gained `experimental.serverActions.bodySizeLimit: "5mb"` for the one-file-per-call photo
+uploads (see `[[auth-gating]]`).

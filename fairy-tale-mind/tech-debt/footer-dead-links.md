@@ -2,14 +2,22 @@
 type: debt
 summary: "Footer social links use href='#', violating the 'every link goes somewhere real' rule."
 tags: [ux]
-status: open
+status: resolved
 created: 2026-06-02
-updated: 2026-06-02
+updated: 2026-06-10
 related: ["[[app-shell]]"]
 sources: []
 severity: med
 effort: low
 ---
+
+## Resolved 2026-06-10
+Launch hardening replaced every `href="#"` social placeholder in
+`components/home/site-footer.tsx` with the real profiles: Instagram
+`https://www.instagram.com/yoursfairytale7/`, Facebook
+`https://www.facebook.com/yoursfairytale7/` (replacing the Pinterest placeholder),
+and TikTok `https://www.tiktok.com/@yoursfairytale7`. Links open in a new tab with
+`rel="noopener noreferrer"` and announce the new-tab behavior to assistive tech.
 
 ## Problem
 `components/home/site-footer.tsx` contains social media links (e.g. Instagram,

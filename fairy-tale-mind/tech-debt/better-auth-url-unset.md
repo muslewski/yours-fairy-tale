@@ -2,11 +2,21 @@
 type: debt
 summary: "BETTER_AUTH_URL is not set in production. Better Auth logs 'Base URL could not be determined' and infers the host from the request — works today, but fragile for callbacks/redirects."
 tags: [auth, config, hardening]
-status: open
+status: resolved
 created: 2026-06-04
+updated: 2026-06-10
 severity: low
-related: ["[[auth-gating]]", "[[magic-link-confirmation-interstitial]]"]
+related: ["[[auth-gating]]", "[[magic-link-confirmation-interstitial]]", "[[prod-env-fail-closed]]"]
 ---
+
+## Resolved 2026-06-10
+`BETTER_AUTH_URL` is now part of the 9-var required production env contract
+(`lib/required-env.ts`): a production deploy without it fails closed at boot (see
+`[[prod-env-fail-closed]]`), and it is documented in `.env.example`. The launch
+hardening also documented in `lib/auth.ts` that BETTER_AUTH_URL is the load-bearing
+origin trust (the VERCEL_* trustedOrigins loop is best-effort breadth only).
+Remaining ops step (launch checklist, not debt): actually set the var in the Vercel
+environment — the boot guard makes forgetting it impossible to miss.
 
 ## What
 During the magic-link debugging (2026-06-04) the server logged:

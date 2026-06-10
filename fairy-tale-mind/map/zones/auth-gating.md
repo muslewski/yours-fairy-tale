@@ -4,8 +4,8 @@ summary: "Two-layer /app gating: optimistic proxy cookie check + authoritative l
 tags: [auth, security, customer-area]
 status: active
 created: 2026-06-03
-updated: 2026-06-04
-related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]", "[[video-ownership-route-over-static-url]]", "[[local-disk-video-delivery]]"]
+updated: 2026-06-10
+related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]", "[[video-ownership-route-over-static-url]]", "[[local-disk-video-delivery]]", "[[blob-pass-through-proxied-video]]", "[[prod-env-fail-closed]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
 owns:
@@ -39,11 +39,13 @@ owns:
     - "tests/auth/auth-confirm-url.test.ts"
     - "components/app/status-timeline.tsx"
     - "components/app/photo-upload.tsx"
+    - "components/app/prepare-upload.ts"
     - "components/app/proof-review.tsx"
     - "components/app/video-player.tsx"
     - "components/app/order-notes.tsx"
     - "components/app/sign-out-button.tsx"
     - "tests/auth/gating.test.ts"
+    - "tests/auth/server.test.ts"
     - "tests/auth/order-detail-read.test.ts"
     - "tests/auth/add-order-note.test.ts"
     - "tests/app/order-stages.test.ts"
@@ -72,7 +74,15 @@ invariants:
     enforcedBy: ["tests/auth/order-tracking-link.test.ts"]
   - rule: "The status → stage mapping and parent-facing copy live ONLY in lib/order-stages.ts (DOM-free, tested). The timeline component and dashboard page render FROM it; they never re-derive stage indices or hardcode status copy."
     enforcedBy: ["tests/app/order-stages.test.ts"]
-verifiedAt: c5eb0aa
+  - rule: "trustedOrigins NEVER contains a *.vercel.app wildcard (anyone can host there — it would hand CSRF/origin trust to arbitrary third parties). Previews are trusted only via this project's own VERCEL_URL / VERCEL_BRANCH_URL / VERCEL_PROJECT_PRODUCTION_URL; the load-bearing trust is the resolved base URL (BETTER_AUTH_URL, boot-required in prod)."
+    enforcedBy: ["tests/auth/server.test.ts"]
+  - rule: "A magic-link send failure RETHROWS from sendMagicLink so Better Auth surfaces an error and the sign-in page shows its gentle error state — never a false 'check your email' success."
+    enforcedBy: ["lib/auth.ts"]
+  - rule: "getOrdersForOwner reads with pagination:false + sort '-createdAt' — a customer sees ALL their orders newest-first, never Payload's silent 10-doc default page."
+    enforcedBy: ["tests/auth/gating.test.ts"]
+  - rule: "Each photo-upload server-action call carries ONE file, client-side re-encoded (≤2048px JPEG q0.85, EXIF orientation baked in) when over MAX_REQUEST_BYTES (3.5MB), so every request fits Vercel's ~4.5MB body cap; retries skip files already saved in a previous attempt."
+    enforcedBy: ["components/app/prepare-upload.ts", "components/app/photo-upload.tsx"]
+verifiedAt: 76b1727
 ---
 
 ## Purpose
@@ -179,12 +189,20 @@ Both guard Motion with `useReducedMotion()` and use brand tokens only.
   route 404s and the UI shows the fallback). `mediaFilePath(filename)` resolves
   the on-disk path under `MEDIA_STATIC_DIR` and guards against path traversal.
 - **`app/(app)/api/orders/[id]/video/route.ts`** — the only path a customer can
-  reach the film. `GET` streams the local file (Range-aware for scrubbing);
-  `?download` sets an attachment disposition. Non-owner → 403, no film → 404.
-  Because `media` is `read: adminOnly`, access is gated by ownership, NOT by a
-  guessable static URL (`[[video-ownership-route-over-static-url]]`). The
-  local-disk byte source is a deliberate MVP shortcut, flagged in-code and in
-  `[[local-disk-video-delivery]]` — production needs signed/managed delivery.
+  reach the film. Non-owner → 403, no film → 404; `?download` sets an attachment
+  disposition; `maxDuration = 300` for long downloads. Because `media` is
+  `read: adminOnly`, access is gated by ownership, NOT by a guessable static URL
+  (`[[video-ownership-route-over-static-url]]`). Two byte sources behind the same
+  gate (`[[blob-pass-through-proxied-video]]`):
+  - **Blob mode** (when `BLOB_READ_WRITE_TOKEN` is set, `isBlobStorageEnabled()`):
+    resolves the stored file via `head(filename)` and PROXIES the bytes from
+    Vercel Blob — the (public-but-unguessable) Blob URL never reaches the client.
+    Forwards the client `Range` header so seeking works, relays upstream 416, and
+    surfaces any other Blob non-200/206 as a 500 (so a Blob outage doesn't read
+    as "every order is unfinalized"). Missing blob → 404.
+  - **Local-disk fallback** (no token, dev only): streams from `MEDIA_STATIC_DIR`,
+    Range-aware. Remaining future work — private Blob + signed playback URLs —
+    stays tracked in `[[local-disk-video-delivery]]`.
 
 ### Profile (app/(app)/app/profile/page.tsx + sign-out)
 Server component; the layout has already gated the session, so it reads the
@@ -256,12 +274,12 @@ gets the media back; a non-owner and an unauthenticated caller are rejected
 resolves to `null` for the owner. The route handler's streaming/Range/disposition
 plumbing is thin glue over this gate and is not separately unit-tested.
 
-> Build/runtime caveat: `npm run build` and any server-side auth route handler in
-> `next dev` currently fail with a `@better-auth/kysely-adapter` ↔ `kysely`
-> export mismatch. This is **pre-existing and repo-wide** (it breaks the
-> untouched `app/api/auth/[...all]/route.ts`), not caused by this work, so the
-> video route could not be smoke-tested end to end. Tracked in
-> `[[better-auth-kysely-build-break]]`. tsc is clean and the unit suite is green.
+> Build/runtime caveat: a `@better-auth/kysely-adapter` ↔ `kysely` export
+> mismatch historically broke `npm run build` and server-side auth handlers in
+> dev. As of 2026-06-10 the deciding evidence is CI's Playwright webServer build
+> (a local build attempt was OOM-killed in the sandbox before any kysely error
+> appeared). Tracked in `[[better-auth-kysely-build-break]]` — close that note
+> once a green CI build on this branch is observed.
 
 ## Lineage
 Task 2.4 (proxy) + 2.5 (sign-in) + 2.6 (layout + customer data) + the dashboard
@@ -284,3 +302,13 @@ list became compact link cards (per-status actions relocated to the detail page)
 the detail page added a read-only "Your story" panel + a customer→studio notes thread
 (append-only `customerNotes` on the order, shown back to the parent, visible to the
 studio in `/admin`) (2026-06-04, see `[[order-detail-subpage-and-notes]]`).
+Launch hardening (2026-06-10): the `*.vercel.app` trustedOrigins wildcard was removed
+(explicit domains + this project's VERCEL_* deploy URLs; BETTER_AUTH_URL is the
+load-bearing trust and is now boot-required); magic-link send failures rethrow so the
+sign-in page shows a real error; `getOrdersForOwner` lost the silent 10-doc cap
+(pagination:false, newest-first); the delivered-video route gained the Blob proxy mode
+(see `[[blob-pass-through-proxied-video]]`); and photo uploads re-encode client-side
+(`components/app/prepare-upload.ts`) and ship one file per server-action call to fit
+Vercel's body cap, with retries skipping already-saved files. Note: browsers that
+cannot decode HEIC (non-Safari) reject >3.5MB HEICs with a gentle error instead of
+converting — see the `heic-photos-over-cap-rejected` tech-debt note.

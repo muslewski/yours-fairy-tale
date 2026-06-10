@@ -1,13 +1,14 @@
 ---
 type: zone
-summary: "Payload v3 backend — the in-app CMS, /admin panel, REST/GraphQL API, and the admins native-auth collection."
+summary: "Payload v3 backend — the in-app CMS, /admin panel, REST/GraphQL API, the admins native-auth collection, the Waitlist collection, Vercel Blob media storage (pass-through), and production boot (env validation + migrate-on-deploy)."
 tags: [backend, payload, auth, infrastructure]
 status: active
 created: 2026-06-03
-updated: 2026-06-03
-related: []
+updated: 2026-06-10
+related: ["[[migrate-on-deploy-via-instrumentation]]", "[[prod-env-fail-closed]]", "[[blob-pass-through-proxied-video]]", "[[waitlist-signups-payload-plus-resend]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
+  - "fairy-tale-mind/plans/2026-06-10-launch-hardening.md"
 owns:
   # Routes are served from the `(payload)` route group via catch-all dynamic
   # segments (`/admin`, `/api/[...slug]`, `/api/graphql`, `/api/graphql-playground`).
@@ -20,7 +21,14 @@ owns:
     - "migrations/index.ts"
     - "migrations/20260604_000000_wizard_order_fields.ts"
     - "migrations/20260605_000000_order_customer_notes.ts"
+    - "migrations/20260610_000000_waitlist.ts"
     - "collections/Admins.ts"
+    - "collections/Waitlist.ts"
+    - "instrumentation.ts"
+    - "lib/run-migrations.ts"
+    - "lib/required-env.ts"
+    - "tests/lib/run-migrations.test.ts"
+    - "tests/lib/required-env.test.ts"
     - "lib/payload.ts"
     - "app/(payload)/layout.tsx"
     - "app/(payload)/admin/[[...segments]]/page.tsx"
@@ -45,7 +53,13 @@ invariants:
     enforcedBy: ["tests/auth/adapter.test.ts"]
   - rule: "Never hardcode the connection string or secret — read process.env.DATABASE_URI / PAYLOAD_SECRET."
     enforcedBy: []
-verifiedAt: ab028c3
+  - rule: "Production boot FAILS CLOSED: instrumentation.ts checks missingProductionEnv (9 vars, lib/required-env.ts) BEFORE running migrations and throws if any is missing — a half-configured deploy 500s every request instead of silently degrading. Asymmetry is deliberate: run-migrations NEVER throws (a failed migration must not kill an already-live site)."
+    enforcedBy: ["tests/lib/required-env.test.ts", "tests/lib/run-migrations.test.ts"]
+  - rule: "Vercel Blob storage runs in PASS-THROUGH mode (disablePayloadAccessControl NOT set): media file URLs stay on Payload's /api/media/file/* endpoint so `read: adminOnly` keeps gating every byte. Enabled iff BLOB_READ_WRITE_TOKEN is set; without a token, local-disk staticDir (collections/Media.ts) is the dev fallback."
+    enforcedBy: ["payload.config.ts"]
+  - rule: "Waitlist rows are created ONLY by app/api/waitlist/route.ts via the Local API with overrideAccess — all collection access is adminOnly (same posture as Orders). Email is unique + lowercased (beforeValidate hook, same canonicalization as users.email)."
+    enforcedBy: ["collections/Waitlist.ts", "tests/waitlist/waitlist.test.ts"]
+verifiedAt: 76b1727
 ---
 
 ## Purpose
@@ -71,6 +85,23 @@ It owns the database (Postgres via `@payloadcms/db-postgres`, uuid primary keys)
   conditions. Config: `disableIdGeneration: true` (Postgres mints the uuid, BA reads it
   back), `supportsDates/Booleans/JSON: true`, `transaction: false` (the Local API has no
   nested-tx primitive to hand BA). NOT the deprecated `payload-auth` plugin.
+- `collections/Waitlist.ts` — series waitlist signups (unique lowercased email, `source`
+  text, all access adminOnly; rows created only by the waitlist route via Local API).
+  Queryable in `/admin` under the Commerce group. Schema migration:
+  `migrations/20260610_000000_waitlist.ts`. The form/route/lib pipeline is owned by
+  `[[series]]`.
+- **Media storage** — `vercelBlobStorage` plugin (pass-through mode) in
+  `payload.config.ts`, enabled iff `BLOB_READ_WRITE_TOKEN` is set; file URLs stay on
+  Payload's gated `/api/media/file/*` endpoint and the plugin auto-disables local
+  storage. No token (dev) → local-disk `staticDir` from `collections/Media.ts`. See
+  `[[blob-pass-through-proxied-video]]`.
+- **Production boot** (`instrumentation.ts`, prod Node runtime only) — first validates
+  the 9-var env contract (`lib/required-env.ts`) and THROWS on any missing var (fail
+  closed, see `[[prod-env-fail-closed]]`); then runs migrate-on-deploy
+  (`lib/run-migrations.ts`, advisory-locked, never throws — see
+  `[[migrate-on-deploy-via-instrumentation]]`). The register()-throw → failed-requests
+  semantics still need confirmation on a real Vercel preview (see the
+  `verify-fail-closed-boot-on-vercel` tech-debt note).
 - `app/(payload)/…` — the route group: admin pages, layout, generated `importMap`, and the
   REST/GraphQL/playground handlers from `@payloadcms/next/{layouts,views,routes}`.
 - `next.config.ts` is wrapped with `withPayload(...)`.
@@ -83,7 +114,8 @@ installed in this repo, despite shipping with some Payload setups).
 
 `tests/auth/adapter.test.ts` round-trips a BA user through the adapter (`create` →
 `findOne` by email), proving the bridge reaches Postgres via the Local API and that the
-uuid id is minted by the DB and read back as a string. NOTE: the auth + payload test files
+uuid id is minted by the DB and read back as a string. `tests/lib/required-env.test.ts`
+and `tests/lib/run-migrations.test.ts` cover the pure boot guards (no DB). NOTE: the auth + payload test files
 each boot their own Payload instance; running them together with vitest's default
 file-parallelism races on the single local Postgres schema pull/push — run with
 `--no-file-parallelism` (or one file at a time), which is a test-harness limitation, not an
@@ -97,6 +129,10 @@ Payload 3.85). Task 2.1 added the BA → Payload Local-API adapter
 (`lib/better-auth-payload-adapter.ts`), faithfully adapted from delieta's verified
 ~270-line implementation. Later slices wire the BA server/client, sign-in, `/app` gating,
 Orders, and Media.
+Migrate-on-deploy via `instrumentation.ts` landed 2026-06-05 (see
+`[[migrate-on-deploy-via-instrumentation]]`). Launch hardening (2026-06-10): fail-closed
+production env validation added before migrations, the `waitlist` collection +
+migration, and Vercel Blob pass-through media storage (from the launch-hardening plan).
 
 ## Notes / tech debt
 - `payload generate:importmap` / `generate:types` fail under Node 25 (the CLI's tsx worker

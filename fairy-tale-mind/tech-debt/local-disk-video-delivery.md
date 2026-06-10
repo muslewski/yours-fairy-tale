@@ -1,16 +1,34 @@
 ---
 type: debt
-summary: "The delivered video player streams the final film off LOCAL DISK behind an ownership check. Production needs access-controlled / signed delivery (Mux, Cloudflare Stream, or private Blob + signed URLs)."
+summary: "REMAINING (narrowed 2026-06-10): delivered videos now proxy from Vercel Blob behind the ownership gate, but the blobs are PUBLIC (unguessable, never exposed) and every byte flows through a Node route. Future work: private Blob + short-lived signed playback URLs (or Mux / Cloudflare Stream). Local disk persists only as the no-token dev fallback."
 tags: [video, media, security, infra]
 status: open
 created: 2026-06-03
-updated: 2026-06-03
-related: ["[[auth-gating]]", "[[payload-backend]]"]
+updated: 2026-06-10
+related: ["[[auth-gating]]", "[[payload-backend]]", "[[blob-pass-through-proxied-video]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
-severity: medium
+  - "fairy-tale-mind/plans/2026-06-10-launch-hardening.md"
+severity: low
 effort: medium
 ---
+
+## Update 2026-06-10 — largely superseded by Blob delivery
+The original local-disk concern is resolved: `[[blob-pass-through-proxied-video]]`
+moved media storage to Vercel Blob (`vercelBlobStorage` pass-through mode in
+`payload.config.ts`) and the ownership-gated route now proxies bytes from Blob
+(`head(filename)` + Range forwarding) — local disk is only the dev fallback when
+`BLOB_READ_WRITE_TOKEN` is unset. The ownership gate (`resolveOwnedVideo`) was kept
+as the single doorway, exactly as this note prescribed.
+
+**Remaining debt (why this stays open, severity lowered to low):**
+- Blobs are stored at **public-but-unguessable** URLs. The URL never reaches the
+  client (server-side proxy only), which is accepted for MVP — but true defense in
+  depth wants **private Blob storage + short-lived signed playback URLs**, or a
+  managed video host (Mux / Cloudflare Stream) minting signed URLs after
+  `resolveOwnedVideo`.
+- Every video byte still proxies through a Node route handler — no CDN offload, no
+  adaptive streaming.
 
 ## Problem
 The customer dashboard's `delivered` action (Task 4.4) plays `order.finalVideo`

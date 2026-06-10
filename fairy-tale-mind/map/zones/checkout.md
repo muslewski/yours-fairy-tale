@@ -4,9 +4,9 @@ summary: "Stripe checkout integration — mock UI simulation + real Checkout Ses
 tags: [ui, checkout, stripe, api, webhook, orders]
 status: active
 created: 2026-06-02
-updated: 2026-06-04
+updated: 2026-06-10
 related: ["[[configurator]]", "[[payload-backend]]"]
-sources: ["[[checkout-is-a-simulation]]", "[[payments-stripe-over-shopify]]", "[[stripe-checkout-session-route]]"]
+sources: ["[[checkout-is-a-simulation]]", "[[payments-stripe-over-shopify]]", "[[stripe-checkout-session-route]]", "[[webhook-orphan-events-retry]]"]
 owns:
   routes:
     - "/api/stripe/checkout"
@@ -57,15 +57,17 @@ invariants:
     enforcedBy: ["tests/stripe/refund-email.test.ts"]
   - rule: "Dev email always routes to RESEND_TO_OVERRIDE when set; subject prefixed with real recipient."
     enforcedBy: ["tests/stripe/refund-email.test.ts"]
-  - rule: "charge.refunded → order status 'refunded'; charge.dispute.created → 'cancelled'. Unknown paymentIntentId: log and return, no throw."
-    enforcedBy: ["tests/stripe/refund-email.test.ts"]
+  - rule: "charge.refunded → order status 'refunded'; charge.dispute.created → 'cancelled'. An event with NO matching order THROWS (→ POST 500 → Stripe retries with backoff): Stripe does not guarantee ordering, so the refund/dispute may precede checkout.session.completed. Only events missing a payment_intent (can never match) are warn-and-return."
+    enforcedBy: ["tests/stripe/webhook.test.ts", "tests/stripe/refund-email.test.ts"]
+  - rule: "Email config fails LOUD in production: sendEmail throws when RESEND_API_KEY or RESEND_FROM is missing under NODE_ENV=production (dev keeps warn+skip / the resend.dev sandbox sender)."
+    enforcedBy: ["lib/email.ts"]
   - rule: "stripePaymentIntentId must be indexed for O(1) refund/dispute lookups."
     enforcedBy: ["collections/Orders.ts"]
   - rule: "Status-transition email fires ONLY on update + real status change + proof_ready or delivered. All other transitions (including create) are silent."
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
     enforcedBy: ["tests/app/status-emails.test.ts"]
-verifiedAt: 721196d
+verifiedAt: 76b1727
 ---
 
 ## Purpose
@@ -113,16 +115,27 @@ Enacts the "checkout-gated, no public sign-up" model:
 
 ### `charge.refunded`
 Finds the order by `stripePaymentIntentId` (indexed). Sets `status: "refunded"`.
-Unknown payment intent: log + return (no throw).
+No matching order: **throw** → 500 → Stripe retries (out-of-order delivery safety).
+Missing `payment_intent` on the event (can never match): log + return.
 
 ### `charge.dispute.created`
-Same lookup. Sets `status: "cancelled"`.
-Unknown payment intent: log + return (no throw).
+Same lookup. Sets `status: "cancelled"`. Same throw-for-retry on no match.
+
+### Accepted failure mode (documented for on-call)
+A permanently-orphaned event (e.g. a refund for an unrelated/pre-launch charge in
+this Stripe account) retries for Stripe's full backoff window (~3 days), logging
+"no order yet" each attempt, then surfaces as a failed webhook in the Stripe
+dashboard. Benign and self-resolving — do not page; investigate only if the
+payment_intent should have a real order. See `[[webhook-orphan-events-retry]]`.
 
 ## Email (`lib/email.ts`)
 Thin Resend wrapper. Dev routing: if `RESEND_TO_OVERRIDE` is set, all mail goes to that
 address with the real recipient prefixed to the subject (`[→ buyer@x.io] subject`).
-Guard: if `RESEND_API_KEY` is absent, logs a warning and returns without error.
+Config guard is environment-split: in production a missing `RESEND_API_KEY` or
+`RESEND_FROM` THROWS (silent mail loss would break magic-link sign-in — the only
+sign-in path — with no symptom); in dev it warns and skips / falls back to the
+`onboarding@resend.dev` sandbox sender. Boot-time env validation
+(`[[prod-env-fail-closed]]`) guarantees both vars in prod before requests are served.
 
 ## Lineage
 Seeded from the existing site at Mind setup. Real Stripe route added 2026-06-03.
@@ -138,3 +151,8 @@ confirmation email carries a one-click "track your order" magic link
 (`lib/order-tracking-link.ts`) instead of a plain /sign-in link (2026-06-04, see
 `[[email-lowercase-and-order-tracking-link]]`). The prod Stripe webhook endpoint
 delivery (test-mode endpoint) is documented in `[[stripe-webhook-test-mode]]`.
+Launch hardening (2026-06-10): orphan `charge.refunded` / `charge.dispute.created`
+events flipped from silent-drop to throw-for-retry (see
+`[[webhook-orphan-events-retry]]`), and `lib/email.ts` lost its silent prod
+fallbacks — missing RESEND_API_KEY/RESEND_FROM now throw in production (see
+`[[prod-env-fail-closed]]`).

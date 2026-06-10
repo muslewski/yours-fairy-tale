@@ -4,7 +4,7 @@ summary: "The production build (and any server-side auth route handler in Turbop
 tags: [build, auth, dependencies, blocker]
 status: open
 created: 2026-06-03
-updated: 2026-06-03
+updated: 2026-06-10
 related: ["[[auth-gating]]", "[[payload-backend]]"]
 sources: []
 severity: high
@@ -56,3 +56,13 @@ Pin compatible versions so the kysely-adapter's re-export resolves, e.g.:
 
 Once resolved, run `npm run build` to green and smoke-test the video route end to
 end with a real `delivered` order + `finalVideo`.
+
+## Update 2026-06-10 — status unknown locally; CI build is the deciding evidence
+During the launch-hardening pass a local `npm run build` attempt was **OOM-killed**
+(Turbopack, sandbox memory limit) — it did NOT reproduce the kysely export error
+before the kill, but the build also never completed, so this proves nothing either
+way. CI's Playwright webServer **builds the app**, so a green CI run on the
+launch-hardening branch is the deciding evidence: if CI is green there, this break
+is gone (likely resolved by dependency movement since 2026-06-03) and this note
+should be closed citing that run. Left open because that evidence could not be
+observed from the sandbox.
