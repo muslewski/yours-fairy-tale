@@ -113,23 +113,37 @@ describe("getOrdersForOwner", () => {
 
   test("getOrdersForOwner returns more than Payload's default page of 10", async () => {
     const payload = await getPayloadClient();
+
+    // Create the user first (orders need an owner id).
     const user = await payload.create({
       collection: "users",
       data: { email: `cap-test-${Date.now()}@example.com`, emailVerified: false },
     });
-    const created: string[] = [];
-    for (let i = 0; i < 11; i++) {
-      const order = await payload.create({
-        collection: "orders",
-        data: { owner: user.id, status: "paid", childName: `Cap ${i}` },
-      });
-      created.push(String(order.id));
+    const userId = String(user.id);
+
+    // Create all 11 orders concurrently — only the count is asserted, so order
+    // of creation does not matter.
+    const orderIds: string[] = await Promise.all(
+      Array.from({ length: 11 }, (_, i) =>
+        payload
+          .create({
+            collection: "orders",
+            data: { owner: user.id, status: "paid", childName: `Cap ${i}` },
+          })
+          .then((o) => String(o.id)),
+      ),
+    );
+
+    try {
+      const result = await getOrdersForOwner(userId);
+      expect(result.length).toBe(11);
+    } finally {
+      // Always clean up — even when the assertion above throws.
+      // Delete orders before the user (owner FK is NOT NULL).
+      for (const id of orderIds) {
+        await payload.delete({ collection: "orders", id }).catch(() => {});
+      }
+      await payload.delete({ collection: "users", id: userId }).catch(() => {});
     }
-    const result = await getOrdersForOwner(String(user.id));
-    expect(result.length).toBe(11);
-    // cleanup
-    for (const id of created)
-      await payload.delete({ collection: "orders", id });
-    await payload.delete({ collection: "users", id: user.id });
   });
 });
