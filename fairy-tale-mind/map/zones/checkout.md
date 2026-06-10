@@ -5,7 +5,7 @@ tags: [ui, checkout, stripe, api, webhook, orders]
 status: active
 created: 2026-06-02
 updated: 2026-06-10
-related: ["[[configurator]]", "[[payload-backend]]"]
+related: ["[[configurator]]", "[[payload-backend]]", "[[studio]]", "[[delivery-promise-auto-from-length]]"]
 sources: ["[[checkout-is-a-simulation]]", "[[payments-stripe-over-shopify]]", "[[stripe-checkout-session-route]]", "[[webhook-orphan-events-retry]]"]
 owns:
   routes:
@@ -51,6 +51,8 @@ invariants:
     enforcedBy: ["tests/stripe/webhook.test.ts"]
   - rule: "User upsert by email — never creates a duplicate users row; emailVerified:true on new users (payment proves email ownership)."
     enforcedBy: ["tests/stripe/webhook.test.ts"]
+  - rule: "The webhook stamps amountTotalCents (what Stripe ACTUALLY charged, from the session) and promisedBy (purchase time + the length's window via promisedByForLength) on the new order. The studio's revenue numbers and the customer countdown read these stored fields — neither is recomputed later."
+    enforcedBy: ["tests/stripe/webhook.test.ts", "tests/lib/delivery.test.ts"]
   - rule: "No public sign-up path exists — customer accounts come ONLY from this webhook."
     enforcedBy: []
   - rule: "Confirmation email failure never blocks order creation — errors are logged, not thrown."
@@ -67,7 +69,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
     enforcedBy: ["tests/app/status-emails.test.ts"]
-verifiedAt: 76b1727
+verifiedAt: 80eddae
 ---
 
 ## Purpose
@@ -108,10 +110,14 @@ Enacts the "checkout-gated, no public sign-up" model:
    `customer_email`); creates one with `emailVerified: true` if absent.
 4. **Create order** — links to the user via `owner`, stores `stripeSessionId`,
    `stripePaymentIntentId`, the seven config fields from metadata (childName, world, length,
-   detailLevel, extraMinutes, addOns, plotNote), and lets `status` default to `"paid"`.
+   detailLevel, extraMinutes, addOns, plotNote), plus `amountTotalCents` (the session's
+   `amount_total` — what Stripe actually charged) and `promisedBy` (purchase time + the
+   length's production window via `promisedByForLength` in `lib/delivery.ts`), and lets
+   `status` default to `"paid"`.
 5. **Confirmation email** — sends a "your video is on its way — sign in to track it" email
-   via `lib/email.ts` (Resend). Email failure is logged and never re-throws; the order is
-   always the critical path.
+   via `lib/email.ts` (Resend), including the expected-by date when a promise was stamped
+   ("We expect it to be ready by …"). Email failure is logged and never re-throws; the
+   order is always the critical path.
 
 ### `charge.refunded`
 Finds the order by `stripePaymentIntentId` (indexed). Sets `status: "refunded"`.
@@ -156,3 +162,6 @@ events flipped from silent-drop to throw-for-retry (see
 `[[webhook-orphan-events-retry]]`), and `lib/email.ts` lost its silent prod
 fallbacks — missing RESEND_API_KEY/RESEND_FROM now throw in production (see
 `[[prod-env-fail-closed]]`).
+Studio panel (2026-06-10): the webhook now stamps `amountTotalCents` + `promisedBy` on the
+new order (migration `20260610_000001_order_amount_promise`), and the confirmation email
+includes the expected-by date (see `[[delivery-promise-auto-from-length]]` and `[[studio]]`).

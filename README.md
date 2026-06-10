@@ -20,6 +20,10 @@ The Payload admin lives at `/admin` (staff accounts in the `admins`
 collection). Customer accounts are created ONLY by the Stripe webhook after a
 purchase; customers sign in at `/sign-in` with a magic link.
 
+The staff order panel lives at `/studio` (same `admins` login as `/admin`):
+revenue, the order queue, status workflow, video delivery, and the customer's
+delivery promise.
+
 ## Tests
 
 - `npm test` — vitest, DB-backed against the database in `.env.test`

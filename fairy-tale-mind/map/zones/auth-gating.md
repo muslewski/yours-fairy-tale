@@ -5,7 +5,7 @@ tags: [auth, security, customer-area]
 status: active
 created: 2026-06-03
 updated: 2026-06-10
-related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]", "[[video-ownership-route-over-static-url]]", "[[local-disk-video-delivery]]", "[[blob-pass-through-proxied-video]]", "[[prod-env-fail-closed]]"]
+related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]", "[[video-ownership-route-over-static-url]]", "[[local-disk-video-delivery]]", "[[blob-pass-through-proxied-video]]", "[[prod-env-fail-closed]]", "[[studio]]", "[[delivery-promise-auto-from-length]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
 owns:
@@ -38,6 +38,8 @@ owns:
     - "lib/auth-emails.ts"
     - "tests/auth/auth-confirm-url.test.ts"
     - "components/app/status-timeline.tsx"
+    - "components/app/delivery-countdown.tsx"
+    - "components/app/mascot-image.tsx"
     - "components/app/photo-upload.tsx"
     - "components/app/prepare-upload.ts"
     - "components/app/proof-review.tsx"
@@ -62,7 +64,7 @@ invariants:
     enforcedBy: ["tests/auth/gating.test.ts", "tests/auth/order-detail-read.test.ts"]
   - rule: "Every mutating customer order action (lib/order-actions.ts) starts with assertOwnsOrder(orderId), which throws unless the signed-in customer owns the order. A customer can never mutate another customer's order. addOrderNote follows this too: it guards, then appends to customerNotes (validated, ≤ MAX_NOTE_LENGTH) and revalidates the detail path — it NEVER changes status and is available at any status."
     enforcedBy: ["tests/app/order-actions.test.ts", "tests/auth/add-order-note.test.ts"]
-  - rule: "The delivered film is served ONLY through the ownership-checked route (app/(app)/api/orders/[id]/video) via resolveOwnedVideo → assertOwnsOrder. Never a direct/guessable media URL; media stays read: adminOnly. A non-owner can never fetch another customer's video."
+  - rule: "The delivered film AND the proof preview are served ONLY through the ownership-checked route (app/(app)/api/orders/[id]/video, ?kind=proof for the preview) via resolveOwnedVideo(orderId, field) → assertOwnsOrder. Never a direct/guessable media URL; media stays read: adminOnly (a raw media.url 403s for parents). A non-owner can never fetch another customer's video."
     enforcedBy: ["tests/app/video-access.test.ts"]
   - rule: "sign-in page is OUTSIDE the gated app route group — redirect can never trap it."
     enforcedBy: []
@@ -82,7 +84,7 @@ invariants:
     enforcedBy: ["tests/auth/gating.test.ts"]
   - rule: "Each photo-upload server-action call carries ONE file, client-side re-encoded (≤2048px JPEG q0.85, EXIF orientation baked in) when over MAX_REQUEST_BYTES (3.5MB), so every request fits Vercel's ~4.5MB body cap; retries skip files already saved in a previous attempt."
     enforcedBy: ["components/app/prepare-upload.ts", "components/app/photo-upload.tsx"]
-verifiedAt: 76b1727
+verifiedAt: 80eddae
 ---
 
 ## Purpose
@@ -121,9 +123,13 @@ the homepage configurator (`/#build`).
 The full home for one order. Server component: reads
 `getOrderForCurrentCustomer(id)`, `notFound()` on null (owner-scoped — see the
 read invariant). Renders the status timeline + the full status message (headline
-+ body), the relocated per-status ACTION slot (photo upload / proof review /
-finished-film player — same components as before), a read-only **"Your story"**
-panel (world, length, detail level, extra minutes, add-ons, the parent's original
++ body), the **DeliveryCountdown** card (`components/app/delivery-countdown.tsx`
++ `MascotImage` — days-granularity countdown to `promisedBy` from pure
+`countdownState` in `lib/delivery.ts`: calm overdue variant, never negative
+numbers, hidden once delivered and on refunded/cancelled — see
+`[[delivery-promise-auto-from-length]]`), the relocated per-status ACTION slot
+(photo upload / proof review / finished-film player — same components as
+before), a read-only **"Your story"** panel (world, length, detail level, extra minutes, add-ons, the parent's original
 `plotNote`; labels from `lib/order-options.ts`), and the **notes thread**
 (`components/app/order-notes.tsx`). Lives under the `(app)` group so it inherits
 the gate + chrome with no new gate code.
@@ -166,8 +172,9 @@ Two pure (non-`"use server"`) sidecars hold values that can't be exported from a
   states. Calls `uploadOrderAssets`.
 - **ProofReview** — renders the `proof` media (video/image by mime type, link
   fallback), an Approve button and a Request-a-change textarea panel. Calls
-  `approveProof` / `requestProofChange`. The page resolves the `proof` media id
-  to `{ url, mimeType, alt }` server-side and passes it in.
+  `approveProof` / `requestProofChange`. The page passes the GATED route URL
+  (`/api/orders/{id}/video?kind=proof`) — never the raw `media.url`, which is
+  `read: adminOnly` and 403'd for parents before the 2026-06-10 fix.
 Both guard Motion with `useReducedMotion()` and use brand tokens only.
 - **VideoPlayer** (plain component, no `"use client"`) — the `delivered` action.
   A native `<video controls>` plus a Download link, both pointing at the
@@ -183,13 +190,15 @@ Both guard Motion with `useReducedMotion()` and use brand tokens only.
   new note appears after the server round-trip + `revalidatePath`.
 
 ### Delivered video — gated streaming (Task 4.4)
-- **`lib/video-access.ts`** — `resolveOwnedVideo(orderId)` runs `assertOwnsOrder`
-  (the shared ownership doorway), then resolves `order.finalVideo` to the media
-  fields needed to stream it; returns `null` when there is no film yet (so the
+- **`lib/video-access.ts`** — `resolveOwnedVideo(orderId, field)` runs
+  `assertOwnsOrder` (the shared ownership doorway), then resolves the media in
+  `field` (`"finalVideo"` default, or `"proof"` for the preview) to the fields
+  needed to stream it; returns `null` when there is no film yet (so the
   route 404s and the UI shows the fallback). `mediaFilePath(filename)` resolves
   the on-disk path under `MEDIA_STATIC_DIR` and guards against path traversal.
 - **`app/(app)/api/orders/[id]/video/route.ts`** — the only path a customer can
-  reach the film. Non-owner → 403, no film → 404; `?download` sets an attachment
+  reach the film (and, via `?kind=proof`, the proof preview — same gate, same
+  streaming plumbing). Non-owner → 403, no film → 404; `?download` sets an attachment
   disposition; `maxDuration = 300` for long downloads. Because `media` is
   `read: adminOnly`, access is gated by ownership, NOT by a guessable static URL
   (`[[video-ownership-route-over-static-url]]`). Two byte sources behind the same
@@ -312,3 +321,8 @@ sign-in page shows a real error; `getOrdersForOwner` lost the silent 10-doc cap
 Vercel's body cap, with retries skipping already-saved files. Note: browsers that
 cannot decode HEIC (non-Safari) reject >3.5MB HEICs with a gentle error instead of
 converting — see the `heic-photos-over-cap-rejected` tech-debt note.
+Studio panel (2026-06-10): the order detail page gained the **DeliveryCountdown**
+card (mascot + days-to-`promisedBy`, see `[[delivery-promise-auto-from-length]]`),
+and proof playback was FIXED to stream through the ownership-gated video route
+(`?kind=proof`, `resolveOwnedVideo` gained a field param) — the page used to pass
+the raw `media.url`, which is `read: adminOnly` and 403'd for parents.

@@ -19,7 +19,10 @@ moved media storage to Vercel Blob (`vercelBlobStorage` pass-through mode in
 `payload.config.ts`) and the ownership-gated route now proxies bytes from Blob
 (`head(filename)` + Range forwarding) — local disk is only the dev fallback when
 `BLOB_READ_WRITE_TOKEN` is unset. The ownership gate (`resolveOwnedVideo`) was kept
-as the single doorway, exactly as this note prescribed.
+as the single doorway, exactly as this note prescribed. The studio panel's
+browser-to-Blob uploads and the proof preview's `?kind=proof` playback
+(2026-06-10) both ride the same gate and change nothing about the remaining
+work below.
 
 **Remaining debt (why this stays open, severity lowered to low):**
 - Blobs are stored at **public-but-unguessable** URLs. The URL never reaches the

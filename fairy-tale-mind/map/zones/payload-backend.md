@@ -5,7 +5,7 @@ tags: [backend, payload, auth, infrastructure]
 status: active
 created: 2026-06-03
 updated: 2026-06-10
-related: ["[[migrate-on-deploy-via-instrumentation]]", "[[prod-env-fail-closed]]", "[[blob-pass-through-proxied-video]]", "[[waitlist-signups-payload-plus-resend]]"]
+related: ["[[migrate-on-deploy-via-instrumentation]]", "[[prod-env-fail-closed]]", "[[blob-pass-through-proxied-video]]", "[[waitlist-signups-payload-plus-resend]]", "[[studio]]", "[[browser-to-blob-uploads-metadata-media]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
   - "fairy-tale-mind/plans/2026-06-10-launch-hardening.md"
@@ -22,6 +22,7 @@ owns:
     - "migrations/20260604_000000_wizard_order_fields.ts"
     - "migrations/20260605_000000_order_customer_notes.ts"
     - "migrations/20260610_000000_waitlist.ts"
+    - "migrations/20260610_000001_order_amount_promise.ts"
     - "collections/Admins.ts"
     - "collections/Waitlist.ts"
     - "instrumentation.ts"
@@ -55,11 +56,13 @@ invariants:
     enforcedBy: []
   - rule: "Production boot FAILS CLOSED: instrumentation.ts checks missingProductionEnv (9 vars, lib/required-env.ts) BEFORE running migrations and throws if any is missing — a half-configured deploy 500s every request instead of silently degrading. Asymmetry is deliberate: run-migrations NEVER throws (a failed migration must not kill an already-live site)."
     enforcedBy: ["tests/lib/required-env.test.ts", "tests/lib/run-migrations.test.ts"]
-  - rule: "Vercel Blob storage runs in PASS-THROUGH mode (disablePayloadAccessControl NOT set): media file URLs stay on Payload's /api/media/file/* endpoint so `read: adminOnly` keeps gating every byte. Enabled iff BLOB_READ_WRITE_TOKEN is set; without a token, local-disk staticDir (collections/Media.ts) is the dev fallback."
+  - rule: "Vercel Blob storage runs in PASS-THROUGH mode (disablePayloadAccessControl NOT set): media file URLs stay on Payload's /api/media/file/* endpoint so `read: adminOnly` keeps gating every byte. Enabled iff BLOB_READ_WRITE_TOKEN is set; without a token, local-disk staticDir (collections/Media.ts) is the dev fallback. The plugin sets clientUploads: true so big /admin uploads also go browser → Blob (past Vercel's ~4.5MB body cap)."
     enforcedBy: ["payload.config.ts"]
+  - rule: "media allows METADATA-ONLY creates (filesRequiredOnCreate: false) — the studio's browser-to-Blob uploads create media docs whose filename == the blob pathname with no file payload; Payload never receives the video bytes."
+    enforcedBy: ["collections/Media.ts", "tests/studio/attach-video.test.ts"]
   - rule: "Waitlist rows are created ONLY by app/api/waitlist/route.ts via the Local API with overrideAccess — all collection access is adminOnly (same posture as Orders). Email is unique + lowercased (beforeValidate hook, same canonicalization as users.email)."
     enforcedBy: ["collections/Waitlist.ts", "tests/waitlist/waitlist.test.ts"]
-verifiedAt: 76b1727
+verifiedAt: 80eddae
 ---
 
 ## Purpose
@@ -94,7 +97,11 @@ It owns the database (Postgres via `@payloadcms/db-postgres`, uuid primary keys)
   `payload.config.ts`, enabled iff `BLOB_READ_WRITE_TOKEN` is set; file URLs stay on
   Payload's gated `/api/media/file/*` endpoint and the plugin auto-disables local
   storage. No token (dev) → local-disk `staticDir` from `collections/Media.ts`. See
-  `[[blob-pass-through-proxied-video]]`.
+  `[[blob-pass-through-proxied-video]]`. Since the studio panel (2026-06-10) the plugin
+  also sets `clientUploads: true` (big `/admin` uploads stream browser → Blob) and
+  `collections/Media.ts` sets `filesRequiredOnCreate: false` so the studio's
+  browser-to-Blob flow can create metadata-only media docs (filename == blob pathname,
+  no bytes through the server — see `[[browser-to-blob-uploads-metadata-media]]`).
 - **Production boot** (`instrumentation.ts`, prod Node runtime only) — first validates
   the 9-var env contract (`lib/required-env.ts`) and THROWS on any missing var (fail
   closed, see `[[prod-env-fail-closed]]`); then runs migrate-on-deploy
@@ -133,6 +140,10 @@ Migrate-on-deploy via `instrumentation.ts` landed 2026-06-05 (see
 `[[migrate-on-deploy-via-instrumentation]]`). Launch hardening (2026-06-10): fail-closed
 production env validation added before migrations, the `waitlist` collection +
 migration, and Vercel Blob pass-through media storage (from the launch-hardening plan).
+Studio panel (2026-06-10): `clientUploads: true` on the Blob plugin,
+`filesRequiredOnCreate: false` on media (metadata-only creates for browser-to-Blob
+uploads), and migration `20260610_000001_order_amount_promise` adding
+`amountTotalCents` + `promisedBy` to orders (see `[[studio]]`).
 
 ## Notes / tech debt
 - `payload generate:importmap` / `generate:types` fail under Node 25 (the CLI's tsx worker

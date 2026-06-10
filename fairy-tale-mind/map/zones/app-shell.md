@@ -47,7 +47,7 @@ invariants:
     enforcedBy: []
   - rule: "Footer social icons link to the REAL profiles (Instagram, Facebook, TikTok — yoursfairytale7), open in a new tab with rel='noopener noreferrer', and announce the new-tab behavior to assistive tech. Never href='#'."
     enforcedBy: []
-verifiedAt: 76b1727
+verifiedAt: 80eddae
 ---
 
 ## Purpose
@@ -106,3 +106,6 @@ external profile links (Instagram/Facebook/TikTok `yoursfairytale7`, new-tab +
 replaced the Pinterest placeholder), closing the `footer-dead-links` debt. `next.config.ts`
 gained `experimental.serverActions.bodySizeLimit: "5mb"` for the one-file-per-call photo
 uploads (see `[[auth-gating]]`).
+Studio panel (2026-06-10): `app/robots.ts` disallow gained `/studio` — the staff panel
+stays out of the index alongside `/app`, `/admin`, `/api`, and `/sign-in` (see
+`[[studio]]`).

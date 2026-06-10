@@ -5,7 +5,7 @@ tags: [testing]
 status: active
 created: 2026-06-03
 updated: 2026-06-10
-related: ["[[checkout]]", "[[configurator]]", "[[auth-gating]]", "[[payload-backend]]", "[[series]]"]
+related: ["[[checkout]]", "[[configurator]]", "[[auth-gating]]", "[[payload-backend]]", "[[series]]", "[[studio]]"]
 sources: ["[[2026-06-03-playwright-test-suite-design]]", "[[e2e-hybrid-playwright-neon-branch]]"]
 owns:
   routes: []
@@ -24,7 +24,7 @@ invariants:
     enforcedBy: ["tests/setup-env.ts", "playwright.config.ts"]
   - rule: "CI runs `npx tsc --noEmit` as its own step — type errors fail the pipeline even when no test imports the broken file."
     enforcedBy: [".github/workflows/test.yml"]
-verifiedAt: 76b1727
+verifiedAt: 80eddae
 ---
 
 ## Purpose
@@ -41,9 +41,10 @@ Next.js). Not exhaustive coverage — a critical-path safety net.
   required-env, auth server) runs anywhere.
 - **Playwright Layer A** (`e2e/checkout.spec.ts`, `e2e/sign-in.spec.ts`, `e2e/waitlist.spec.ts`,
   `@layerA`) — deterministic, mock at our API edge (no DB, no real Stripe).
-- **Playwright Layer B** (`e2e/dashboard.spec.ts`, `@layerB`) — DB-backed dashboard-by-status +
-  ownership, using a `storageState` auth fixture (`e2e/fixtures/auth.ts`) + out-of-process seeding
-  (`e2e/fixtures/seed*.ts`).
+- **Playwright Layer B** (`e2e/dashboard.spec.ts`, `e2e/studio.spec.ts`, `@layerB`) — DB-backed
+  dashboard-by-status + ownership, plus the studio panel (gate bounce, sign-in, queue, status
+  advance), using a `storageState` auth fixture (`e2e/fixtures/auth.ts`) + out-of-process seeding
+  (`e2e/fixtures/seed*.ts`, incl. `seedAdmin`).
 - **Playwright Layer C** (`e2e/smoke/purchase.spec.ts`, `@smoke`) — real Stripe test-mode purchase
   through `stripe listen`. Gated; run on demand, NOT in CI.
 - **CI typecheck** — a dedicated `npx tsc --noEmit` step in `.github/workflows/test.yml`.
@@ -64,3 +65,7 @@ throw-for-retry coverage in `tests/stripe/webhook.test.ts`, a CI typecheck step,
 removed the placeholder `tests/smoke.test.ts`. Known smell: `tests/stripe/webhook.test.ts`
 inlines event literals that duplicate `tests/stripe/refund-email.test.ts` helpers (see
 the `stripe-test-event-fixtures-duplicated` tech-debt note).
+Studio panel (2026-06-10): added `tests/studio/*` (auth bridge, pure workflow core,
+DB-backed action guardrails, metadata-only video attach), `tests/lib/delivery.test.ts`
+(promise math + countdown states), and `e2e/studio.spec.ts` (Layer B) with `seedAdmin`
+in the shared seed fixtures (see `[[studio]]`).
