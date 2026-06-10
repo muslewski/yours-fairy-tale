@@ -44,6 +44,10 @@ export async function getOrdersForOwner(ownerId: string) {
     },
     overrideAccess: true,
     depth: 0,
+    // A customer must see ALL their orders — Payload's find() defaults to a
+    // 10-doc page, which silently hid the 11th order.
+    pagination: false,
+    sort: "-createdAt",
   });
   return result.docs;
 }

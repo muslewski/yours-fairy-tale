@@ -110,4 +110,26 @@ describe("getOrdersForOwner", () => {
     await payload.delete({ collection: "users", id: userA.id });
     await payload.delete({ collection: "users", id: userB.id });
   });
+
+  test("getOrdersForOwner returns more than Payload's default page of 10", async () => {
+    const payload = await getPayloadClient();
+    const user = await payload.create({
+      collection: "users",
+      data: { email: `cap-test-${Date.now()}@example.com`, emailVerified: false },
+    });
+    const created: string[] = [];
+    for (let i = 0; i < 11; i++) {
+      const order = await payload.create({
+        collection: "orders",
+        data: { owner: user.id, status: "paid", childName: `Cap ${i}` },
+      });
+      created.push(String(order.id));
+    }
+    const result = await getOrdersForOwner(String(user.id));
+    expect(result.length).toBe(11);
+    // cleanup
+    for (const id of created)
+      await payload.delete({ collection: "orders", id });
+    await payload.delete({ collection: "users", id: user.id });
+  });
 });
