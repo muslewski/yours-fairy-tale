@@ -20,6 +20,7 @@ import {
 import { LENGTH_LABELS, DETAIL_LEVEL_LABELS } from "@/lib/order-options";
 import { WORLD_LABELS, type WorldId } from "@/lib/worlds";
 import { StatusTimeline } from "@/components/app/status-timeline";
+import { DeliveryCountdown } from "@/components/app/delivery-countdown";
 import { PhotoUpload } from "@/components/app/photo-upload";
 import { ProofReview } from "@/components/app/proof-review";
 import { VideoPlayer } from "@/components/app/video-player";
@@ -124,6 +125,13 @@ export default async function OrderDetailPage({
             {message.body}
           </p>
         </div>
+
+        <DeliveryCountdown
+          status={status}
+          promisedBy={(order.promisedBy as string | null) ?? null}
+          createdAt={String(order.createdAt)}
+          childName={childName}
+        />
 
         <ActionSlot order={order} status={status} childName={childName} proof={proof} />
       </article>
