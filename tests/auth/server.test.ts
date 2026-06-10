@@ -43,3 +43,9 @@ test("magic-link plugin is registered with disableSignUp: true", () => {
     | undefined;
   expect(pluginOptions?.disableSignUp).toBe(true);
 });
+
+test("trustedOrigins never trusts all of vercel.app", () => {
+  const origins = auth.options.trustedOrigins as string[];
+  expect(origins).not.toContain("https://*.vercel.app");
+  for (const o of origins) expect(o).not.toMatch(/\*/);
+});

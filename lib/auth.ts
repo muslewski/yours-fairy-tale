@@ -42,17 +42,25 @@ if (!secret) {
   );
 }
 
-// Origins Better Auth will accept requests from. We explicitly list our known
-// production domains and cover preview/dev without relying on a dynamic env var
-// that might be stale or missing.
+// Origins Better Auth will accept requests from. Production domains are listed
+// explicitly; Vercel previews are trusted ONLY via this project's own
+// deployment URLs (VERCEL_URL / VERCEL_BRANCH_URL), injected per-deploy by
+// Vercel. NEVER use a `*.vercel.app` wildcard — anyone can host there, which
+// would hand CSRF/origin trust to arbitrary third parties.
 const trustedOrigins = [
   "http://localhost:1234",
   "http://localhost:3000",
   "http://localhost:3002",
   "https://yoursfairytale.com",
   "https://www.yoursfairytale.com",
-  "https://*.vercel.app",
 ];
+for (const host of [
+  process.env.VERCEL_URL,
+  process.env.VERCEL_BRANCH_URL,
+  process.env.VERCEL_PROJECT_PRODUCTION_URL,
+]) {
+  if (host) trustedOrigins.push(`https://${host}`);
+}
 
 export const auth = betterAuth({
   secret,
