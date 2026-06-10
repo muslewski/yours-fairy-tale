@@ -12,6 +12,7 @@ import { Users } from "./collections/auth/Users";
 import { Verifications } from "./collections/auth/Verifications";
 import { Media } from "./collections/Media";
 import { Orders } from "./collections/Orders";
+import { Waitlist } from "./collections/Waitlist";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -44,6 +45,7 @@ export default buildConfig({
     Verifications,
     // Commerce.
     Orders,
+    Waitlist,
     Media,
   ],
   editor: lexicalEditor(),
