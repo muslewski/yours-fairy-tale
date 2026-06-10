@@ -28,6 +28,10 @@
 .DS_Store
 *.pem
 
+# mascot source GIF (9.8MB) — only the compressed public/mascot/* derivatives are committed;
+# regeneration recipe lives in fairy-tale-mind/specs/2026-06-10-studio-panel-design.md
+/assets/builder-mascot-original.gif
+
 # debug
 npm-debug.log*
 yarn-debug.log*
