@@ -11,6 +11,7 @@ import {
   inTheWorks,
   computeRevenueTotals,
   formatCents,
+  formatAge,
   type StudioOrder,
 } from "@/lib/studio-workflow";
 
@@ -100,6 +101,16 @@ describe("revenue", () => {
     const totals = computeRevenueTotals(docs.slice(0, 3), NOW);
     expect(totals.hasUnrecordedAmounts).toBe(false);
   });
+
+  test("window boundaries are inclusive", () => {
+    const docs: StudioOrder[] = [
+      order({ id: "m", amountTotalCents: 100, createdAt: "2026-06-01T00:00:00.000Z", status: "paid" }),
+      order({ id: "r", amountTotalCents: 200, createdAt: "2026-05-11T12:00:00.000Z", status: "paid" }),
+    ];
+    const totals = computeRevenueTotals(docs, NOW);
+    expect(totals.thisMonth).toEqual({ cents: 100, count: 1 });   // May 11 is last month
+    expect(totals.last30Days).toEqual({ cents: 300, count: 2 });  // exactly 30*24h ago counts
+  });
 });
 
 describe("formatCents", () => {
@@ -107,5 +118,14 @@ describe("formatCents", () => {
     expect(formatCents(435000)).toBe("$4,350");
     expect(formatCents(0)).toBe("$0");
     expect(formatCents(45050)).toBe("$450.50");
+  });
+});
+
+describe("formatAge", () => {
+  test("coarse buckets with singulars", () => {
+    expect(formatAge("2026-06-10T11:30:00.000Z", NOW)).toBe("just now");
+    expect(formatAge("2026-06-10T11:00:00.000Z", NOW)).toBe("1 hour ago");
+    expect(formatAge("2026-06-09T12:00:00.000Z", NOW)).toBe("1 day ago");
+    expect(formatAge("2026-06-07T00:00:00.000Z", NOW)).toBe("3 days ago");
   });
 });
