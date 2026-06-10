@@ -292,6 +292,18 @@ House pattern ([[testing]]): vitest DB-backed unit/integration + Playwright.
 - Staff email notifications on new orders.
 - Search in the order list; roles/permissions beyond "is an admin".
 
+## Addendum (planning discovery): customer proof playback is broken today
+
+Found while planning: `components/app/proof-review.tsx` plays the proof from
+`proof.url` — Payload's `/api/media/file/<filename>` endpoint, which the
+`media` collection gates with `read: adminOnly`. A real parent (Better Auth
+session, not a Payload admin) gets a 403 in every environment, so the proof
+review loop has never worked for customers. The studio panel makes this loop
+load-bearing, so the fix ships with it: `resolveOwnedVideo` gains a
+`field: "finalVideo" | "proof"` parameter, the gated route accepts
+`?kind=proof`, and `ProofReview` points at that route instead of `proof.url`.
+Ownership-gated, same pattern as the delivered film.
+
 ## Risks on record
 
 1. **Browser-to-Blob upload integration** is the one piece with real
