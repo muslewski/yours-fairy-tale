@@ -96,6 +96,10 @@ export const auth = betterAuth({
           });
         } catch (err) {
           console.error("[auth] magic-link email failed:", err);
+          // Rethrow so Better Auth surfaces an error to the client; the sign-in
+          // page then shows its gentle error state instead of a false
+          // "check your email" success.
+          throw err;
         }
       },
     }),

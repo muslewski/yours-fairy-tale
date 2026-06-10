@@ -17,7 +17,13 @@ interface SendEmailOptions {
 export async function sendEmail({ to, subject, html, replyTo }: SendEmailOptions): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.warn("[email] RESEND_API_KEY is not set — skipping email send.");
+    // Dev convenience only. In production this is a hard error: silently
+    // dropping mail would break magic-link sign-in (the only sign-in path)
+    // and order confirmations with no visible symptom.
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("[email] RESEND_API_KEY is not set in production.");
+    }
+    console.warn("[email] RESEND_API_KEY is not set — skipping email send (dev only).");
     return;
   }
 

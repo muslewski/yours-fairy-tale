@@ -15,6 +15,17 @@ export async function register(): Promise<void> {
     process.env.NEXT_RUNTIME === "nodejs" &&
     process.env.VERCEL_ENV === "production"
   ) {
+    // Fail closed: a production deploy with missing config must not come up
+    // half-working (silent email loss, localhost success_urls). Throwing here
+    // 500s every request, which is loud, visible, and safe.
+    const { missingProductionEnv } = await import("@/lib/required-env");
+    const missing = missingProductionEnv(process.env);
+    if (missing.length > 0) {
+      throw new Error(
+        `[boot] Missing required production env vars: ${missing.join(", ")}`,
+      );
+    }
+
     const { runProductionMigrations } = await import("@/lib/run-migrations");
     await runProductionMigrations();
   }
