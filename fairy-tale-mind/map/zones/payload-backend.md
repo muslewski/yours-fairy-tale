@@ -62,7 +62,7 @@ invariants:
     enforcedBy: ["collections/Media.ts", "tests/studio/attach-video.test.ts"]
   - rule: "Waitlist rows are created ONLY by app/api/waitlist/route.ts via the Local API with overrideAccess — all collection access is adminOnly (same posture as Orders). Email is unique + lowercased (beforeValidate hook, same canonicalization as users.email)."
     enforcedBy: ["collections/Waitlist.ts", "tests/waitlist/waitlist.test.ts"]
-verifiedAt: 80eddae
+verifiedAt: a5084d4
 ---
 
 ## Purpose
