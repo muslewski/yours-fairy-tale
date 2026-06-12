@@ -22,13 +22,13 @@ owns:
     - "lib/order-options.ts"
     - "lib/order-upload-validation.ts"
     - "lib/video-access.ts"
-    - "app/(app)/app/layout.tsx"
-    - "app/(app)/app/page.tsx"
-    - "app/(app)/app/orders/[id]/page.tsx"
-    - "app/(app)/app/profile/page.tsx"
-    - "app/(app)/api/orders/[id]/video/route.ts"
-    - "app/(app)/sign-in/page.tsx"
-    - "app/(app)/sign-in/verify/page.tsx"
+    - "app/(site)/(app)/app/layout.tsx"
+    - "app/(site)/(app)/app/page.tsx"
+    - "app/(site)/(app)/app/orders/[id]/page.tsx"
+    - "app/(site)/(app)/app/profile/page.tsx"
+    - "app/(site)/(app)/api/orders/[id]/video/route.ts"
+    - "app/(site)/(app)/sign-in/page.tsx"
+    - "app/(site)/(app)/sign-in/verify/page.tsx"
     - "lib/auth-confirm-url.ts"
     - "lib/order-tracking-link.ts"
     - "collections/auth/Users.ts"
@@ -58,13 +58,13 @@ owns:
     - "e2e/fixtures/seed.vitest.config.ts"
 depends: ["[[payload-backend]]"]
 invariants:
-  - rule: "proxy.ts is PRESENCE-ONLY (no DB hit). The authoritative DB check is app/(app)/app/layout.tsx only."
+  - rule: "proxy.ts is PRESENCE-ONLY (no DB hit). The authoritative DB check is app/(site)/(app)/app/layout.tsx only."
     enforcedBy: ["tests/auth/gating.test.ts"]
   - rule: "Customer order reads are ALWAYS owner-scoped via explicit where { owner: { equals: userId } } + overrideAccess:true. Never rely on Payload req.user. The single-order read (getOrderForOwner) adds the order id to the same where (and:[{id},{owner}]) so the /app/orders/[id] detail page can only load the signed-in customer's own order; a non-owned/unknown id reads as null → notFound()."
     enforcedBy: ["tests/auth/gating.test.ts", "tests/auth/order-detail-read.test.ts"]
   - rule: "Every mutating customer order action (lib/order-actions.ts) starts with assertOwnsOrder(orderId), which throws unless the signed-in customer owns the order. A customer can never mutate another customer's order. addOrderNote follows this too: it guards, then appends to customerNotes (validated, ≤ MAX_NOTE_LENGTH) and revalidates the detail path — it NEVER changes status and is available at any status."
     enforcedBy: ["tests/app/order-actions.test.ts", "tests/auth/add-order-note.test.ts"]
-  - rule: "The delivered film AND the proof preview are served ONLY through the ownership-checked route (app/(app)/api/orders/[id]/video, ?kind=proof for the preview) via resolveOwnedVideo(orderId, field) → assertOwnsOrder. Never a direct/guessable media URL; media stays read: adminOnly (a raw media.url 403s for parents). A non-owner can never fetch another customer's video."
+  - rule: "The delivered film AND the proof preview are served ONLY through the ownership-checked route (app/(site)/(app)/api/orders/[id]/video, ?kind=proof for the preview) via resolveOwnedVideo(orderId, field) → assertOwnsOrder. Never a direct/guessable media URL; media stays read: adminOnly (a raw media.url 403s for parents). A non-owner can never fetch another customer's video."
     enforcedBy: ["tests/app/video-access.test.ts"]
   - rule: "sign-in page is OUTSIDE the gated app route group — redirect can never trap it."
     enforcedBy: []
@@ -84,7 +84,7 @@ invariants:
     enforcedBy: ["tests/auth/gating.test.ts"]
   - rule: "Each photo-upload server-action call carries ONE file, client-side re-encoded (≤2048px JPEG q0.85, EXIF orientation baked in) when over MAX_REQUEST_BYTES (3.5MB), so every request fits Vercel's ~4.5MB body cap; retries skip files already saved in a previous attempt."
     enforcedBy: ["components/app/prepare-upload.ts", "components/app/photo-upload.tsx"]
-verifiedAt: 80eddae
+verifiedAt: cf03e40
 ---
 
 ## Purpose
@@ -93,7 +93,7 @@ Implements the two-layer session gate described in the `better-auth-with-payload
 ### Layer 1 — Optimistic (proxy.ts)
 `proxy.ts` at the repo root (Next 16's renamed Middleware) runs on every `/app/:path*` request. It calls `getSessionCookie(request)` from `better-auth/cookies` — presence only, no DB hit. If absent, redirect to `/sign-in?next=<path>`. If present, forward `x-pathname` header and continue. The decision is extracted into `shouldRedirectToSignIn(request): boolean`, a pure testable helper.
 
-### Layer 2 — Authoritative (app/(app)/app/layout.tsx)
+### Layer 2 — Authoritative (app/(site)/(app)/app/layout.tsx)
 The layout calls `getCustomerSession()` → `auth.api.getSession({ headers })`. This validates the session token against the DB. Stale/expired cookies that slipped past layer 1 are caught here. On no session, `redirect("/sign-in?next=...")`.
 
 ### Customer data (lib/customer-data.ts)
@@ -107,7 +107,7 @@ The layout calls `getCustomerSession()` → `auth.api.getSession({ headers })`. 
 - `getOrderForCurrentCustomer(orderId)` — composes session + `getOrderForOwner`;
   `null` when unauthenticated.
 
-### Dashboard view (app/(app)/app/page.tsx + the timeline)
+### Dashboard view (app/(site)/(app)/app/page.tsx + the timeline)
 The `/app` page lists the customer's orders as compact, comic-styled **link
 cards** (`bg-white`, `border-2 border-brand-deep`, `shadow-comic`) — each a
 `<Link href="/app/orders/{id}">` wrapped in `<li className="group">` that lifts
@@ -119,7 +119,7 @@ longer live here — they moved to the detail page (below), which is why the car
 can be a single Link with no nested interactive controls. Empty state links to
 the homepage configurator (`/#build`).
 
-### Order detail page (app/(app)/app/orders/[id]/page.tsx)
+### Order detail page (app/(site)/(app)/app/orders/[id]/page.tsx)
 The full home for one order. Server component: reads
 `getOrderForCurrentCustomer(id)`, `notFound()` on null (owner-scoped — see the
 read invariant). Renders the status timeline + the full status message (headline
@@ -196,7 +196,7 @@ Both guard Motion with `useReducedMotion()` and use brand tokens only.
   needed to stream it; returns `null` when there is no film yet (so the
   route 404s and the UI shows the fallback). `mediaFilePath(filename)` resolves
   the on-disk path under `MEDIA_STATIC_DIR` and guards against path traversal.
-- **`app/(app)/api/orders/[id]/video/route.ts`** — the only path a customer can
+- **`app/(site)/(app)/api/orders/[id]/video/route.ts`** — the only path a customer can
   reach the film (and, via `?kind=proof`, the proof preview — same gate, same
   streaming plumbing). Non-owner → 403, no film → 404; `?download` sets an attachment
   disposition; `maxDuration = 300` for long downloads. Because `media` is
@@ -213,7 +213,7 @@ Both guard Motion with `useReducedMotion()` and use brand tokens only.
     Range-aware. Remaining future work — private Blob + signed playback URLs —
     stays tracked in `[[local-disk-video-delivery]]`.
 
-### Profile (app/(app)/app/profile/page.tsx + sign-out)
+### Profile (app/(site)/(app)/app/profile/page.tsx + sign-out)
 Server component; the layout has already gated the session, so it reads the
 parent's name + email straight from it (read-only for MVP) into an on-brand card,
 with a link back to `/app` and a **SignOutButton**.
@@ -231,9 +231,9 @@ with a link back to `/app` and a **SignOutButton**.
   drops all auto-motion to static emphasis. Horizontal on desktop, vertical on
   mobile. For terminal statuses it renders a quiet note, not a stepper.
 
-### Sign-in page (app/(app)/sign-in/page.tsx)
+### Sign-in page (app/(site)/(app)/sign-in/page.tsx)
 Client component. Email input + submit calling `authClient.signIn.magicLink({ email, callbackURL: "/app" })`. On success, "check your email" state. No-account explainer (with a "Place an order" → `/#build` CTA) below the form per brand-voice: calm, warm, explains checkout → email → account flow.
-Design: a **split-screen** comic card (mirrors the configurator) — left brand-deep dotted "Welcome back" panel with the astronaut (hidden below lg), right panel holds the form + explainer. Gets the full site chrome via its own `app/(app)/sign-in/layout.tsx` (SiteNav + SiteFooter — see `[[app-shell]]`); the gated `/app` deliberately does not.
+Design: a **split-screen** comic card (mirrors the configurator) — left brand-deep dotted "Welcome back" panel with the astronaut (hidden below lg), right panel holds the form + explainer. Gets the full site chrome via its own `app/(site)/(app)/sign-in/layout.tsx` (SiteNav + SiteFooter — see `[[app-shell]]`); the gated `/app` deliberately does not.
 
 ### E2E auth fixture (e2e/fixtures/auth.ts — Playwright `setup` project)
 Produces the signed-in `storageState` (`e2e/.auth/customer.json`) the `chromium`

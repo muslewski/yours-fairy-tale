@@ -11,7 +11,7 @@ owns:
   routes: ["/"]
   anchors: ["route:/", "id:top", "id:collections", "id:faq", "id:series"]
   globs:
-    - "app/page.tsx"
+    - "app/(site)/page.tsx"
     - "components/home/hero.tsx"
     - "components/home/categories.tsx"
     - "components/home/cta-banner.tsx"
@@ -24,7 +24,7 @@ invariants:
     enforcedBy: []
   - rule: "The hero headline must not overflow on mobile: it scales fluidly (clamp) and wraps below lg; whitespace-nowrap is restored only at lg+. The character column moves above the headline on mobile (order-first) at a capped width, restored to the right column at lg."
     enforcedBy: []
-verifiedAt: 7033caf
+verifiedAt: cf03e40
 ---
 
 ## Purpose

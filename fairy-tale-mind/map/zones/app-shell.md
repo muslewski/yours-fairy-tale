@@ -11,31 +11,31 @@ owns:
   routes: []
   anchors: []
   globs:
-    - "app/layout.tsx"
-    - "app/series/layout.tsx"
-    - "app/blog/layout.tsx"
+    - "app/(site)/layout.tsx"
+    - "app/(site)/series/layout.tsx"
+    - "app/(site)/blog/layout.tsx"
     - "components/home/site-nav.tsx"
     - "components/home/site-footer.tsx"
-    - "app/error.tsx"
+    - "app/(site)/error.tsx"
     - "app/global-error.tsx"
-    - "app/not-found.tsx"
+    - "app/(site)/not-found.tsx"
     - "app/sitemap.ts"
     - "app/robots.ts"
     - "next.config.ts"
-    - "app/(legal)/layout.tsx"
-    - "app/(legal)/privacy/page.tsx"
-    - "app/(legal)/terms/page.tsx"
-    - "app/(legal)/refund/page.tsx"
+    - "app/(site)/(legal)/layout.tsx"
+    - "app/(site)/(legal)/privacy/page.tsx"
+    - "app/(site)/(legal)/terms/page.tsx"
+    - "app/(site)/(legal)/refund/page.tsx"
     - "components/legal/legal-page.tsx"
     - "components/motion/stagger.tsx"
-    - "app/(app)/sign-in/layout.tsx"
+    - "app/(site)/(app)/sign-in/layout.tsx"
     - "app/manifest.json"
     - "app/favicon.ico"
     - "app/icon0.svg"
     - "app/icon1.png"
     - "app/apple-icon.png"
-    - "app/opengraph-image.tsx"
-    - "app/twitter-image.tsx"
+    - "app/(site)/opengraph-image.tsx"
+    - "app/(site)/twitter-image.tsx"
     - "lib/og.tsx"
     - "assets/Fredoka-400.woff"
     - "assets/Fredoka-600.woff"
@@ -47,13 +47,13 @@ invariants:
     enforcedBy: []
   - rule: "Footer social icons link to the REAL profiles (Instagram, Facebook, TikTok — yoursfairytale7), open in a new tab with rel='noopener noreferrer', and announce the new-tab behavior to assistive tech. Never href='#'."
     enforcedBy: []
-verifiedAt: 80eddae
+verifiedAt: cf03e40
 ---
 
 ## Purpose
-The root layout (`app/layout.tsx`) registers fonts and wraps all pages with
+The root layout (`app/(site)/layout.tsx`) registers fonts and wraps all pages with
 `[[site-preloader]]` — it does NOT mount the nav/footer. Each page/route that wants the
-marketing chrome mounts `<SiteNav/>` + `<SiteFooter/>` itself: the homepage (`app/page.tsx`)
+marketing chrome mounts `<SiteNav/>` + `<SiteFooter/>` itself: the homepage (`app/(site)/page.tsx`)
 directly, and `/series`, `/blog`, `/sign-in`, AND the gated `/app` dashboard via their own
 layouts. `/sign-in` has its own layout (rather than one on the shared `(app)` route group)
 so the `/app` gate can never trap it.

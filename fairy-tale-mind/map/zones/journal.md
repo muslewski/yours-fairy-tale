@@ -11,16 +11,16 @@ owns:
   routes: ["/blog"]
   anchors: ["route:/blog"]
   globs:
-    - "app/blog/page.tsx"
-    - "app/blog/[slug]/page.tsx"
-    - "app/blog/[slug]/opengraph-image.tsx"
-    - "app/blog/[slug]/twitter-image.tsx"
-    - "app/blog/rss.xml/route.ts"
+    - "app/(site)/blog/page.tsx"
+    - "app/(site)/blog/[slug]/page.tsx"
+    - "app/(site)/blog/[slug]/opengraph-image.tsx"
+    - "app/(site)/blog/[slug]/twitter-image.tsx"
+    - "app/(site)/blog/rss.xml/route.ts"
     - "components/blog/*"
     - "lib/blog.ts"
 depends: ["[[app-shell]]", "[[design-system]]"]
 invariants: []
-verifiedAt: 8d49abd
+verifiedAt: cf03e40
 ---
 
 ## Purpose

@@ -11,7 +11,7 @@ owns:
   routes: ["/contact"]
   anchors: []
   globs:
-    - "app/contact/**"
+    - "app/(site)/contact/**"
     - "components/contact/**"
     - "lib/contact.ts"
     - "app/api/contact/route.ts"
@@ -26,7 +26,7 @@ verifiedAt: b20383d
 
 ## Purpose
 The `/contact` surface where parents reach a real person. A server-component page
-(`app/contact/page.tsx`) under a `/series`-style layout (`app/contact/layout.tsx`:
+(`app/(site)/contact/page.tsx`) under a `/series`-style layout (`app/(site)/contact/layout.tsx`:
 `<SiteNav/>` + cream `<main>` + `<SiteFooter/>`, footer owns its wave) renders the
 static content; a `"use client"` `<ContactForm/>` island
 (`components/contact/contact-form.tsx`) POSTs JSON to `app/api/contact/route.ts`,

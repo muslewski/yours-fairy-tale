@@ -11,7 +11,7 @@ owns:
   routes: ["/series", "/api/waitlist"]
   anchors: ["route:/series", "id:waitlist"]
   globs:
-    - "app/series/page.tsx"
+    - "app/(site)/series/page.tsx"
     - "components/series/*"
     - "app/api/waitlist/route.ts"
     - "lib/waitlist.ts"
@@ -27,13 +27,13 @@ invariants:
     enforcedBy: ["tests/waitlist/waitlist.test.ts"]
   - rule: "The Resend thank-you ('You're on the list for The Series') is non-fatal — the signup is saved even if the email send fails (logged, never rethrown)."
     enforcedBy: ["tests/waitlist/waitlist.test.ts"]
-verifiedAt: 76b1727
+verifiedAt: cf03e40
 ---
 
 ## Purpose
 The `/series` route showcases the upcoming series and captures early-access email
 addresses via the waitlist form. Components live in `components/series/`; the
-sub-layout in `app/series/layout.tsx` is owned by `[[app-shell]]`.
+sub-layout in `app/(site)/series/layout.tsx` is owned by `[[app-shell]]`.
 
 ## Waitlist pipeline (real since 2026-06-10)
 Mirrors the contact form's form → route → lib triad:
@@ -48,7 +48,7 @@ Mirrors the contact form's form → route → lib triad:
   `[[payload-backend]]`, with its `20260610_000000_waitlist` migration.
 
 ## Anchors & layout
-Section id: `waitlist` (the sign-up form section in `app/series/page.tsx`).
+Section id: `waitlist` (the sign-up form section in `app/(site)/series/page.tsx`).
 
 ## Lineage
 Seeded from the existing site at Mind setup.

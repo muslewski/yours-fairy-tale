@@ -16,7 +16,7 @@ owns:
   routes: []
   anchors: []
   globs:
-    - "app/studio/**"
+    - "app/(site)/studio/**"
     - "lib/studio-auth.ts"
     - "lib/studio-data.ts"
     - "lib/studio-workflow.ts"
@@ -39,7 +39,7 @@ invariants:
     enforcedBy: ["tests/studio/attach-video.test.ts"]
   - rule: "Revenue sums Stripe-charged cents (amountTotalCents) excluding refunded/cancelled; never recomputed from pricing."
     enforcedBy: ["tests/studio/workflow.test.ts"]
-verifiedAt: 80eddae
+verifiedAt: cf03e40
 ---
 
 ## Purpose
@@ -59,18 +59,18 @@ mutation (mirroring `assertOwnsOrder` on the customer side). The `(gated)` layou
 redirects to `/studio/sign-in`, but it is ONLY a navigation gate — the data layer
 and the actions are the security boundary.
 
-### Shell + sign-in (app/studio/layout.tsx, app/studio/sign-in)
+### Shell + sign-in (app/(site)/studio/layout.tsx, app/(site)/studio/sign-in)
 `noindex` metadata (plus `/studio` in robots disallow, see `[[app-shell]]`), a
 branded sign-in page posting email/password to Payload's own login, and a compact
 studio nav (`components/studio/studio-nav.tsx`) with sign-out.
 
-### Dashboard (app/studio/(gated)/page.tsx)
+### Dashboard (app/(site)/studio/(gated)/page.tsx)
 Revenue cards (this month / all time, summed from `amountTotalCents` — never
 recomputed from `lib/pricing.ts`, which can drift from what was actually
 charged), a needs-attention queue (orders whose next move is the studio's), and
 quick links.
 
-### Order list + workstation (app/studio/(gated)/orders, orders/[id])
+### Order list + workstation (app/(site)/studio/(gated)/orders, orders/[id])
 The list filters by status chips. The per-order workstation shows the story
 panel, the parent's photos, the notes thread, and:
 - **Status workflow** (`components/studio/workflow-card.tsx` →
@@ -84,7 +84,7 @@ panel, the parent's photos, the notes thread, and:
   purchase (see `[[delivery-promise-auto-from-length]]`).
 - **Video uploads** (`components/studio/video-upload.tsx`) — proof + final film
   go browser → Vercel Blob via `@vercel/blob/client` `upload()` against the
-  token route `app/studio/api/blob-upload/route.ts` (admin check inside
+  token route `app/(site)/studio/api/blob-upload/route.ts` (admin check inside
   `onBeforeGenerateToken` — route handlers do NOT inherit the layout gate),
   then the client calls `attachUploadedVideo` to create a METADATA-ONLY media
   doc (`filesRequiredOnCreate: false`) whose `filename` == the blob pathname —

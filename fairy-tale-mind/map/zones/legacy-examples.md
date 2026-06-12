@@ -11,20 +11,20 @@ owns:
   routes: ["/legacy-examples"]
   anchors: ["route:/legacy-examples"]
   globs:
-    - "app/legacy-examples/page.tsx"
-    - "app/1-magic-sparkle/*"
-    - "app/2-bento-grid/*"
-    - "app/3-glass-dream/*"
-    - "app/4-storybook-editorial/*"
-    - "app/5-aurora-mesh/*"
-    - "app/6-pop-comic/*"
-    - "app/7-cloud-castle/*"
-    - "app/8-neumorph-pastel/*"
-    - "app/9-sticker-sheet/*"
-    - "app/10-floating-3d/*"
+    - "app/(site)/legacy-examples/page.tsx"
+    - "app/(site)/1-magic-sparkle/*"
+    - "app/(site)/2-bento-grid/*"
+    - "app/(site)/3-glass-dream/*"
+    - "app/(site)/4-storybook-editorial/*"
+    - "app/(site)/5-aurora-mesh/*"
+    - "app/(site)/6-pop-comic/*"
+    - "app/(site)/7-cloud-castle/*"
+    - "app/(site)/8-neumorph-pastel/*"
+    - "app/(site)/9-sticker-sheet/*"
+    - "app/(site)/10-floating-3d/*"
 depends: []
 invariants: []
-verifiedAt: 73b3cb8c3542e6bf0cf1814cde54e21b006c6158
+verifiedAt: cf03e40
 ---
 
 ## Purpose

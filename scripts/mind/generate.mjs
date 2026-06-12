@@ -36,11 +36,18 @@ function grepFiles(needle, dirs) {
 }
 
 function routeExists(route) {
-  const seg = route === "/" ? "" : route.replace(/^\//, "");
-  const base = join(ROOT, "app", seg);
-  return ["page.tsx", "page.jsx", "route.ts", "route.tsx"].some((f) =>
-    existsSync(join(base, f)),
-  );
+  // Resolve like the App Router does: route groups "(...)" are invisible in
+  // URLs, so strip them from each page/route file's path before comparing.
+  const want = route === "/" ? "" : route.replace(/^\//, "").replace(/\/$/, "");
+  return tracked("app").some((f) => {
+    const m = f.match(/^app\/(?:(.*)\/)?(?:page\.(?:tsx|jsx)|route\.tsx?)$/);
+    if (!m) return false;
+    const resolved = (m[1] ?? "")
+      .split("/")
+      .filter((s) => s && !(s.startsWith("(") && s.endsWith(")")))
+      .join("/");
+    return resolved === want;
+  });
 }
 
 function anchorResolves(anchor) {
