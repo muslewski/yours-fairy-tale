@@ -17,7 +17,7 @@ owns:
 depends: []
 invariants: []
 skills: ["[[navigating-fairy-tale]]", "[[obsidian-markdown]]", "[[obsidian-bases]]", "[[json-canvas]]"]
-verifiedAt: b74bfbb
+verifiedAt: 47ac623
 ---
 
 ## Purpose
