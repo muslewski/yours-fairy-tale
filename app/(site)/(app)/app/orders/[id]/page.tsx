@@ -24,6 +24,7 @@ import { DeliveryCountdown } from "@/components/app/delivery-countdown";
 import { PhotoUpload } from "@/components/app/photo-upload";
 import { ProofReview } from "@/components/app/proof-review";
 import { VideoPlayer } from "@/components/app/video-player";
+import { UploadedPhotos } from "@/components/app/uploaded-photos";
 import { OrderNotes, type CustomerNote } from "@/components/app/order-notes";
 
 export const metadata: Metadata = {
@@ -85,6 +86,9 @@ export default async function OrderDetailPage({
       ? await loadProof(String(order.id), order.proof as string | null)
       : null;
   const notes = (Array.isArray(order.customerNotes) ? order.customerNotes : []) as CustomerNote[];
+  const assetIds = (Array.isArray(order.assets) ? order.assets : []).map((a) =>
+    typeof a === "object" && a !== null ? String((a as { id: string }).id) : String(a),
+  );
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-8 px-6">
@@ -137,6 +141,8 @@ export default async function OrderDetailPage({
       </article>
 
       <StoryPanel order={order} />
+
+      <UploadedPhotos orderId={String(order.id)} assetIds={assetIds} />
 
       <OrderNotes orderId={String(order.id)} notes={notes} />
     </div>
