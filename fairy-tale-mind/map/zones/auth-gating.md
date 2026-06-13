@@ -4,8 +4,8 @@ summary: "Two-layer /app gating: optimistic proxy cookie check + authoritative l
 tags: [auth, security, customer-area]
 status: active
 created: 2026-06-03
-updated: 2026-06-10
-related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]", "[[video-ownership-route-over-static-url]]", "[[local-disk-video-delivery]]", "[[blob-pass-through-proxied-video]]", "[[prod-env-fail-closed]]", "[[studio]]", "[[delivery-promise-auto-from-length]]"]
+updated: 2026-06-13
+related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]", "[[video-ownership-route-over-static-url]]", "[[local-disk-video-delivery]]", "[[blob-pass-through-proxied-video]]", "[[prod-env-fail-closed]]", "[[studio]]", "[[delivery-promise-auto-from-length]]", "[[two-media-collections-public-and-gated]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
 owns:
@@ -27,6 +27,7 @@ owns:
     - "app/(site)/(app)/app/orders/[id]/page.tsx"
     - "app/(site)/(app)/app/profile/page.tsx"
     - "app/(site)/(app)/api/orders/[id]/video/route.ts"
+    - "app/(site)/(app)/api/orders/[id]/asset/[assetId]/route.ts"
     - "app/(site)/(app)/sign-in/page.tsx"
     - "app/(site)/(app)/sign-in/verify/page.tsx"
     - "lib/auth-confirm-url.ts"
@@ -45,6 +46,7 @@ owns:
     - "components/app/proof-review.tsx"
     - "components/app/video-player.tsx"
     - "components/app/order-notes.tsx"
+    - "components/app/uploaded-photos.tsx"
     - "components/app/sign-out-button.tsx"
     - "tests/auth/gating.test.ts"
     - "tests/auth/server.test.ts"
@@ -66,6 +68,8 @@ invariants:
     enforcedBy: ["tests/app/order-actions.test.ts", "tests/auth/add-order-note.test.ts"]
   - rule: "The delivered film AND the proof preview are served ONLY through the ownership-checked route (app/(site)/(app)/api/orders/[id]/video, ?kind=proof for the preview) via resolveOwnedVideo(orderId, field) → assertOwnsOrder. Never a direct/guessable media URL; media stays read: adminOnly (a raw media.url 403s for parents). A non-owner can never fetch another customer's video."
     enforcedBy: ["tests/app/video-access.test.ts"]
+  - rule: "Customer PHOTOS are served ONLY through the ownership-gated route app/(site)/(app)/api/orders/[id]/asset/[assetId] via resolveOwnedAsset(orderId, assetId) → the SAME assertOwnsOrder doorway as the video route. resolveOwnedAsset also checks the asset id is one of the order's `assets` and prefers the small `preview` size. Non-owner (or asset not on the order) → 403/404; media stays read: adminOnly, so this gate — not a guessable URL — is the only door. No Range (images need none)."
+    enforcedBy: ["tests/app/video-access.test.ts"]
   - rule: "sign-in page is OUTSIDE the gated app route group — redirect can never trap it."
     enforcedBy: []
   - rule: "Magic-link emails point at the /sign-in/verify confirmation interstitial (via toConfirmSignInUrl), NEVER the raw /api/auth/magic-link/verify endpoint. The interstitial consumes nothing on GET; a human form submit reaches verify exactly once. This stops email scanners / link-preview bots from burning the single-use token (INVALID_TOKEN)."
@@ -84,7 +88,7 @@ invariants:
     enforcedBy: ["tests/auth/gating.test.ts"]
   - rule: "Each photo-upload server-action call carries ONE file, client-side re-encoded (≤2048px JPEG q0.85, EXIF orientation baked in) when over MAX_REQUEST_BYTES (3.5MB), so every request fits Vercel's ~4.5MB body cap; retries skip files already saved in a previous attempt."
     enforcedBy: ["components/app/prepare-upload.ts", "components/app/photo-upload.tsx"]
-verifiedAt: cf03e40
+verifiedAt: 82f6095
 ---
 
 ## Purpose
@@ -213,6 +217,26 @@ Both guard Motion with `useReducedMotion()` and use brand tokens only.
     Range-aware. Remaining future work — private Blob + signed playback URLs —
     stays tracked in `[[local-disk-video-delivery]]`.
 
+### Uploaded photos — gated preview (2026-06-13)
+The parent's own uploaded photos are shown back to them on the detail page, but
+the bytes ride the SAME ownership gate as the film:
+- **`resolveOwnedAsset(orderId, assetId)`** (`lib/video-access.ts`) runs
+  `assertOwnsOrder`, then confirms `assetId` is one of the order's `assets`, then
+  resolves the media doc (Local API, `overrideAccess`, `depth:0`) preferring its
+  small `preview` size (falls back to the original). Returns `null` when the asset
+  isn't on the order or has no file yet — never leaks another customer's photo.
+- **`app/(site)/(app)/api/orders/[id]/asset/[assetId]/route.ts`** — the only door
+  to a customer photo. Mirrors the video route minus `Range` (images need none):
+  Blob mode proxies the bytes via `head(filename)` (the Blob URL never reaches the
+  client); local-disk fallback streams from `MEDIA_STATIC_DIR`. Non-owner → 403,
+  unknown/foreign asset → 404. Because `media` is `read: adminOnly`, this gate —
+  not a guessable URL — is the access boundary (see
+  `[[two-media-collections-public-and-gated]]`).
+- **`components/app/uploaded-photos.tsx`** ("Photos you sent") — a server-component
+  thumbnail grid mounted on the detail page; each tile is a plain `<img>` pointing
+  at `/api/orders/{id}/asset/{assetId}` (gated dynamic URLs aren't
+  Next/Image-optimizable). Renders nothing when the order has no assets.
+
 ### Profile (app/(site)/(app)/app/profile/page.tsx + sign-out)
 Server component; the layout has already gated the session, so it reads the
 parent's name + email straight from it (read-only for MVP) into an on-brand card,
@@ -326,3 +350,9 @@ card (mascot + days-to-`promisedBy`, see `[[delivery-promise-auto-from-length]]`
 and proof playback was FIXED to stream through the ownership-gated video route
 (`?kind=proof`, `resolveOwnedVideo` gained a field param) — the page used to pass
 the raw `media.url`, which is `read: adminOnly` and 403'd for parents.
+Two media collections + gated photo preview (2026-06-13): customer PHOTOS now
+also proxy through an ownership-gated route
+(`app/(site)/(app)/api/orders/[id]/asset/[assetId]`, `resolveOwnedAsset`, same
+`assertOwnsOrder` doorway, non-owner 403), and the detail page gained a "Photos
+you sent" gallery (`components/app/uploaded-photos.tsx`) that loads the small
+`preview` size through that gate (see `[[two-media-collections-public-and-gated]]`).

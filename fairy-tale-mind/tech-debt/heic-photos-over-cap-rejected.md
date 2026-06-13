@@ -1,16 +1,34 @@
 ---
 type: debt
-summary: "Browsers that cannot decode HEIC (everything except Safari) reject >3.5MB HEIC photos with a gentle error instead of converting them — a non-Safari parent with large iPhone HEICs must convert/resize manually."
+summary: "NARROWED 2026-06-13: the client now ALWAYS converts HEIC→JPEG (not only over-cap) and the server rejects non-jpeg/png/webp with a gentle message. Residual: a browser that cannot DECODE HEIC at all (everything except Safari) still falls through to the gentle 'use a JPEG copy' error — a non-Safari parent with iPhone HEICs must convert manually."
 tags: [ux, uploads, customer-area]
 status: open
 created: 2026-06-10
-updated: 2026-06-10
-related: ["[[auth-gating]]"]
+updated: 2026-06-13
+related: ["[[auth-gating]]", "[[two-media-collections-public-and-gated]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-10-launch-hardening.md"
+  - "fairy-tale-mind/plans/2026-06-13-media-collections-blob-optimization.md"
 severity: low
 effort: medium
 ---
+
+## Update 2026-06-13 — narrowed by always-convert + server allow-list
+The two-media-collections work (`[[two-media-collections-public-and-gated]]`)
+tightened both ends:
+- The client now **always** converts HEIC/HEIF → JPEG (not only when over the
+  3.5MB cap) before upload — `prepareForUpload` detects HEIC by MIME or extension
+  and runs the canvas re-encode unconditionally (`components/app/prepare-upload.ts`).
+- The server hardened its contract: `collections/Media.ts` `mimeTypes` accepts
+  only jpeg/png/webp (+ the studio's video types), and `isServerAcceptedImage`
+  (`lib/order-upload-validation.ts`) lets `uploadOrderAssets` reject a non-accepted
+  image with a gentle message instead of a raw Payload mimeTypes error.
+
+**Residual (why this stays open, low):** the always-convert still depends on the
+browser being able to DECODE the HEIC. On a non-Safari browser that cannot decode
+HEIC at all, `createImageBitmap` throws and the pipeline falls through to the
+gentle "a little large… please choose a JPEG copy" error. The genuinely-undecodable
+case is unchanged; only its trigger surface narrowed.
 
 ## Problem
 The photo-upload pipeline (`components/app/prepare-upload.ts`) shrinks oversized

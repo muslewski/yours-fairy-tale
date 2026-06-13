@@ -4,11 +4,12 @@ summary: "REMAINING (narrowed 2026-06-10): delivered videos now proxy from Verce
 tags: [video, media, security, infra]
 status: open
 created: 2026-06-03
-updated: 2026-06-10
-related: ["[[auth-gating]]", "[[payload-backend]]", "[[blob-pass-through-proxied-video]]"]
+updated: 2026-06-13
+related: ["[[auth-gating]]", "[[payload-backend]]", "[[blob-pass-through-proxied-video]]", "[[two-media-collections-public-and-gated]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
   - "fairy-tale-mind/plans/2026-06-10-launch-hardening.md"
+  - "fairy-tale-mind/plans/2026-06-13-media-collections-blob-optimization.md"
 severity: low
 effort: medium
 ---
@@ -32,6 +33,18 @@ work below.
   `resolveOwnedVideo`.
 - Every video byte still proxies through a Node route handler — no CDN offload, no
   adaptive streaming.
+
+## Update 2026-06-13 — now also covers customer PHOTOS
+With the two-media-collections work (`[[two-media-collections-public-and-gated]]`),
+customer photos join videos behind the same ownership-gated proxy: a new route
+`app/(site)/(app)/api/orders/[id]/asset/[assetId]/route.ts` (via `resolveOwnedAsset`,
+same `assertOwnsOrder` doorway) streams the small `preview` size, and the "Photos
+you sent" gallery reads through it. The bytes still live on the **public** Vercel
+Blob store (unguessable URLs, never exposed). So the remaining-debt items in this note — private
+Blob + short-lived signed URLs (or a managed video host) — now applies to BOTH
+videos AND photos. Customer media stays GATED-PUBLIC because the Payload
+Vercel-Blob plugin is public-only today (the core `@vercel/blob` SDK supports
+private, but only outside the plugin). Still open, severity unchanged (low).
 
 ## Problem
 The customer dashboard's `delivered` action (Task 4.4) plays `order.finalVideo`

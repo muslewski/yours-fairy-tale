@@ -24,6 +24,10 @@ The staff order panel lives at `/studio` (same `admins` login as `/admin`):
 revenue, the order queue, status workflow, video delivery, and the customer's
 delivery promise.
 
+Media lives in two collections: `site-media` (public, admin-managed brand
+imagery, direct CDN URLs) and `media` (customer photos/proofs/videos,
+access-controlled and served only through ownership-gated routes).
+
 ## Tests
 
 - `npm test` — vitest, DB-backed against the database in `.env.test`

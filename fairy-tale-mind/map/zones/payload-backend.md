@@ -1,14 +1,15 @@
 ---
 type: zone
-summary: "Payload v3 backend — the in-app CMS, /admin panel, REST/GraphQL API, the admins native-auth collection, the Waitlist collection, Vercel Blob media storage (pass-through), and production boot (env validation + migrate-on-deploy)."
+summary: "Payload v3 backend — the in-app CMS, /admin panel, REST/GraphQL API, the admins native-auth collection, the Waitlist collection, TWO media collections (gated-public customer `media` + public direct-URL `site-media`) on one Vercel Blob store, and production boot (env validation + migrate-on-deploy)."
 tags: [backend, payload, auth, infrastructure]
 status: active
 created: 2026-06-03
-updated: 2026-06-10
-related: ["[[migrate-on-deploy-via-instrumentation]]", "[[prod-env-fail-closed]]", "[[blob-pass-through-proxied-video]]", "[[waitlist-signups-payload-plus-resend]]", "[[studio]]", "[[browser-to-blob-uploads-metadata-media]]"]
+updated: 2026-06-13
+related: ["[[migrate-on-deploy-via-instrumentation]]", "[[prod-env-fail-closed]]", "[[blob-pass-through-proxied-video]]", "[[waitlist-signups-payload-plus-resend]]", "[[studio]]", "[[browser-to-blob-uploads-metadata-media]]", "[[two-media-collections-public-and-gated]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
   - "fairy-tale-mind/plans/2026-06-10-launch-hardening.md"
+  - "fairy-tale-mind/plans/2026-06-13-media-collections-blob-optimization.md"
 owns:
   # Routes are served from the `(payload)` route group via catch-all dynamic
   # segments (`/admin`, `/api/[...slug]`, `/api/graphql`, `/api/graphql-playground`).
@@ -23,8 +24,11 @@ owns:
     - "migrations/20260605_000000_order_customer_notes.ts"
     - "migrations/20260610_000000_waitlist.ts"
     - "migrations/20260610_000001_order_amount_promise.ts"
+    - "migrations/20260613_000000_media_site_media.ts"
     - "collections/Admins.ts"
     - "collections/Waitlist.ts"
+    - "collections/Media.ts"
+    - "collections/SiteMedia.ts"
     - "instrumentation.ts"
     - "lib/run-migrations.ts"
     - "lib/required-env.ts"
@@ -60,9 +64,11 @@ invariants:
     enforcedBy: ["payload.config.ts"]
   - rule: "media allows METADATA-ONLY creates (filesRequiredOnCreate: false) — the studio's browser-to-Blob uploads create media docs whose filename == the blob pathname with no file payload; Payload never receives the video bytes."
     enforcedBy: ["collections/Media.ts", "tests/studio/attach-video.test.ts"]
+  - rule: "There are TWO media collections on ONE public Blob store. site-media is public-read/admin-write with DIRECT CDN URLs (disablePayloadAccessControl: true + `site/` prefix, set per-collection in payload.config.ts); media stays read: adminOnly and is served only through ownership-gated routes. The customer-PII collection (`media`) and the public brand collection (`site-media`) never share an access model. media.mimeTypes is restricted to sharp-safe images (jpeg/png/webp) + the studio's four video types; customer photos are capped to 2048px + re-encoded WebP and carry one `preview` size."
+    enforcedBy: ["collections/SiteMedia.ts", "collections/Media.ts", "payload.config.ts"]
   - rule: "Waitlist rows are created ONLY by app/api/waitlist/route.ts via the Local API with overrideAccess — all collection access is adminOnly (same posture as Orders). Email is unique + lowercased (beforeValidate hook, same canonicalization as users.email)."
     enforcedBy: ["collections/Waitlist.ts", "tests/waitlist/waitlist.test.ts"]
-verifiedAt: a5084d4
+verifiedAt: 82f6095
 ---
 
 ## Purpose
@@ -102,6 +108,23 @@ It owns the database (Postgres via `@payloadcms/db-postgres`, uuid primary keys)
   `collections/Media.ts` sets `filesRequiredOnCreate: false` so the studio's
   browser-to-Blob flow can create metadata-only media docs (filename == blob pathname,
   no bytes through the server — see `[[browser-to-blob-uploads-metadata-media]]`).
+- **Two media collections, one store** (2026-06-13, see
+  `[[two-media-collections-public-and-gated]]`). `collections/Media.ts` (slug
+  `media`, unchanged — only relabeled "Customer media" in /admin) holds customer
+  PII: children's photos, proofs, delivered films. It now restricts `mimeTypes` to
+  sharp-safe images (jpeg/png/webp) + the studio's four video types, normalizes
+  customer photos server-side (`resizeOptions` cap 2048px `inside` + WebP q80), and
+  emits one small `preview` imageSize (640px) for the in-app gallery. `collections/SiteMedia.ts`
+  (slug `site-media`) is the NEW public, admin-managed brand collection: `read: () => true`,
+  create/update/delete `adminOnly`, WebP `formatOptions`, thumbnail/card/hero
+  imageSizes, focalPoint, `alt`+`caption` fields. Both ride the SAME single
+  `vercelBlobStorage` plugin (one `BLOB_READ_WRITE_TOKEN`) — but `payload.config.ts`
+  configures them per collection: `media: true` (pass-through, proxied) vs
+  `"site-media": { disablePayloadAccessControl: true, prefix: "site" }` (direct CDN
+  URLs, namespaced under `site/`). No new env var. Schema migration:
+  `migrations/20260613_000000_media_site_media.ts` (site_media tables + `media`
+  `sizes_preview_*` columns; idempotent; carries a VERIFY-against-`migrate:create`
+  note).
 - **Production boot** (`instrumentation.ts`, prod Node runtime only) — first validates
   the 9-var env contract (`lib/required-env.ts`) and THROWS on any missing var (fail
   closed, see `[[prod-env-fail-closed]]`); then runs migrate-on-deploy
@@ -144,6 +167,13 @@ Studio panel (2026-06-10): `clientUploads: true` on the Blob plugin,
 `filesRequiredOnCreate: false` on media (metadata-only creates for browser-to-Blob
 uploads), and migration `20260610_000001_order_amount_promise` adding
 `amountTotalCents` + `promisedBy` to orders (see `[[studio]]`).
+Two media collections (2026-06-13): the customer `media` collection was relabeled
+"Customer media", restricted to sharp-safe image types + the studio's video types,
+and given a server-side WebP cap + one `preview` size; a new public `site-media`
+collection (direct CDN URLs via per-collection `disablePayloadAccessControl` +
+`site/` prefix) carries admin-managed brand imagery; migration
+`20260613_000000_media_site_media` adds the site_media tables and the `media`
+preview-size columns (see `[[two-media-collections-public-and-gated]]`).
 
 ## Notes / tech debt
 - `payload generate:importmap` / `generate:types` fail under Node 25 (the CLI's tsx worker
