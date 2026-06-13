@@ -44,6 +44,12 @@ export interface OwnedVideo {
   alt: string | null;
 }
 
+/** The media fields the gated asset route needs to serve a photo preview. */
+export interface OwnedAsset {
+  filename: string;
+  mimeType: string;
+}
+
 /**
  * Resolve a video attached to `orderId` — the delivered `finalVideo` (default)
  * or the `proof` preview — but ONLY after proving the signed-in customer owns
@@ -86,6 +92,51 @@ export async function resolveOwnedVideo(
       filesize: media.filesize ?? null,
       alt: media.alt ?? null,
     };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolve ONE asset (customer photo) for `orderId`, but only after proving the
+ * signed-in customer owns the order AND that `assetId` is one of the order's
+ * `assets`. Returns the small `preview` variant when present (falls back to the
+ * original), or null if the asset isn't on the order / has no file yet.
+ *
+ * Mirrors resolveOwnedVideo: ownership is the only door; the blob URL never
+ * reaches the client.
+ */
+export async function resolveOwnedAsset(
+  orderId: string,
+  assetId: string,
+): Promise<OwnedAsset | null> {
+  const { order, payload } = await assertOwnsOrder(orderId);
+
+  const rawAssets = (order as { assets?: unknown }).assets;
+  const assets = Array.isArray(rawAssets)
+    ? rawAssets.map((a) =>
+        typeof a === "object" && a !== null ? String((a as { id: string }).id) : String(a),
+      )
+    : [];
+  if (!assets.includes(assetId)) return null;
+
+  try {
+    const media = await payload.findByID({
+      collection: "media",
+      id: assetId,
+      depth: 0,
+      overrideAccess: true,
+    });
+    const sizes = (
+      media as {
+        sizes?: Record<string, { filename?: string | null; mimeType?: string | null }>;
+      }
+    ).sizes;
+    const preview = sizes?.preview;
+    const filename = preview?.filename ?? media.filename;
+    const mimeType = preview?.mimeType ?? media.mimeType;
+    if (!filename || !mimeType) return null;
+    return { filename, mimeType };
   } catch {
     return null;
   }

@@ -33,7 +33,7 @@ vi.mock("@/lib/customer-data", async (importOriginal) => {
 });
 
 import { getPayloadClient } from "@/lib/payload";
-import { resolveOwnedVideo } from "@/lib/video-access";
+import { resolveOwnedAsset, resolveOwnedVideo } from "@/lib/video-access";
 
 let payload: Awaited<ReturnType<typeof getPayloadClient>>;
 let userAId: string;
@@ -164,5 +164,64 @@ describe("resolveOwnedVideo — ownership gate", () => {
 
     // The default field remains finalVideo — and this order has none.
     expect(await resolveOwnedVideo(String(order.id))).toBeNull();
+  });
+});
+
+describe("resolveOwnedAsset — ownership-gated photo preview", () => {
+  test("resolveOwnedAsset returns the preview for an asset on the owner's order", async () => {
+    const photo = await payload.create({
+      collection: "media",
+      data: { alt: "a photo" },
+      file: {
+        data: Buffer.from("not-a-real-image"),
+        name: `a-${Date.now()}.jpg`,
+        mimetype: "image/jpeg",
+        size: 16,
+      },
+      overrideAccess: true,
+    });
+    createdMediaIds.push(String(photo.id));
+
+    const order = await payload.create({
+      collection: "orders",
+      data: { owner: userAId, childName: "Mia", status: "in_production", assets: [photo.id] },
+    });
+    createdOrderIds.push(String(order.id));
+
+    mockGetCustomerSession.mockResolvedValue(sessionFor(userAId));
+
+    const resolved = await resolveOwnedAsset(String(order.id), String(photo.id));
+    expect(resolved).not.toBeNull();
+    expect(resolved?.mimeType).toBeTruthy();
+    expect(resolved?.filename).toBeTruthy();
+
+    // An assetId NOT on the order resolves to null even for the owner.
+    expect(
+      await resolveOwnedAsset(String(order.id), "00000000-0000-0000-0000-000000000000"),
+    ).toBeNull();
+  });
+
+  test("resolveOwnedAsset throws for a non-owner", async () => {
+    const photo = await payload.create({
+      collection: "media",
+      data: { alt: "p" },
+      file: {
+        data: Buffer.from("x"),
+        name: `p-${Date.now()}.jpg`,
+        mimetype: "image/jpeg",
+        size: 1,
+      },
+      overrideAccess: true,
+    });
+    createdMediaIds.push(String(photo.id));
+
+    const order = await payload.create({
+      collection: "orders",
+      data: { owner: userAId, childName: "Mia", status: "in_production", assets: [photo.id] },
+    });
+    createdOrderIds.push(String(order.id));
+
+    mockGetCustomerSession.mockResolvedValue(sessionFor(userBId));
+    await expect(resolveOwnedAsset(String(order.id), String(photo.id))).rejects.toThrow();
   });
 });
