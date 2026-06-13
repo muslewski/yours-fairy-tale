@@ -47,3 +47,20 @@ export function validateUploadFile(file: UploadCandidate): UploadValidation {
   }
   return { ok: true };
 }
+
+/**
+ * The image content types the SERVER (Payload + sharp) accepts for customer
+ * media — MUST mirror collections/Media.ts `upload.mimeTypes` (image subset).
+ * HEIC is intentionally excluded: it is converted to JPEG client-side before
+ * upload (components/app/prepare-upload.ts), so a HEIC reaching the server is an
+ * error worth a gentle message rather than a raw Payload mimeTypes rejection.
+ */
+const SERVER_ACCEPTED_IMAGE_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+]);
+
+export function isServerAcceptedImage(mimeType: string): boolean {
+  return SERVER_ACCEPTED_IMAGE_TYPES.has(mimeType);
+}

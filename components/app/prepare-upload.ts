@@ -15,7 +15,13 @@ const JPEG_QUALITY = 0.85;
 export type PreparedUpload = { ok: true; file: File } | { ok: false; error: string };
 
 export async function prepareForUpload(file: File): Promise<PreparedUpload> {
-  if (file.size <= MAX_REQUEST_BYTES) return { ok: true, file };
+  const isHeic =
+    /image\/(heic|heif)/i.test(file.type) || /\.(heic|heif)$/i.test(file.name);
+
+  // Non-HEIC already under the request cap needs no work. HEIC always gets
+  // re-encoded to JPEG: the server only accepts jpeg/png/webp, and sharp may
+  // not decode HEIF.
+  if (!isHeic && file.size <= MAX_REQUEST_BYTES) return { ok: true, file };
 
   try {
     const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });

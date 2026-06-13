@@ -23,7 +23,10 @@ import { revalidatePath } from "next/cache";
 
 import { getCustomerSession } from "@/lib/customer-data";
 import { getPayloadClient } from "@/lib/payload";
-import { validateUploadFile } from "@/lib/order-upload-validation";
+import {
+  isServerAcceptedImage,
+  validateUploadFile,
+} from "@/lib/order-upload-validation";
 import { MAX_NOTE_LENGTH, type AddNoteResult } from "@/lib/order-notes-shared";
 
 /**
@@ -93,6 +96,18 @@ export async function uploadOrderAssets(
     const check = validateUploadFile(file);
     if (!check.ok) {
       return { added: 0, error: check.error };
+    }
+  }
+
+  // The picker accepts HEIC (converted to JPEG client-side); guard here in case
+  // a non-jpeg/png/webp image slips through, so it gets a gentle message rather
+  // than a raw Payload mimeTypes rejection.
+  for (const file of files) {
+    if (!isServerAcceptedImage(file.type)) {
+      return {
+        added: 0,
+        error: `"${file.name}" is in a format we can't process. Please use a JPEG or PNG.`,
+      };
     }
   }
 
