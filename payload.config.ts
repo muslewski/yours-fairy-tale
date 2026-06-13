@@ -12,6 +12,7 @@ import { Sessions } from "./collections/auth/Sessions";
 import { Users } from "./collections/auth/Users";
 import { Verifications } from "./collections/auth/Verifications";
 import { Media } from "./collections/Media";
+import { SiteMedia } from "./collections/SiteMedia";
 import { Orders } from "./collections/Orders";
 import { Waitlist } from "./collections/Waitlist";
 
@@ -48,6 +49,7 @@ export default buildConfig({
     Orders,
     Waitlist,
     Media,
+    SiteMedia,
   ],
   plugins: [
     // Media storage. Pass-through mode (disablePayloadAccessControl NOT set):
@@ -59,7 +61,15 @@ export default buildConfig({
     // (collections/Media.ts) still applies.
     vercelBlobStorage({
       enabled: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
-      collections: { media: true },
+      collections: {
+        media: true,
+        "site-media": {
+          // Public marketing assets: serve direct CDN URLs (no Payload proxy)
+          // and namespace them under `site/` in the shared store.
+          disablePayloadAccessControl: true,
+          prefix: "site",
+        },
+      },
       token: process.env.BLOB_READ_WRITE_TOKEN,
       // Admin-panel uploads go browser → Blob directly (bypasses Vercel's
       // ~4.5MB request cap — final films are hundreds of MB). The /studio
