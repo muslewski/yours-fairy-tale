@@ -1,6 +1,8 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
+import type { CheckoutInput } from "@/lib/checkout";
+
 import {
   createOrder, getCheckoutIntent, getOrder, listOrders,
 } from "./tools/orders";
@@ -54,7 +56,9 @@ export function registerTools(server: McpServer): string[] {
       plotNote: z.string().optional(),
       email: z.string().optional(),
     },
-    async (args) => json(getCheckoutIntent(args)),
+    // The zod shape infers world: string; CheckoutInput wants the WorldId union.
+    // The value is just passed through to metadata, so the assertion is safe.
+    async (args) => json(getCheckoutIntent(args as CheckoutInput)),
   );
 
   server.tool(
