@@ -4,7 +4,7 @@ summary: "Nav, footer, root layout and fonts — the chrome wrapping every page.
 tags: [infrastructure, layout]
 status: active
 created: 2026-06-02
-updated: 2026-06-10
+updated: 2026-06-15
 related: ["[[site-preloader]]", "[[section-waves]]", "[[auth-gating]]"]
 sources: []
 owns:
@@ -47,7 +47,7 @@ invariants:
     enforcedBy: []
   - rule: "Footer social icons link to the REAL profiles (Instagram, Facebook, TikTok — yoursfairytale7), open in a new tab with rel='noopener noreferrer', and announce the new-tab behavior to assistive tech. Never href='#'."
     enforcedBy: []
-verifiedAt: cf03e40
+verifiedAt: 5da134f
 ---
 
 ## Purpose
@@ -98,8 +98,11 @@ Trust/quality pass (2026-06-05): branded `error.tsx` / `global-error.tsx` / `not
 (brand voice, error digest shown as a support reference); SEO `sitemap.ts` + `robots.ts`;
 baseline security headers + `poweredByHeader: false` in `next.config.ts`; and the legal
 pages (privacy, terms, refund) under a shared `(legal)` route group, linked in the footer
-bottom bar (legal copy has placeholders + needs review, see
-`[[legal-pages-need-entity-and-review]]`).
+bottom bar. Pre-launch (2026-06-15): the bracketed placeholders are now filled with the
+real registered entity (Firma Dominik Jaworski AI, NIP 5543048002, REGON 544985902,
+ul. Nad Stawem 4, 86-005 Białe Błota, Poland) and governing law (Poland), guarded by
+`tests/legal/legal-pages.test.ts`; a qualified-lawyer review of the wording is still
+outstanding (see `[[legal-pages-need-entity-and-review]]`).
 Launch hardening (2026-06-10): the footer's `href="#"` social placeholders became real
 external profile links (Instagram/Facebook/TikTok `yoursfairytale7`, new-tab +
 `rel="noopener noreferrer"`, new-tab behavior announced to assistive tech; Facebook

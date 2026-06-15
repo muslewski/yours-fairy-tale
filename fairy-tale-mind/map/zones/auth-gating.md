@@ -4,7 +4,7 @@ summary: "Two-layer /app gating: optimistic proxy cookie check + authoritative l
 tags: [auth, security, customer-area]
 status: active
 created: 2026-06-03
-updated: 2026-06-13
+updated: 2026-06-15
 related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]", "[[video-ownership-route-over-static-url]]", "[[local-disk-video-delivery]]", "[[blob-pass-through-proxied-video]]", "[[prod-env-fail-closed]]", "[[studio]]", "[[delivery-promise-auto-from-length]]", "[[two-media-collections-public-and-gated]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
@@ -64,7 +64,7 @@ invariants:
     enforcedBy: ["tests/auth/gating.test.ts"]
   - rule: "Customer order reads are ALWAYS owner-scoped via explicit where { owner: { equals: userId } } + overrideAccess:true. Never rely on Payload req.user. The single-order read (getOrderForOwner) adds the order id to the same where (and:[{id},{owner}]) so the /app/orders/[id] detail page can only load the signed-in customer's own order; a non-owned/unknown id reads as null → notFound()."
     enforcedBy: ["tests/auth/gating.test.ts", "tests/auth/order-detail-read.test.ts"]
-  - rule: "Every mutating customer order action (lib/order-actions.ts) starts with assertOwnsOrder(orderId), which throws unless the signed-in customer owns the order. A customer can never mutate another customer's order. addOrderNote follows this too: it guards, then appends to customerNotes (validated, ≤ MAX_NOTE_LENGTH) and revalidates the detail path — it NEVER changes status and is available at any status."
+  - rule: "Every mutating customer order action (lib/order-actions.ts) starts with assertOwnsOrder(orderId), which throws unless the signed-in customer owns the order. A customer can never mutate another customer's order. addOrderNote follows this too: it guards, then appends to customerNotes (validated, ≤ MAX_NOTE_LENGTH) and revalidates the detail path — it NEVER changes status and is available at any status. On a successful append it also sends a NON-FATAL studio heads-up email (notifyStudioOfNote → STUDIO_NOTIFY_EMAIL, fallback hello@yoursfairytale.com); a failed email is swallowed and never breaks the parent's note."
     enforcedBy: ["tests/app/order-actions.test.ts", "tests/auth/add-order-note.test.ts"]
   - rule: "The delivered film AND the proof preview are served ONLY through the ownership-checked route (app/(site)/(app)/api/orders/[id]/video, ?kind=proof for the preview) via resolveOwnedVideo(orderId, field) → assertOwnsOrder. Never a direct/guessable media URL; media stays read: adminOnly (a raw media.url 403s for parents). A non-owner can never fetch another customer's video."
     enforcedBy: ["tests/app/video-access.test.ts"]
@@ -88,7 +88,7 @@ invariants:
     enforcedBy: ["tests/auth/gating.test.ts"]
   - rule: "Each photo-upload server-action call carries ONE file, client-side re-encoded (≤2048px JPEG q0.85, EXIF orientation baked in) when over MAX_REQUEST_BYTES (3.5MB), so every request fits Vercel's ~4.5MB body cap; retries skip files already saved in a previous attempt."
     enforcedBy: ["components/app/prepare-upload.ts", "components/app/photo-upload.tsx"]
-verifiedAt: 82f6095
+verifiedAt: 5da134f
 ---
 
 ## Purpose

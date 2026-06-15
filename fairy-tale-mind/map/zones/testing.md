@@ -4,7 +4,7 @@ summary: "The test suite — vitest (unit/integration, DB-backed) + a hybrid Pla
 tags: [testing]
 status: active
 created: 2026-06-03
-updated: 2026-06-14
+updated: 2026-06-15
 related: ["[[checkout]]", "[[configurator]]", "[[auth-gating]]", "[[payload-backend]]", "[[series]]", "[[studio]]", "[[agent-tooling]]"]
 sources: ["[[2026-06-03-playwright-test-suite-design]]", "[[e2e-hybrid-playwright-neon-branch]]", "[[2026-06-14-agent-order-tooling-mcp-design]]"]
 owns:
@@ -24,7 +24,7 @@ invariants:
     enforcedBy: ["tests/setup-env.ts", "playwright.config.ts"]
   - rule: "CI runs `npx tsc --noEmit` as its own step — type errors fail the pipeline even when no test imports the broken file."
     enforcedBy: [".github/workflows/test.yml"]
-verifiedAt: c2310cd7d69038f6840a3307b651dec0bd1a1c10
+verifiedAt: 5da134f
 ---
 
 ## Purpose
