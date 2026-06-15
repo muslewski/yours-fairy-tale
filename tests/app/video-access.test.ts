@@ -64,17 +64,14 @@ beforeAll(async () => {
   userAId = String(userA.id);
   userBId = String(userB.id);
 
-  // A tiny "video" media doc (bytes/mime are arbitrary for the resolver test —
-  // we only assert the resolver returns its fields under the ownership gate).
+  // A "video" media doc, created metadata-only (filename/mimeType/filesize, no
+  // file bytes) — exactly how the real studio path (attachVideoCore) registers a
+  // proof/final video whose bytes live in Blob. The resolver only reads these
+  // fields under the ownership gate; this also sidesteps Payload's file-content
+  // validation (checkFileRestrictions), which rejects non-real video bytes.
   const media = await payload.create({
     collection: "media",
-    data: { alt: "Mia's finished film" },
-    file: {
-      data: Buffer.from("fake-mp4-bytes"),
-      name: "mia-final.mp4",
-      mimetype: "video/mp4",
-      size: 14,
-    },
+    data: { filename: "mia-final.mp4", mimeType: "video/mp4", filesize: 14 },
     overrideAccess: true,
   });
   videoMediaId = String(media.id);
@@ -171,13 +168,7 @@ describe("resolveOwnedAsset — ownership-gated photo preview", () => {
   test("resolveOwnedAsset returns the preview for an asset on the owner's order", async () => {
     const photo = await payload.create({
       collection: "media",
-      data: { alt: "a photo" },
-      file: {
-        data: Buffer.from("not-a-real-image"),
-        name: `a-${Date.now()}.jpg`,
-        mimetype: "image/jpeg",
-        size: 16,
-      },
+      data: { filename: `a-${Date.now()}.jpg`, mimeType: "image/jpeg", filesize: 16 },
       overrideAccess: true,
     });
     createdMediaIds.push(String(photo.id));
@@ -204,13 +195,7 @@ describe("resolveOwnedAsset — ownership-gated photo preview", () => {
   test("resolveOwnedAsset throws for a non-owner", async () => {
     const photo = await payload.create({
       collection: "media",
-      data: { alt: "p" },
-      file: {
-        data: Buffer.from("x"),
-        name: `p-${Date.now()}.jpg`,
-        mimetype: "image/jpeg",
-        size: 1,
-      },
+      data: { filename: `p-${Date.now()}.jpg`, mimeType: "image/jpeg", filesize: 1 },
       overrideAccess: true,
     });
     createdMediaIds.push(String(photo.id));

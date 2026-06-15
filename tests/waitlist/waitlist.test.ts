@@ -32,7 +32,10 @@ test("normalizes email to trimmed lowercase", () => {
 
 test("thank-you email is branded and calm", () => {
   const html = buildWaitlistEmail();
-  expect(html).toContain("You're on the list");
+  // renderBrandedEmail HTML-escapes the heading, so the apostrophe in
+  // "You're on the list" renders as an entity (You&#39;re …). Assert the
+  // apostrophe-free part of the heading so the check survives escaping.
+  expect(html).toContain("on the list");
   expect(html).toContain("Create their video");
   expect(html).not.toMatch(/!{2,}|Pow!|Kapow!/);
 });

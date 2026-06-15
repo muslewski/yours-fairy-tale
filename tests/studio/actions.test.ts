@@ -77,14 +77,17 @@ describe("applyOrderStatusCore", () => {
 
   test("guardrail passes once the attachment exists", async () => {
     const { payload, order } = await seedOrder("approved");
+    // Mirror the real attachment path (lib/studio-order-mutations.ts
+    // attachVideoCore): the bytes live in Blob, so the media doc is created
+    // metadata-only (filename/mimeType/filesize) with no `file` upload. This
+    // avoids Payload's file-content validation (checkFileRestrictions), which
+    // rejects a fake video, and matches how proof/final videos are registered.
     const media = await payload.create({
       collection: "media",
-      data: { alt: "test film" },
-      file: {
-        data: Buffer.from("not-really-a-video"),
-        name: `guard-final-${Date.now()}.mp4`,
-        mimetype: "video/mp4",
-        size: 18,
+      data: {
+        filename: `guard-final-${Date.now()}.mp4`,
+        mimeType: "video/mp4",
+        filesize: 18,
       },
       overrideAccess: true,
     });
