@@ -1,6 +1,11 @@
-import { expect, test, vi } from "vitest";
+import { beforeEach, expect, test, vi } from "vitest";
 
 vi.mock("@/lib/email", () => ({ sendEmail: vi.fn().mockResolvedValue(undefined) }));
+
+// Isolate the shared sendEmail mock so call-count assertions are order-independent.
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 import { sendEmail } from "@/lib/email";
 import { getPayloadClient } from "@/lib/payload";
@@ -38,6 +43,31 @@ test("thank-you email is branded and calm", () => {
   expect(html).toContain("on the list");
   expect(html).toContain("Create their video");
   expect(html).not.toMatch(/!{2,}|Pow!|Kapow!/);
+});
+
+test("submitWaitlistSignup records the provided source", async () => {
+  const email = `footer-${Date.now()}@example.com`;
+  const payload = await getPayloadClient();
+  let rowId: string | null = null;
+  try {
+    const res = await submitWaitlistSignup({ email, source: "footer" });
+    expect(res.ok).toBe(true);
+
+    const found = await payload.find({
+      collection: "waitlist",
+      where: { email: { equals: email } },
+      limit: 1,
+      overrideAccess: true,
+    });
+    rowId = found.docs[0] ? String(found.docs[0].id) : null;
+    expect(found.docs[0]?.source).toBe("footer");
+  } finally {
+    if (rowId) {
+      await payload
+        .delete({ collection: "waitlist", id: rowId, overrideAccess: true })
+        .catch(() => {});
+    }
+  }
 });
 
 test("signup persists the row and sends one thank-you; duplicate is a quiet success", async () => {

@@ -13,6 +13,8 @@ export interface WaitlistInput {
   email?: string;
   /** Honeypot — must be empty. */
   company?: string;
+  /** Where the signup came from (e.g. "series", "footer"). Defaults to "series". */
+  source?: string;
 }
 
 export type WaitlistResult = { ok: true } | { ok: false; error: string };
@@ -71,10 +73,12 @@ export async function submitWaitlistSignup(
     return { ok: true };
   }
 
+  const source = (input.source ?? "series").trim().slice(0, 64) || "series";
+
   try {
     await payload.create({
       collection: "waitlist",
-      data: { email: v.email, source: "series" },
+      data: { email: v.email, source },
       overrideAccess: true,
     });
   } catch (err) {

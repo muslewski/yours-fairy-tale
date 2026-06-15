@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Stagger, StaggerItem, hoverPop, tapPop } from "@/components/motion/stagger";
@@ -55,6 +56,26 @@ const LEGAL = [
  * (defaults to cream, which all current pages end on).
  */
 export function SiteFooter({ waveFrom = "cream" }: { waveFrom?: BrandColor } = {}) {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
+
+  async function handleNewsletter(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!email.trim() || status === "loading") return;
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, source: "footer" }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { ok?: boolean };
+      setStatus(res.ok && data.ok ? "sent" : "error");
+    } catch {
+      setStatus("error");
+    }
+  }
+
   return (
     <>
       <SectionWave from={waveFrom} to="deep" />
@@ -82,7 +103,7 @@ export function SiteFooter({ waveFrom = "cream" }: { waveFrom?: BrandColor } = {
               and again.
             </p>
 
-            <form className="mt-7 max-w-sm">
+            <form className="mt-7 max-w-sm" onSubmit={handleNewsletter}>
               <label
                 htmlFor="footer-email"
                 className="text-sm font-black uppercase tracking-widest text-brand-yellow"
@@ -93,19 +114,33 @@ export function SiteFooter({ waveFrom = "cream" }: { waveFrom?: BrandColor } = {
                 <input
                   id="footer-email"
                   type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@email.com"
                   className="w-full rounded-xl border-[3px] border-white bg-white px-4 py-3 text-sm font-semibold text-brand-deep placeholder:text-brand-deep/40 focus:outline-none focus:ring-4 focus:ring-brand-pink/50"
                 />
                 <button
                   type="submit"
-                  className="shrink-0 rounded-xl border-[3px] border-white bg-brand-pink px-5 py-3 text-sm font-black uppercase text-white transition-transform duration-150 active:translate-y-0.5"
+                  disabled={status === "loading" || status === "sent"}
+                  className="shrink-0 rounded-xl border-[3px] border-white bg-brand-pink px-5 py-3 text-sm font-black uppercase text-white transition-transform duration-150 active:translate-y-0.5 disabled:opacity-70"
                 >
-                  Join
+                  {status === "sent" ? "Done" : status === "loading" ? "…" : "Join"}
                 </button>
               </div>
-              <p className="mt-2 text-xs font-semibold text-white/45">
-                Occasional updates and new collections. No spam, ever.
-              </p>
+              {status === "sent" ? (
+                <p role="status" className="mt-2 text-xs font-semibold text-brand-yellow">
+                  You&apos;re on the list. Thanks for joining us.
+                </p>
+              ) : status === "error" ? (
+                <p role="alert" className="mt-2 text-xs font-semibold text-white/70">
+                  That didn&apos;t go through. Please try again in a moment.
+                </p>
+              ) : (
+                <p className="mt-2 text-xs font-semibold text-white/45">
+                  Occasional updates and new collections. No spam, ever.
+                </p>
+              )}
             </form>
           </div>
 
