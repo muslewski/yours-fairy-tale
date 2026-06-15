@@ -126,22 +126,12 @@ export function Hero() {
               </motion.a>
             </motion.div>
 
-            <motion.div {...rise(0.4)} className="mt-8 flex items-center gap-4 text-sm font-bold">
-              <div className="flex -space-x-2">
-                {[
-                  "var(--color-brand-blue)",
-                  "var(--color-brand-pink)",
-                  "var(--color-brand-yellow)",
-                  "var(--color-brand-deep)",
-                ].map((c) => (
-                  <span
-                    key={c}
-                    className="inline-block h-9 w-9 rounded-full border-[3px] border-brand-deep"
-                    style={{ background: c }}
-                  />
-                ))}
-              </div>
-              <span>40,000+ children already starring</span>
+            <motion.div {...rise(0.4)} className="mt-8 flex items-center gap-3 text-sm font-bold">
+              <span
+                aria-hidden
+                className="inline-block h-9 w-9 rounded-full border-[3px] border-brand-deep bg-brand-yellow"
+              />
+              <span>Now taking our first orders, with a full preview before we animate a thing.</span>
             </motion.div>
           </div>
 
