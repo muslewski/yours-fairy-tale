@@ -1,10 +1,10 @@
 ---
 type: zone
-summary: "The Series subpage and its REAL waitlist — signups persist to the Payload `waitlist` collection via /api/waitlist and get a non-fatal Resend thank-you."
+summary: "The Series subpage and its REAL waitlist — signups persist to the Payload `waitlist` collection via /api/waitlist and get a non-fatal Resend thank-you. The footer newsletter (app-shell) reuses this same /api/waitlist path with source=footer."
 tags: [surface, marketing, api]
 status: active
 created: 2026-06-02
-updated: 2026-06-10
+updated: 2026-06-15
 related: ["[[app-shell]]", "[[payload-backend]]", "[[contact]]"]
 sources: ["[[waitlist-signups-payload-plus-resend]]"]
 owns:
@@ -27,7 +27,7 @@ invariants:
     enforcedBy: ["tests/waitlist/waitlist.test.ts"]
   - rule: "The Resend thank-you ('You're on the list for The Series') is non-fatal — the signup is saved even if the email send fails (logged, never rethrown)."
     enforcedBy: ["tests/waitlist/waitlist.test.ts"]
-verifiedAt: cf03e40
+verifiedAt: 2f29246
 ---
 
 ## Purpose

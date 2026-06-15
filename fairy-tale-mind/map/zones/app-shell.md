@@ -47,7 +47,7 @@ invariants:
     enforcedBy: []
   - rule: "Footer social icons link to the REAL profiles (Instagram, Facebook, TikTok — yoursfairytale7), open in a new tab with rel='noopener noreferrer', and announce the new-tab behavior to assistive tech. Never href='#'."
     enforcedBy: []
-verifiedAt: 5da134f
+verifiedAt: 2f29246
 ---
 
 ## Purpose
@@ -109,6 +109,12 @@ external profile links (Instagram/Facebook/TikTok `yoursfairytale7`, new-tab +
 replaced the Pinterest placeholder), closing the `footer-dead-links` debt. `next.config.ts`
 gained `experimental.serverActions.bodySizeLimit: "5mb"` for the one-file-per-call photo
 uploads (see `[[auth-gating]]`).
+Pre-launch acquisition UX (2026-06-15, Phase 2): `site-nav.tsx` gained a mobile hamburger +
+slide-out drawer (`md:hidden`, Motion, reduced-motion guarded) exposing the full menu, and
+the primary CTA copy changed `Start! ⚡` → `Start` (brand-voice). `site-footer.tsx`: the
+newsletter form is now wired to `POST /api/waitlist` (`source=footer`) with sent/error states
+instead of a native GET reload; the fabricated "Our story / Reviews / Careers / Gift cards"
+links were removed and "Track your order" repointed to `/sign-in` (the real path).
 Studio panel (2026-06-10): `app/robots.ts` disallow gained `/studio` — the staff panel
 stays out of the index alongside `/app`, `/admin`, `/api`, and `/sign-in` (see
 `[[studio]]`).

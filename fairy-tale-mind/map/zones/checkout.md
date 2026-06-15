@@ -4,16 +4,18 @@ summary: "Stripe checkout integration — mock UI simulation + real Checkout Ses
 tags: [ui, checkout, stripe, api, webhook, orders]
 status: active
 created: 2026-06-02
-updated: 2026-06-10
+updated: 2026-06-15
 related: ["[[configurator]]", "[[payload-backend]]", "[[studio]]", "[[delivery-promise-auto-from-length]]"]
 sources: ["[[checkout-is-a-simulation]]", "[[payments-stripe-over-shopify]]", "[[stripe-checkout-session-route]]", "[[webhook-orphan-events-retry]]"]
 owns:
   routes:
     - "/api/stripe/checkout"
     - "/api/stripe/webhook"
+    - "/order-confirmed"
   anchors: []
   globs:
     - "components/checkout/*"
+    - "app/(site)/order-confirmed/*"
     - "lib/stripe.ts"
     - "lib/checkout.ts"
     - "lib/pricing.ts"
@@ -23,6 +25,8 @@ owns:
     - "app/api/stripe/webhook/route.ts"
     - "collections/Orders.ts"
     - "tests/stripe/checkout.test.ts"
+    - "tests/stripe/checkout-route.test.ts"
+    - "tests/lib/checkout.test.ts"
     - "tests/stripe/webhook.test.ts"
     - "tests/stripe/refund-email.test.ts"
     - "tests/lib/pricing.test.ts"
@@ -69,7 +73,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
     enforcedBy: ["tests/app/status-emails.test.ts"]
-verifiedAt: 80eddae
+verifiedAt: 2f29246
 ---
 
 ## Purpose
@@ -165,3 +169,10 @@ fallbacks — missing RESEND_API_KEY/RESEND_FROM now throw in production (see
 Studio panel (2026-06-10): the webhook now stamps `amountTotalCents` + `promisedBy` on the
 new order (migration `20260610_000001_order_amount_promise`), and the confirmation email
 includes the expected-by date (see `[[delivery-promise-auto-from-length]]` and `[[studio]]`).
+Pre-launch UX (2026-06-15, Phase 2): `success_url` now points at a new PUBLIC, auth/DB-free
+`/order-confirmed` page (`app/(site)/order-confirmed/`) instead of the gated `/app` — it
+reassures, sets email expectations (incl. a spam-folder note), and routes onward, robust to
+the async webhook not having created the order yet. The unwrapped
+`stripe.checkout.sessions.create` call is now wrapped: a Stripe/network failure returns a
+clean `502` (was an unhandled 500). Guarded by `tests/lib/checkout.test.ts` (success_url) +
+`tests/stripe/checkout-route.test.ts` (502).
