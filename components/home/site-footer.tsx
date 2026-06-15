@@ -23,16 +23,7 @@ const COLUMNS = [
       { label: "FAQ", href: "/#faq" },
       { label: "Contact us", href: "/contact" },
       { label: "Delivery", href: "/#faq" },
-      { label: "Track your order", href: "/#top" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "Our story", href: "/#top" },
-      { label: "Reviews", href: "/#top" },
-      { label: "Gift cards", href: "/#build" },
-      { label: "Careers", href: "/#top" },
+      { label: "Track your order", href: "/sign-in" },
     ],
   },
 ];
@@ -145,7 +136,7 @@ export function SiteFooter({ waveFrom = "cream" }: { waveFrom?: BrandColor } = {
           </div>
 
           {/* Link columns */}
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-8">
             {COLUMNS.map((col) => (
               <div key={col.title}>
                 <h3 className="font-[family-name:var(--font-fredoka)] text-base font-bold uppercase tracking-wide text-brand-yellow">

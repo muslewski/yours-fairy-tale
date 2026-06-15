@@ -130,7 +130,7 @@ export function SiteNav({ signedIn: signedInProp }: { signedIn?: boolean } = {})
                 })}
             className="rounded-lg border-[3px] border-brand-deep bg-brand-pink px-4 py-2 text-sm font-bold text-white shadow-comic-sm active:translate-y-0.5"
           >
-            Start! ⚡
+            Start
           </MotionLink>
         </div>
       </motion.header>
