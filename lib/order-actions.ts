@@ -24,10 +24,16 @@ import { revalidatePath } from "next/cache";
 import { getCustomerSession } from "@/lib/customer-data";
 import { getPayloadClient } from "@/lib/payload";
 import {
-  isServerAcceptedImage,
   validateUploadFile,
 } from "@/lib/order-upload-validation";
 import { MAX_NOTE_LENGTH, type AddNoteResult } from "@/lib/order-notes-shared";
+import {
+  approveProofCore,
+  requestProofChangeCore,
+  uploadOrderAssetsCore,
+  type UploadFileSpec,
+  type UploadResult,
+} from "@/lib/order-action-cores";
 
 /**
  * Confirm the current customer owns `orderId`, returning the session and the
@@ -61,12 +67,6 @@ export async function assertOwnsOrder(orderId: string) {
   return { session, order, payload };
 }
 
-/** The result of an upload attempt, surfaced to the client component. */
-export interface UploadResult {
-  added: number;
-  error?: string;
-}
-
 /**
  * Task 4.2 — append customer photos to an order's `assets`.
  *
@@ -81,75 +81,39 @@ export async function uploadOrderAssets(
   orderId: string,
   formData: FormData,
 ): Promise<UploadResult> {
-  const { order, payload } = await assertOwnsOrder(orderId);
+  await assertOwnsOrder(orderId);
 
-  const files = formData
+  const rawFiles = formData
     .getAll("files")
     .filter((entry): entry is File => entry instanceof File && entry.size > 0);
-
-  if (files.length === 0) {
+  if (rawFiles.length === 0) {
     return { added: 0, error: "Please choose at least one photo to add." };
   }
 
-  // Validate the whole batch first — all or nothing, so nothing is half-added.
-  for (const file of files) {
+  // Validate the whole batch first — all or nothing (unchanged customer guard).
+  for (const file of rawFiles) {
     const check = validateUploadFile(file);
     if (!check.ok) {
       return { added: 0, error: check.error };
     }
   }
 
-  // The picker accepts HEIC (converted to JPEG client-side); guard here in case
-  // a non-jpeg/png/webp image slips through, so it gets a gentle message rather
-  // than a raw Payload mimeTypes rejection.
-  for (const file of files) {
-    if (!isServerAcceptedImage(file.type)) {
-      return {
-        added: 0,
-        error: `"${file.name}" is in a format we can't process. Please use a JPEG or PNG.`,
-      };
-    }
-  }
-
-  const newAssetIds: string[] = [];
-  for (const file of files) {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const media = await payload.create({
-      collection: "media",
-      data: {},
-      file: {
-        data: buffer,
-        name: file.name,
-        mimetype: file.type,
-        size: file.size,
-      },
-      overrideAccess: true,
+  const files: UploadFileSpec[] = [];
+  for (const file of rawFiles) {
+    files.push({
+      data: Buffer.from(await file.arrayBuffer()),
+      name: file.name,
+      mimetype: file.type,
+      size: file.size,
     });
-    newAssetIds.push(String(media.id));
   }
 
-  // Preserve any assets already attached (assets is hasMany; depth 0 → ids).
-  const existing = Array.isArray(order.assets)
-    ? order.assets.map((a) => (typeof a === "object" && a !== null ? String((a as { id: string }).id) : String(a)))
-    : [];
-
-  // First photos in: nudge the journey forward so the parent sees movement.
-  const nextStatus =
-    order.status === "awaiting_assets" ? "in_production" : order.status;
-
-  await payload.update({
-    collection: "orders",
-    id: orderId,
-    data: {
-      assets: [...existing, ...newAssetIds],
-      status: nextStatus,
-    },
-    overrideAccess: true,
-  });
-
-  revalidatePath("/app");
-  revalidatePath(`/app/orders/${orderId}`);
-  return { added: newAssetIds.length };
+  const result = await uploadOrderAssetsCore(orderId, files);
+  if (result.added > 0) {
+    revalidatePath("/app");
+    revalidatePath(`/app/orders/${orderId}`);
+  }
+  return result;
 }
 
 /**
@@ -157,15 +121,8 @@ export async function uploadOrderAssets(
  * order to `approved`.
  */
 export async function approveProof(orderId: string): Promise<void> {
-  const { payload } = await assertOwnsOrder(orderId);
-
-  await payload.update({
-    collection: "orders",
-    id: orderId,
-    data: { status: "approved" },
-    overrideAccess: true,
-  });
-
+  await assertOwnsOrder(orderId);
+  await approveProofCore(orderId);
   revalidatePath("/app");
   revalidatePath(`/app/orders/${orderId}`);
 }
@@ -178,18 +135,8 @@ export async function requestProofChange(
   orderId: string,
   note: string,
 ): Promise<void> {
-  const { payload } = await assertOwnsOrder(orderId);
-
-  await payload.update({
-    collection: "orders",
-    id: orderId,
-    data: {
-      status: "revisions",
-      revisionNote: note?.trim() || null,
-    },
-    overrideAccess: true,
-  });
-
+  await assertOwnsOrder(orderId);
+  await requestProofChangeCore(orderId, note);
   revalidatePath("/app");
   revalidatePath(`/app/orders/${orderId}`);
 }
