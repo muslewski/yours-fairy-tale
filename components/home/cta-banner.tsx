@@ -43,10 +43,10 @@ export function CtaBanner() {
             Create their video →
           </a>
           <a
-            href="#collections"
+            href="#sample"
             className="inline-flex items-center gap-2 rounded-xl border-[3px] border-brand-deep bg-white px-6 py-4 text-base font-bold text-brand-deep shadow-comic transition-transform duration-150 active:translate-y-1 active:shadow-comic-sm"
           >
-            Watch samples
+            Watch a sample
           </a>
         </div>
       </div>

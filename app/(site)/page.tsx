@@ -1,5 +1,6 @@
 import { SiteNav } from "@/components/home/site-nav";
 import { Hero } from "@/components/home/hero";
+import { Sample } from "@/components/home/sample";
 import { Categories } from "@/components/home/categories";
 import { Configurator } from "@/components/home/configurator";
 import { SeriesTeaser } from "@/components/home/series-teaser";
@@ -15,6 +16,7 @@ export default function Home() {
       <main className="font-[family-name:var(--font-quicksand)] text-brand-deep">
         <Hero />
         <SectionWave from="yellow" to="cream" />
+        <Sample />
         <Categories />
         <SectionWave from="cream" to="deep" flip />
         <Configurator />

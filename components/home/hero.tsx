@@ -117,7 +117,7 @@ export function Hero() {
                 Create their video →
               </motion.a>
               <motion.a
-                href="#collections"
+                href="#sample"
                 whileHover={reduce ? undefined : { scale: 1.04 }}
                 whileTap={reduce ? undefined : { scale: 0.97 }}
                 className="inline-flex items-center gap-2 rounded-xl border-[3px] border-brand-deep bg-white px-6 py-4 text-base font-bold text-brand-deep shadow-comic active:translate-y-1 active:shadow-comic-sm"
