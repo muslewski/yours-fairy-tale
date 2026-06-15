@@ -1,6 +1,7 @@
 import { handleStripeEvent } from "@/app/api/stripe/webhook/route";
 import { buildCheckoutSessionParams, type CheckoutInput } from "@/lib/checkout";
 import { getOrdersForOwner } from "@/lib/customer-data";
+import { createOrderTrackingLink } from "@/lib/order-tracking-link";
 import type { OrderStatus } from "@/lib/order-stages";
 import { getPayloadClient } from "@/lib/payload";
 import { computeTotalCents } from "@/lib/pricing";
@@ -28,12 +29,26 @@ export interface CreateOrderResult {
   status: string;
   sessionId: string;
   paymentIntentId: string;
+  trackingLink: string;
 }
 
 function normalizeOwner(owner: unknown): string {
   return typeof owner === "object" && owner !== null
     ? String((owner as { id: string }).id)
     : String(owner);
+}
+
+async function mintTrackingLink(email: string): Promise<string> {
+  try {
+    return await createOrderTrackingLink({
+      email,
+      baseUrl: process.env.BETTER_AUTH_URL ?? "http://localhost:3100",
+      callbackURL: "/app",
+    });
+  } catch (err) {
+    console.error("create_order: failed to mint trackingLink (non-fatal)", err);
+    return "";
+  }
 }
 
 export async function createOrder(args: CreateOrderArgs): Promise<CreateOrderResult> {
@@ -52,12 +67,14 @@ export async function createOrder(args: CreateOrderArgs): Promise<CreateOrderRes
       data: { stripePaymentIntentId: paymentIntentId },
       overrideAccess: true,
     });
+    const trackingLink = await mintTrackingLink(email);
     return {
       orderId: String(order.id),
       owner: String(user.id),
       status: String(order.status),
       sessionId: String(order.stripeSessionId),
       paymentIntentId,
+      trackingLink,
     };
   }
 
@@ -96,12 +113,14 @@ export async function createOrder(args: CreateOrderArgs): Promise<CreateOrderRes
     });
   }
 
+  const trackingLink = await mintTrackingLink(email);
   return {
     orderId: String(order.id),
     owner: normalizeOwner(order.owner),
     status: String(args.status ?? order.status),
     sessionId,
     paymentIntentId,
+    trackingLink,
   };
 }
 

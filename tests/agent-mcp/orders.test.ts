@@ -9,6 +9,7 @@ test("createOrder (webhook mode) materializes a paid order via the real handler"
   expect(res.orderId).toBeTruthy();
   expect(res.status).toBe("paid");
   expect(res.paymentIntentId).toMatch(/^pi_agent_/);
+  expect(res.trackingLink).toContain("token=");
 
   const order = await getOrder(res.orderId);
   expect(order?.childName).toBe("Ada");
