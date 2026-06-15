@@ -26,7 +26,7 @@ invariants:
     enforcedBy: ["tools/agent-mcp/lib/synthetic-stripe.ts"]
   - rule: "The server entry (server.ts) imports bootstrap-env FIRST — env + guard must run before any Payload import, because payload.config.ts reads process.env at module eval time."
     enforcedBy: ["tools/agent-mcp/server.ts", "tools/agent-mcp/bootstrap-env.ts"]
-verifiedAt: 9dd0b3b4b5bc58aa289c221037a21815cc9c9b7d
+verifiedAt: c2310cd7d69038f6840a3307b651dec0bd1a1c10
 ---
 
 ## Purpose

@@ -24,7 +24,7 @@ invariants:
     enforcedBy: ["tests/setup-env.ts", "playwright.config.ts"]
   - rule: "CI runs `npx tsc --noEmit` as its own step — type errors fail the pipeline even when no test imports the broken file."
     enforcedBy: [".github/workflows/test.yml"]
-verifiedAt: 9dd0b3b4b5bc58aa289c221037a21815cc9c9b7d
+verifiedAt: c2310cd7d69038f6840a3307b651dec0bd1a1c10
 ---
 
 ## Purpose
