@@ -63,7 +63,7 @@ export function buildCheckoutSessionParams(
     ],
     // {CHECKOUT_SESSION_ID} is a Stripe template literal — it is NOT a JS template
     // expression, so it must stay as a plain string (no backtick interpolation here).
-    success_url: `${baseUrl}/app?session={CHECKOUT_SESSION_ID}`,
+    success_url: `${baseUrl}/order-confirmed?session={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/#build`,
     // Metadata carries the order fields the webhook needs to create the order
     // without any intermediary storage.
