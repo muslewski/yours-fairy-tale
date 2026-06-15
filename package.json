@@ -17,7 +17,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test --grep-invert @smoke",
     "test:e2e:smoke": "playwright test --grep @smoke",
-    "test:all": "vitest run && playwright test --grep-invert @smoke"
+    "test:all": "vitest run && playwright test --grep-invert @smoke",
+    "agent:mcp": "vite-node --config tools/agent-mcp/vite.config.ts tools/agent-mcp/server.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.85.0",
@@ -40,6 +41,7 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
@@ -47,6 +49,8 @@
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.8"
+    "vite-node": "^6.0.0",
+    "vitest": "^4.1.8",
+    "zod": "^4.4.3"
   }
 }
