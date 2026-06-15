@@ -22,6 +22,8 @@
 import { revalidatePath } from "next/cache";
 
 import { getCustomerSession } from "@/lib/customer-data";
+import { sendEmail } from "@/lib/email";
+import { emailParagraphs, renderBrandedEmail } from "@/lib/email-template";
 import { getPayloadClient } from "@/lib/payload";
 import {
   validateUploadFile,
@@ -186,9 +188,36 @@ export async function appendCustomerNote(
 }
 
 /**
+ * Non-fatal internal heads-up to the studio that a parent left a note. Never
+ * throws — the note is already saved; a failed email must not fail the action.
+ * Recipient is STUDIO_NOTIFY_EMAIL, falling back to hello@yoursfairytale.com.
+ */
+async function notifyStudioOfNote(orderId: string, message: string): Promise<void> {
+  const to = process.env.STUDIO_NOTIFY_EMAIL ?? "hello@yoursfairytale.com";
+  try {
+    await sendEmail({
+      to,
+      subject: `New customer note on order ${orderId}`,
+      html: renderBrandedEmail({
+        preheader: "A parent left a note on their order.",
+        heading: "New customer note",
+        accent: "blue",
+        bodyHtml: emailParagraphs([
+          `Order: ${orderId}`,
+          `Note: ${message}`,
+          "Open the studio workstation to reply.",
+        ]),
+      }),
+    });
+  } catch (err) {
+    console.error("[order-actions] studio note notification failed (non-fatal):", err);
+  }
+}
+
+/**
  * The parent adds a note to the studio from their order page. Ownership-checked
  * (the single mutation doorway), then appended. Available at any status. Does
- * not change `status`.
+ * not change `status`. On success, sends a non-fatal heads-up to the studio.
  */
 export async function addOrderNote(
   orderId: string,
@@ -197,6 +226,7 @@ export async function addOrderNote(
   await assertOwnsOrder(orderId);
   const result = await appendCustomerNote(orderId, message);
   if (result.ok) {
+    await notifyStudioOfNote(orderId, message);
     revalidatePath(`/app/orders/${orderId}`);
   }
   return result;

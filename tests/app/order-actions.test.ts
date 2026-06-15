@@ -34,8 +34,19 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
+// The studio notification is a network side effect; mock the transport so the
+// test asserts the call without sending mail.
+vi.mock("@/lib/email", () => ({
+  sendEmail: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { getPayloadClient } from "@/lib/payload";
-import { approveProof, requestProofChange } from "@/lib/order-actions";
+import { sendEmail } from "@/lib/email";
+import {
+  addOrderNote,
+  approveProof,
+  requestProofChange,
+} from "@/lib/order-actions";
 import {
   validateUploadFile,
   MAX_UPLOAD_BYTES,
@@ -207,5 +218,32 @@ describe("proof review actions by the owner", () => {
     expect(after.revisionNote).toBe(
       "Could the dragon be a little friendlier?",
     );
+  });
+});
+
+// ─── Customer notes (owner) ───────────────────────────────────────────────────
+
+describe("addOrderNote by the owner", () => {
+  test("appends the note and sends a non-fatal studio notification", async () => {
+    const orderId = await makeOrder("in_production");
+    mockGetCustomerSession.mockResolvedValue(sessionFor(userAId));
+    (sendEmail as ReturnType<typeof vi.fn>).mockClear();
+
+    const res = await addOrderNote(orderId, "Please fix her name to 'Mia'.");
+    expect(res.ok).toBe(true);
+
+    const after = await payload.findByID({
+      collection: "orders",
+      id: orderId,
+      depth: 0,
+      overrideAccess: true,
+    });
+    expect(after.customerNotes?.at(-1)?.message).toBe(
+      "Please fix her name to 'Mia'.",
+    );
+
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+    const arg = (sendEmail as ReturnType<typeof vi.fn>).mock.calls[0][0];
+    expect(arg.subject).toMatch(/note/i);
   });
 });
