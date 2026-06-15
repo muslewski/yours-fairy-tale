@@ -1,12 +1,12 @@
 ---
 type: zone
-summary: "The test suite — vitest (unit/integration, DB-backed) + a hybrid Playwright E2E suite (deterministic Layer A, DB-backed Layer B on a Neon test branch, gated @smoke Layer C) + a CI typecheck step. The green-flag-for-production gate across Stripe · Payload · Better Auth · Next.js."
+summary: "The test suite — vitest (unit/integration, DB-backed) + a hybrid Playwright E2E suite (deterministic Layer A, DB-backed Layer B on a Neon test branch, gated @smoke Layer C) + a CI typecheck step + the agent-order-tooling MCP harness (tests/agent-mcp/* vitest suite + e2e/agent-loop.spec.ts Layer B). The green-flag-for-production gate across Stripe · Payload · Better Auth · Next.js."
 tags: [testing]
 status: active
 created: 2026-06-03
-updated: 2026-06-10
-related: ["[[checkout]]", "[[configurator]]", "[[auth-gating]]", "[[payload-backend]]", "[[series]]", "[[studio]]"]
-sources: ["[[2026-06-03-playwright-test-suite-design]]", "[[e2e-hybrid-playwright-neon-branch]]"]
+updated: 2026-06-14
+related: ["[[checkout]]", "[[configurator]]", "[[auth-gating]]", "[[payload-backend]]", "[[series]]", "[[studio]]", "[[agent-tooling]]"]
+sources: ["[[2026-06-03-playwright-test-suite-design]]", "[[e2e-hybrid-playwright-neon-branch]]", "[[2026-06-14-agent-order-tooling-mcp-design]]"]
 owns:
   routes: []
   anchors: []
@@ -24,7 +24,7 @@ invariants:
     enforcedBy: ["tests/setup-env.ts", "playwright.config.ts"]
   - rule: "CI runs `npx tsc --noEmit` as its own step — type errors fail the pipeline even when no test imports the broken file."
     enforcedBy: [".github/workflows/test.yml"]
-verifiedAt: 80eddae
+verifiedAt: 40653906b4aac20aa98629d2427cc3bd7c5bcd80
 ---
 
 ## Purpose
@@ -48,6 +48,12 @@ Next.js). Not exhaustive coverage — a critical-path safety net.
 - **Playwright Layer C** (`e2e/smoke/purchase.spec.ts`, `@smoke`) — real Stripe test-mode purchase
   through `stripe listen`. Gated; run on demand, NOT in CI.
 - **CI typecheck** — a dedicated `npx tsc --noEmit` step in `.github/workflows/test.yml`.
+- **Agent harness vitest suite** (`tests/agent-mcp/*`) — 9 test files covering the
+  `agent-order-tooling` MCP server: safety guard (pure, no DB), synthetic Stripe event shapes,
+  customer cores, orders/customer/studio/payments/auth-maintenance tool groups, and the 16-tool
+  registration check. DB-backed tests run against the Neon test branch via `.env.test`.
+- **Agent harness Layer B** (`e2e/agent-loop.spec.ts`, `@layerB`) — end-to-end agent loop:
+  `createOrder` → `mintLoginLink` → success landing shows the order on the customer dashboard.
 
 ## How to run
 - `npm run test` — vitest. `npm run test:e2e` — Playwright A+B (CI default). `npm run test:all` — both.
@@ -69,3 +75,7 @@ Studio panel (2026-06-10): added `tests/studio/*` (auth bridge, pure workflow co
 DB-backed action guardrails, metadata-only video attach), `tests/lib/delivery.test.ts`
 (promise math + countdown states), and `e2e/studio.spec.ts` (Layer B) with `seedAdmin`
 in the shared seed fixtures (see `[[studio]]`).
+Agent order-tooling MCP (2026-06-14): added `tests/agent-mcp/*` (9 files — guard, synthetic
+Stripe, cores, orders, customer, studio, payments, auth-maintenance, registration) and
+`e2e/agent-loop.spec.ts` (Layer B agent loop); the enabling refactor extracted customer cores
+into `lib/order-action-cores.ts` (see `[[agent-tooling]]`).
