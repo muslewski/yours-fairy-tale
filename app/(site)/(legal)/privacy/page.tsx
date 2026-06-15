@@ -88,7 +88,7 @@ const sections: LegalSection[] = [
   {
     heading: "Who we are and changes to this policy",
     body: [
-      "This service is provided by Yours Fairy Tale, operated by [registered business name and address]. We may update this policy from time to time, and we will change the date at the top when we do.",
+      "This service is provided by Yours Fairy Tale, operated by Firma Dominik Jaworski AI (NIP 5543048002, REGON 544985902), ul. Nad Stawem 4, 86-005 Białe Błota, Poland. We may update this policy from time to time, and we will change the date at the top when we do.",
     ],
   },
 ];

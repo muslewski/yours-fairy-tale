@@ -73,13 +73,13 @@ const sections: LegalSection[] = [
   {
     heading: "Governing law",
     body: [
-      "These terms are governed by the laws of [your governing jurisdiction], without regard to conflict-of-law rules.",
+      "These terms are governed by the laws of Poland, without regard to conflict-of-law rules.",
     ],
   },
   {
     heading: "Changes and contact",
     body: [
-      "We may update these terms from time to time, and we will change the date at the top when we do. This service is operated by Yours Fairy Tale, [registered business name and address]. Questions are welcome using the details below.",
+      "We may update these terms from time to time, and we will change the date at the top when we do. This service is operated by Yours Fairy Tale, Firma Dominik Jaworski AI (NIP 5543048002, REGON 544985902), ul. Nad Stawem 4, 86-005 Białe Błota, Poland. Questions are welcome using the details below.",
     ],
   },
 ];
