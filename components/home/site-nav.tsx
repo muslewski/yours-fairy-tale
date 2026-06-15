@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Stagger, StaggerItem, hoverPop, tapPop } from "@/components/motion/stagger";
 import { authClient } from "@/lib/auth-client";
 
@@ -33,6 +34,7 @@ export function SiteNav({ signedIn: signedInProp }: { signedIn?: boolean } = {})
   const { data: session } = authClient.useSession();
   // Explicit prop wins (gated routes); otherwise derive from the client session.
   const signedIn = signedInProp ?? Boolean(session?.user);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-4 z-50 px-4 sm:px-6">
@@ -86,6 +88,17 @@ export function SiteNav({ signedIn: signedInProp }: { signedIn?: boolean } = {})
         </Stagger>
 
         <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            className="inline-flex items-center justify-center rounded-lg border-[3px] border-brand-deep bg-white p-2 text-brand-deep shadow-comic-sm md:hidden"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M3 5h14M3 10h14M3 15h14" />
+            </svg>
+          </button>
+
           {/* Signed-in customers (/app) see "My account" → /app/profile (which
               holds sign-out); public visitors see "Sign in" → /sign-in. */}
           <MotionLink
@@ -121,6 +134,60 @@ export function SiteNav({ signedIn: signedInProp }: { signedIn?: boolean } = {})
           </MotionLink>
         </div>
       </motion.header>
+
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
+            className="pointer-events-auto fixed inset-0 z-50 flex flex-col bg-brand-cream px-6 py-6 md:hidden"
+            initial={reduce ? false : { opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={reduce ? { opacity: 0 } : { opacity: 0, x: 24 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setMenuOpen(false)}
+                aria-label="Close menu"
+                className="inline-flex items-center justify-center rounded-lg border-[3px] border-brand-deep bg-white p-2 text-brand-deep shadow-comic-sm"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M5 5l10 10M15 5L5 15" />
+                </svg>
+              </button>
+            </div>
+            <nav className="mt-6 flex flex-col gap-2">
+              {NAV.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="rounded-xl px-4 py-3 text-lg font-bold text-brand-deep hover:bg-brand-yellow"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <Link
+                href={signedIn ? "/app/profile" : "/sign-in"}
+                onClick={() => setMenuOpen(false)}
+                className="mt-2 rounded-xl border-[3px] border-brand-deep bg-white px-4 py-3 text-lg font-bold text-brand-deep shadow-comic-sm"
+              >
+                {signedIn ? "My account" : "Sign in"}
+              </Link>
+              <Link
+                href="/#build"
+                onClick={() => setMenuOpen(false)}
+                className="rounded-xl border-[3px] border-brand-deep bg-brand-pink px-4 py-3 text-lg font-bold text-white shadow-comic-sm"
+              >
+                Start
+              </Link>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
