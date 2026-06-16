@@ -36,6 +36,12 @@ describe("studioElapsed", () => {
     const e = studioElapsed(START, new Date("2026-06-14T10:01:00.000Z"));
     expect([e.minutes, e.seconds]).toEqual([1, 0]);
   });
+
+  test("sub-second remainder is kept in totalMs but floored out of seconds", () => {
+    const e = studioElapsed(START, new Date("2026-06-14T10:00:01.500Z"));
+    expect(e.totalMs).toBe(1500);
+    expect(e.seconds).toBe(1);
+  });
 });
 
 describe("formatStudioElapsed", () => {
@@ -55,6 +61,14 @@ describe("formatStudioElapsed", () => {
     expect(formatStudioElapsed({ days: 0, hours: 0, minutes: 0, seconds: 9, totalMs: 0 })).toBe(
       "9s",
     ));
+  test("hours form leaves the leading hours segment unpadded", () =>
+    expect(formatStudioElapsed({ days: 0, hours: 3, minutes: 4, seconds: 5, totalMs: 0 })).toBe(
+      "3h 04m 05s",
+    ));
+  test("zero elapsed reads as 0s", () =>
+    expect(formatStudioElapsed({ days: 0, hours: 0, minutes: 0, seconds: 0, totalMs: 0 })).toBe(
+      "0s",
+    ));
 });
 
 describe("formatStudioElapsedCoarse", () => {
@@ -73,6 +87,10 @@ describe("formatStudioElapsedCoarse", () => {
   test("under an hour", () =>
     expect(formatStudioElapsedCoarse({ days: 0, hours: 0, minutes: 20, seconds: 0, totalMs: 0 })).toBe(
       "under an hour",
+    ));
+  test("one hour is singular", () =>
+    expect(formatStudioElapsedCoarse({ days: 0, hours: 1, minutes: 0, seconds: 0, totalMs: 0 })).toBe(
+      "about 1 hour",
     ));
 });
 

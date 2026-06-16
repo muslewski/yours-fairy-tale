@@ -11,6 +11,7 @@ export interface Elapsed {
   hours: number;
   minutes: number;
   seconds: number;
+  /** Raw elapsed milliseconds; the d/h/m/s segments are floored to whole seconds, so totalMs may carry a sub-second remainder the segments drop. */
   totalMs: number;
 }
 
