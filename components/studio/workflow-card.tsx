@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { setOrderStatus } from "@/lib/studio-actions";
+import { isDestructiveStatus } from "@/lib/studio-status";
 import type { OrderStatus } from "@/lib/order-stages";
 
 interface NextStep {
@@ -35,6 +36,7 @@ export function WorkflowCard({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [fallback, setFallback] = useState<OrderStatus | "">("");
+  const [confirming, setConfirming] = useState<OrderStatus | null>(null);
 
   function applyStatus(to: OrderStatus) {
     setError("");
@@ -47,6 +49,15 @@ export function WorkflowCard({
       setFallback("");
       router.refresh();
     });
+  }
+
+  /** Gate destructive targets (cancelled/refunded) through a confirm step. */
+  function requestStatus(to: OrderStatus) {
+    if (isDestructiveStatus(to)) {
+      setConfirming(to);
+      return;
+    }
+    applyStatus(to);
   }
 
   return (
@@ -67,7 +78,7 @@ export function WorkflowCard({
             key={step.to}
             type="button"
             disabled={pending}
-            onClick={() => applyStatus(step.to)}
+            onClick={() => requestStatus(step.to)}
             className={
               index === 0
                 ? "rounded-full border-2 border-brand-deep bg-brand-yellow px-5 py-2.5 text-sm font-bold text-brand-deep shadow-comic-sm transition-shadow hover:shadow-comic disabled:opacity-60"
@@ -84,6 +95,37 @@ export function WorkflowCard({
           </p>
         ) : null}
       </div>
+
+      {confirming ? (
+        <div className="mt-4 rounded-xl border-2 border-brand-cream/40 bg-brand-deep p-4">
+          <p className="text-sm font-bold text-brand-cream">
+            Move this order to{" "}
+            <span className="text-brand-yellow">{statusLabels[confirming] ?? confirming}</span>?
+            This tells the customer their order is {statusLabels[confirming] ?? confirming}.
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => {
+                const to = confirming;
+                setConfirming(null);
+                applyStatus(to);
+              }}
+              className="rounded-full border-2 border-brand-deep bg-brand-pink px-5 py-2 text-sm font-bold text-white shadow-comic-sm disabled:opacity-60"
+            >
+              Yes, set {statusLabels[confirming] ?? confirming}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirming(null)}
+              className="rounded-full border-2 border-brand-cream/40 bg-transparent px-5 py-2 text-sm font-bold text-brand-cream hover:bg-brand-cream/10"
+            >
+              Keep as-is
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {error ? (
         <p role="alert" className="mt-3 text-sm font-semibold text-brand-yellow">
@@ -112,7 +154,7 @@ export function WorkflowCard({
             <button
               type="button"
               disabled={pending || !fallback}
-              onClick={() => fallback && applyStatus(fallback)}
+              onClick={() => fallback && requestStatus(fallback)}
               className="shrink-0 rounded-xl border-2 border-brand-cream/40 px-3 py-2 text-sm font-bold text-brand-cream hover:bg-brand-cream/10 disabled:opacity-50"
             >
               Set
