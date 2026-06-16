@@ -44,6 +44,23 @@ export default function Loading() {
           ))}
         </div>
       </section>
+
+      {/* Photos you sent */}
+      <section className="rounded-3xl border-2 border-brand-deep bg-white p-6 shadow-comic md:p-8">
+        <Block className="mb-4 h-7 w-44" />
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Block key={i} className="aspect-square w-full rounded-2xl" />
+          ))}
+        </div>
+      </section>
+
+      {/* Notes */}
+      <section className="rounded-3xl border-2 border-brand-deep bg-white p-6 shadow-comic md:p-8">
+        <Block className="mb-4 h-7 w-28" />
+        <Block className="h-16 w-full rounded-2xl" />
+        <Block className="mt-3 h-10 w-2/3 rounded-2xl" />
+      </section>
     </div>
   );
 }
