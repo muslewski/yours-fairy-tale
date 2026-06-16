@@ -78,6 +78,7 @@ export function WorkflowCard({
             key={step.to}
             type="button"
             disabled={pending}
+            aria-busy={pending}
             onClick={() => requestStatus(step.to)}
             className={
               index === 0
@@ -86,7 +87,7 @@ export function WorkflowCard({
             }
             style={{ fontFamily: "var(--font-fredoka)" }}
           >
-            {step.label}
+            {pending ? "Saving…" : step.label}
           </button>
         ))}
         {nextSteps.length === 0 ? (
@@ -154,10 +155,11 @@ export function WorkflowCard({
             <button
               type="button"
               disabled={pending || !fallback}
+              aria-busy={pending}
               onClick={() => fallback && requestStatus(fallback)}
               className="shrink-0 rounded-xl border-2 border-brand-cream/40 px-3 py-2 text-sm font-bold text-brand-cream hover:bg-brand-cream/10 disabled:opacity-50"
             >
-              Set
+              {pending ? "Saving…" : "Set"}
             </button>
           </div>
         </label>

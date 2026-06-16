@@ -72,10 +72,11 @@ export function PromisedByEditor({
         <button
           type="button"
           disabled={pending || !value}
+          aria-busy={pending}
           onClick={() => save(value)}
           className="rounded-full border-2 border-brand-deep bg-brand-blue px-4 py-2 text-sm font-bold text-brand-deep shadow-comic-sm transition-shadow hover:shadow-comic disabled:opacity-50"
         >
-          Save
+          {pending ? "Saving…" : "Save"}
         </button>
       </div>
 
