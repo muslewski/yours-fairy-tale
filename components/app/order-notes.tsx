@@ -123,9 +123,28 @@ export function OrderNotes({
             <motion.div
               role="dialog"
               aria-modal="true"
-              aria-label="Add a note for the studio"
+              aria-labelledby="notes-dialog-title"
               onKeyDown={(e) => {
-                if (e.key === "Escape") close();
+                if (e.key === "Escape") {
+                  close();
+                  return;
+                }
+                if (e.key !== "Tab") return;
+                // Trap focus within the dialog.
+                const root = e.currentTarget as HTMLElement;
+                const focusable = root.querySelectorAll<HTMLElement>(
+                  'button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])',
+                );
+                if (focusable.length === 0) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (e.shiftKey && document.activeElement === first) {
+                  e.preventDefault();
+                  last.focus();
+                } else if (!e.shiftKey && document.activeElement === last) {
+                  e.preventDefault();
+                  first.focus();
+                }
               }}
               initial={reduce ? undefined : { opacity: 0, y: 16, scale: 0.97 }}
               animate={reduce ? undefined : { opacity: 1, y: 0, scale: 1 }}
@@ -133,6 +152,7 @@ export function OrderNotes({
               className="relative z-10 w-full max-w-lg rounded-3xl border-2 border-brand-deep bg-white p-6 shadow-comic md:p-8"
             >
               <h3
+                id="notes-dialog-title"
                 className="text-xl text-brand-deep"
                 style={{ fontFamily: "var(--font-fredoka)" }}
               >
