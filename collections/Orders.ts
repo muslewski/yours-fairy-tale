@@ -219,6 +219,17 @@ export const Orders: CollectionConfig = {
           "at purchase (lib/delivery.ts); the studio may adjust it per order.",
       },
     },
+    {
+      name: "inStudioSince",
+      type: "date",
+      admin: {
+        readOnly: true,
+        description:
+          "When the order first entered production (status → in_production). " +
+          "Stamped once by the system; drives the customer's 'in the studio for …' " +
+          "live clock. Never reset on re-entry.",
+      },
+    },
   ],
   timestamps: true,
 };
