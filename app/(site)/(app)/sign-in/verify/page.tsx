@@ -72,6 +72,7 @@ export default async function VerifySignInPage({
         <form method="GET" action="/api/auth/magic-link/verify" className="mt-7">
           <input type="hidden" name="token" value={token} />
           <input type="hidden" name="callbackURL" value={cb} />
+          <input type="hidden" name="errorCallbackURL" value="/sign-in/verify/error" />
           <button
             type="submit"
             className="w-full rounded-xl border-2 border-brand-deep bg-brand-yellow px-6 py-3 font-semibold text-brand-deep shadow-comic transition-opacity"
