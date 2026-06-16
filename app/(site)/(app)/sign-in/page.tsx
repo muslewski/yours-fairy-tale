@@ -19,11 +19,17 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { Suspense, useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
+import { safeRelativePath } from "@/lib/safe-redirect";
 
-export default function SignInPage() {
+function SignInForm() {
+  const searchParams = useSearchParams();
+  const next = safeRelativePath(searchParams.get("next"));
+  const linkError = searchParams.get("error");
+
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -35,7 +41,7 @@ export default function SignInPage() {
 
     const result = await authClient.signIn.magicLink({
       email,
-      callbackURL: "/app",
+      callbackURL: next,
     });
 
     if (result.error) {
@@ -106,6 +112,17 @@ export default function SignInPage() {
           >
             We'll send a sign-in link to the email you used at checkout.
           </p>
+
+          {linkError && status === "idle" ? (
+            <p
+              role="status"
+              className="mt-4 text-sm font-semibold text-brand-deep/70"
+              style={{ fontFamily: "var(--font-quicksand)" }}
+            >
+              That sign-in link didn&apos;t work. Enter your email and we&apos;ll send a
+              fresh one.
+            </p>
+          ) : null}
 
           <div className="mt-7">
             {status === "sent" ? (
@@ -205,5 +222,13 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignInForm />
+    </Suspense>
   );
 }

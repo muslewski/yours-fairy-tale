@@ -14,15 +14,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { safeRelativePath } from "@/lib/safe-redirect";
+
 export const metadata: Metadata = {
   title: "Confirm sign-in — Yours Fairy Tale",
   robots: { index: false, follow: false },
 };
-
-/** Only allow same-site relative callbacks (no open redirect). */
-function safeCallback(cb: string | undefined): string {
-  return cb && cb.startsWith("/") && !cb.startsWith("//") ? cb : "/app";
-}
 
 export default async function VerifySignInPage({
   searchParams,
@@ -30,7 +27,7 @@ export default async function VerifySignInPage({
   searchParams: Promise<{ token?: string; callbackURL?: string }>;
 }) {
   const { token, callbackURL } = await searchParams;
-  const cb = safeCallback(callbackURL);
+  const cb = safeRelativePath(callbackURL);
 
   if (!token) {
     return (
