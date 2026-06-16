@@ -214,7 +214,7 @@ export default async function StudioOrderPage({
                         {/* eslint-disable-next-line @next/next/no-img-element -- gated dynamic media URL */}
                         <img
                           src={m.url}
-                          alt={m.filename ?? "customer photo"}
+                          alt="Customer photo"
                           width={96}
                           height={96}
                           loading="lazy"
