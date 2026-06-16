@@ -77,7 +77,7 @@ export default function StudioSignInPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-xl border-2 border-brand-deep bg-brand-cream px-4 py-2.5 font-semibold outline-none focus:shadow-comic-sm"
+              className="rounded-xl border-2 border-brand-deep bg-brand-cream px-4 py-2.5 font-semibold outline-none focus:shadow-comic-sm focus-visible:ring-4 focus-visible:ring-brand-blue/60"
             />
           </label>
           <label className="flex flex-col gap-1 text-sm font-bold text-brand-deep">
@@ -88,7 +88,7 @@ export default function StudioSignInPage() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="rounded-xl border-2 border-brand-deep bg-brand-cream px-4 py-2.5 font-semibold outline-none focus:shadow-comic-sm"
+              className="rounded-xl border-2 border-brand-deep bg-brand-cream px-4 py-2.5 font-semibold outline-none focus:shadow-comic-sm focus-visible:ring-4 focus-visible:ring-brand-blue/60"
             />
           </label>
 

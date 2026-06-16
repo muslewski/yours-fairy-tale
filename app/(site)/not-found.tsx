@@ -34,7 +34,7 @@ export default function NotFound() {
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <Link
               href="/"
-              className="w-full rounded-xl border-[3px] border-brand-deep bg-brand-pink px-6 py-3 text-sm font-black uppercase tracking-wide text-white shadow-comic-sm transition-transform duration-150 active:translate-y-0.5 sm:w-auto"
+              className="w-full rounded-xl border-[3px] border-brand-deep bg-brand-pink px-6 py-3 text-sm font-black uppercase tracking-wide text-white shadow-comic-sm transition-transform duration-150 active:translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-blue/60 sm:w-auto"
             >
               Back to home
             </Link>

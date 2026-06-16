@@ -52,7 +52,7 @@ export function Faq() {
               key={item.q}
               className="group rounded-2xl border-[3px] border-brand-deep bg-white shadow-comic [&[open]]:shadow-comic-lg"
             >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 font-[family-name:var(--font-fredoka)] text-lg font-semibold marker:content-none">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-2xl px-6 py-5 font-[family-name:var(--font-fredoka)] text-lg font-semibold marker:content-none focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-blue/60">
                 {item.q}
                 <span
                   aria-hidden
