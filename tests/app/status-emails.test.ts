@@ -30,6 +30,14 @@ vi.mock("resend", () => {
   return { Resend: ResendMock };
 });
 
+// The status email now mints a one-click order tracking link; mock it so the
+// hook doesn't reach Better Auth's magic-link API during these DB-only tests.
+vi.mock("@/lib/order-tracking-link", () => ({
+  createOrderTrackingLink: vi
+    .fn()
+    .mockResolvedValue("https://example.com/sign-in/verify?token=test"),
+}));
+
 // ---------------------------------------------------------------------------
 // Test fixtures
 // ---------------------------------------------------------------------------

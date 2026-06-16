@@ -54,6 +54,7 @@ const statusTransitionEmailHook: CollectionAfterChangeHook = async ({
   }
 
   await sendStatusTransitionEmail({
+    orderId: String(doc.id),
     ownerEmail,
     newStatus: newStatus as "proof_ready" | "delivered",
     childName: doc.childName ?? null,
