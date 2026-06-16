@@ -31,18 +31,23 @@ export type OrderStatus =
 /** A single step in the production journey, in display order. */
 export interface Stage {
   /** Stable machine key. */
-  key: "received" | "photos" | "studio" | "preview" | "finishing" | "ready";
+  key: "received" | "studio" | "preview" | "finishing" | "ready";
   /** Short label shown beneath the step. */
   label: string;
 }
 
 /**
- * The six steps of making a video, in order. The timeline renders one circle
+ * The five steps of making a video, in order. The timeline renders one circle
  * per stage; `stageForStatus` says which one is active.
+ *
+ * NOTE: there is no longer a dedicated "Add your photos" step. Photos are
+ * collected in the configurator BEFORE checkout (see the photos-before-checkout
+ * flow), so an order arrives already carrying them and goes straight to the
+ * studio. If an order has no photos yet (`awaiting_assets`), adding them is an
+ * action on the "Order received" step, not a milestone of its own.
  */
 export const STAGES: readonly Stage[] = [
   { key: "received", label: "Order received" },
-  { key: "photos", label: "Add your photos" },
   { key: "studio", label: "In the studio" },
   { key: "preview", label: "Your preview" },
   { key: "finishing", label: "Final touches" },
@@ -64,27 +69,28 @@ export type StageResult = ActiveStage | TerminalStage;
 /**
  * Map an order status to its place in the journey.
  *
- * Happy-path statuses resolve to an `activeIndex` into STAGES. `proof_ready`
- * and `revisions` both sit at the "Your preview" step — a revision is still a
- * conversation about the preview, not a step backward. `refunded` and
- * `cancelled` return a terminal sentinel: these orders are off the happy path
- * and the dashboard shows a quiet note instead of a stepper.
+ * Happy-path statuses resolve to an `activeIndex` into STAGES. `paid` and
+ * `awaiting_assets` both sit at "Order received" — the order is in, and (for
+ * `awaiting_assets`) photos are the outstanding action on that step, not a
+ * separate milestone. `proof_ready` and `revisions` both sit at "Your preview" —
+ * a revision is still a conversation about the preview, not a step backward.
+ * `refunded` and `cancelled` return a terminal sentinel: these orders are off
+ * the happy path and the dashboard shows a quiet note instead of a stepper.
  */
 export function stageForStatus(status: OrderStatus): StageResult {
   switch (status) {
     case "paid":
-      return { activeIndex: 0 };
     case "awaiting_assets":
-      return { activeIndex: 1 };
+      return { activeIndex: 0 };
     case "in_production":
-      return { activeIndex: 2 };
+      return { activeIndex: 1 };
     case "proof_ready":
     case "revisions":
-      return { activeIndex: 3 };
+      return { activeIndex: 2 };
     case "approved":
-      return { activeIndex: 4 };
+      return { activeIndex: 3 };
     case "delivered":
-      return { activeIndex: 5 };
+      return { activeIndex: 4 };
     case "refunded":
       return { terminal: "refunded" };
     case "cancelled":

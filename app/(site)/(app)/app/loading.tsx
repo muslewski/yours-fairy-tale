@@ -23,7 +23,7 @@ function CardSkeleton() {
         <Block className="h-4 w-24 shrink-0" />
       </div>
       <div className="mb-6 flex items-center gap-2">
-        {Array.from({ length: 6 }).map((_, i) => (
+        {Array.from({ length: 5 }).map((_, i) => (
           <Block key={i} className="h-8 w-8 shrink-0 rounded-full" />
         ))}
       </div>

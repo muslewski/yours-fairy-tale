@@ -19,10 +19,9 @@ import {
 } from "@/lib/order-stages";
 
 describe("STAGES", () => {
-  test("has the six production stages in order", () => {
+  test("has the five production stages in order (photos are pre-checkout, not a step)", () => {
     expect(STAGES.map((s) => s.key)).toEqual([
       "received",
-      "photos",
       "studio",
       "preview",
       "finishing",
@@ -40,12 +39,12 @@ describe("STAGES", () => {
 describe("stageForStatus — happy-path mapping", () => {
   const cases: Array<[OrderStatus, number]> = [
     ["paid", 0],
-    ["awaiting_assets", 1],
-    ["in_production", 2],
-    ["proof_ready", 3],
-    ["revisions", 3],
-    ["approved", 4],
-    ["delivered", 5],
+    ["awaiting_assets", 0],
+    ["in_production", 1],
+    ["proof_ready", 2],
+    ["revisions", 2],
+    ["approved", 3],
+    ["delivered", 4],
   ];
 
   test.each(cases)("status %s → active stage index %i", (status, index) => {
