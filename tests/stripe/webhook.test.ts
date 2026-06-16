@@ -91,8 +91,11 @@ test("checkout with assetPaths attaches metadata-only media and goes in_producti
   const email = `wh-assets-${Date.now()}@x.io`;
   const sessionId = `cs_${Date.now()}_assets`;
   const evt = completedEvent(email, sessionId);
+  // Unique filenames per run: media filenames are unique (in prod they're blob
+  // pathnames with addRandomSuffix), and media docs persist across test runs.
+  const stamp = Date.now();
   (evt.data.object as { metadata: Record<string, string> }).metadata.assetPaths =
-    "configurator/a.jpg,configurator/b.jpg";
+    `configurator/${stamp}-a.jpg,configurator/${stamp}-b.jpg`;
 
   await handleStripeEvent(evt);
 
