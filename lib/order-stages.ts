@@ -109,7 +109,7 @@ export interface StatusMessage {
  * say "Mia's"; without one we fall back to a warm, name-free phrase so the copy
  * always reads naturally and never leaks a placeholder.
  */
-function heroName(childName?: string): { possessive: string; subject: string } {
+export function heroName(childName?: string): { possessive: string; subject: string } {
   if (childName && childName.trim().length > 0) {
     const name = childName.trim();
     return { possessive: `${name}'s`, subject: name };
