@@ -12,6 +12,14 @@
 export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024; // 15 MB
 
 /**
+ * Max photos a parent can attach in the configurator before checkout. Enforced
+ * client-side (the dropzone), in the checkout metadata builder, and in the
+ * webhook. Bounds the joined-pathnames Stripe metadata value (≤ 500 chars) and
+ * the abandoned-blob exposure surface.
+ */
+export const MAX_CHECKOUT_PHOTOS = 6;
+
+/**
  * Max bytes per upload REQUEST. Vercel rejects request bodies over ~4.5 MB,
  * and each photo travels in its own server-action call (see photo-upload.tsx),
  * so every file must fit under this after client-side re-encoding. Kept below

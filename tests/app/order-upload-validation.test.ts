@@ -3,7 +3,12 @@ import { describe, expect, test } from "vitest";
 import {
   isServerAcceptedImage,
   validateUploadFile,
+  MAX_CHECKOUT_PHOTOS,
 } from "@/lib/order-upload-validation";
+
+test("the pre-checkout photo cap is 6", () => {
+  expect(MAX_CHECKOUT_PHOTOS).toBe(6);
+});
 
 describe("isServerAcceptedImage", () => {
   test("accepts jpeg/png/webp; rejects heic and non-images", () => {
