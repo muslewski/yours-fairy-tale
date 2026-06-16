@@ -219,6 +219,26 @@ describe("proof review actions by the owner", () => {
       "Could the dragon be a little friendlier?",
     );
   });
+
+  test("requestProofChange also leaves the parent a note receipt", async () => {
+    const orderId = await makeOrder("proof_ready");
+    mockGetCustomerSession.mockResolvedValue(sessionFor(userAId));
+
+    await requestProofChange(orderId, "Please make the castle taller.");
+
+    const after = await payload.findByID({
+      collection: "orders",
+      id: orderId,
+      depth: 0,
+      overrideAccess: true,
+    });
+    expect(after.status).toBe("revisions");
+    expect(after.revisionNote).toBe("Please make the castle taller.");
+    // The parent now sees their request in the notes thread.
+    expect(after.customerNotes?.at(-1)?.message).toBe(
+      "Please make the castle taller.",
+    );
+  });
 });
 
 // ─── Customer notes (owner) ───────────────────────────────────────────────────

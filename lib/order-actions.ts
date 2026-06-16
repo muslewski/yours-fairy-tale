@@ -139,6 +139,9 @@ export async function requestProofChange(
 ): Promise<void> {
   await assertOwnsOrder(orderId);
   await requestProofChangeCore(orderId, note);
+  // Leave the parent a receipt in their notes thread (non-fatal — the proof
+  // change already succeeded; appendCustomerNote no-ops on an empty/too-long note).
+  await appendCustomerNote(orderId, note);
   revalidatePath("/app");
   revalidatePath(`/app/orders/${orderId}`);
 }
