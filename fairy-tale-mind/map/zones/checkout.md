@@ -74,7 +74,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
     enforcedBy: ["tests/app/status-emails.test.ts"]
-verifiedAt: 168026c
+verifiedAt: 2a1e55a
 ---
 
 ## Purpose
@@ -177,6 +177,12 @@ the async webhook not having created the order yet. The unwrapped
 `stripe.checkout.sessions.create` call is now wrapped: a Stripe/network failure returns a
 clean `502` (was an unhandled 500). Guarded by `tests/lib/checkout.test.ts` (success_url) +
 `tests/stripe/checkout-route.test.ts` (502).
+Photos-before-checkout (2026-06-16, Phase 3): `buildCheckoutSessionParams` now also writes
+`metadata.assetPaths` (≤6 blob pathnames, length-bounded ≤480 chars) from photos uploaded in
+the configurator; the webhook reads them, `attachCheckoutAssets` (`lib/order-action-cores.ts`)
+`head()`s each + creates metadata-only media + attaches to `order.assets`, and the order is
+promoted `paid → in_production` when any attach (kills the awaiting_assets limbo). See
+`[[2026-06-16-photos-before-checkout-association]]`.
 Post-purchase UX (2026-06-16, Phase 4): the `proof_ready`/`delivered` status emails
 (`lib/order-status-email.ts`) no longer link to a bare `/sign-in` — they mint a one-click
 `createOrderTrackingLink` with `callbackURL=/app/orders/{id}`, so a click both signs the

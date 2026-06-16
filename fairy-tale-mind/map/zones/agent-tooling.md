@@ -4,7 +4,7 @@ summary: "A repo-local MCP server that lets AI agents create, drive, and inspect
 tags: [tooling, mcp, testing, orders, agent]
 status: active
 created: 2026-06-14
-updated: 2026-06-14
+updated: 2026-06-16
 related: ["[[testing]]", "[[checkout]]", "[[studio]]", "[[auth-gating]]", "[[payload-backend]]"]
 sources:
   - "fairy-tale-mind/specs/2026-06-14-agent-order-tooling-mcp-design.md"
@@ -26,7 +26,7 @@ invariants:
     enforcedBy: ["tools/agent-mcp/lib/synthetic-stripe.ts"]
   - rule: "The server entry (server.ts) imports bootstrap-env FIRST — env + guard must run before any Payload import, because payload.config.ts reads process.env at module eval time."
     enforcedBy: ["tools/agent-mcp/server.ts", "tools/agent-mcp/bootstrap-env.ts"]
-verifiedAt: c2310cd7d69038f6840a3307b651dec0bd1a1c10
+verifiedAt: 2a1e55a
 ---
 
 ## Purpose

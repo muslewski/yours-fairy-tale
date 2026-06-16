@@ -4,14 +4,15 @@ summary: "The personalized video builder — the homepage's conversion centerpie
 tags: [surface, conversion]
 status: active
 created: 2026-06-02
-updated: 2026-06-02
-related: ["[[checkout]]"]
+updated: 2026-06-16
+related: ["[[checkout]]", "[[2026-06-16-photos-before-checkout-association]]"]
 sources: []
 owns:
   routes: []
   anchors: ["id:build"]
   globs:
     - "components/home/configurator/**"
+    - "app/(site)/api/configurator/**"
     - "lib/pricing.ts"
     - "lib/worlds.ts"
     - "tests/lib/pricing.test.ts"
@@ -21,11 +22,11 @@ invariants:
     enforcedBy: ["tests/lib/pricing.test.ts", "tests/stripe/checkout.test.ts"]
   - rule: "The displayed total === computeTotalCents(selections) / 100 — client display and server charge use the same math."
     enforcedBy: ["tests/lib/pricing.test.ts"]
-  - rule: "The CTA POSTs SELECTIONS (childName, world, length, detail, extraMinutes, addOns, plotNote) to /api/stripe/checkout and redirects to the returned Stripe url — it never sends a price and never opens the mock checkout."
+  - rule: "The CTA POSTs SELECTIONS (childName, world, length, detail, extraMinutes, addOns, plotNote) plus assetPaths (blob pathnames of photos uploaded in step 3) to /api/stripe/checkout and redirects to the returned Stripe url — it never sends a price and never opens the mock checkout."
     enforcedBy: ["e2e/checkout.spec.ts"]
   - rule: "World ids match collections/Orders.ts world options and lib/worlds.ts WORLD_LABELS; childName is optional (empty is allowed, parent adds it later)."
     enforcedBy: []
-verifiedAt: 05697f5
+verifiedAt: 2a1e55a
 ---
 
 ## Purpose
@@ -34,8 +35,12 @@ child's video. It is the primary conversion point on the marketing site and feed
 `[[checkout]]`. The steps:
 1. **The film** — length, extra minutes, detail level, add-ons (the pricing controls).
 2. **The story** — plot/world, an optional free-text plot idea, and the child's first name.
-3. **Photos & checkout** — a UI-only photo dropzone (preview + validation only; the real
-   upload happens post-purchase in `[[payload-backend]]`'s dashboard) and the checkout CTA.
+3. **Photos & checkout** — a real photo dropzone that uploads each picked photo
+   browser→Vercel Blob (anonymous `clientUploads` via `app/(site)/api/configurator/blob-upload`,
+   reusing the `prepareForUpload` re-encode, capped at `MAX_CHECKOUT_PHOTOS`=6), then the
+   checkout CTA. The blob pathnames ride to the webhook in Stripe metadata and become the
+   order's photos (see `[[2026-06-16-photos-before-checkout-association]]`). The dashboard
+   uploader in `[[payload-backend]]` remains for adding/replacing photos later.
 
 The wizard is one client component (`components/home/configurator/index.tsx`) holding all
 selection + `step` state; step content swaps in the left panel via `AnimatePresence` (guarded

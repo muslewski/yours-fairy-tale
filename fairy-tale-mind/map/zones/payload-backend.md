@@ -4,7 +4,7 @@ summary: "Payload v3 backend — the in-app CMS, /admin panel, REST/GraphQL API,
 tags: [backend, payload, auth, infrastructure]
 status: active
 created: 2026-06-03
-updated: 2026-06-13
+updated: 2026-06-16
 related: ["[[migrate-on-deploy-via-instrumentation]]", "[[prod-env-fail-closed]]", "[[blob-pass-through-proxied-video]]", "[[waitlist-signups-payload-plus-resend]]", "[[studio]]", "[[browser-to-blob-uploads-metadata-media]]", "[[two-media-collections-public-and-gated]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
@@ -30,6 +30,8 @@ owns:
     - "collections/Media.ts"
     - "collections/SiteMedia.ts"
     - "instrumentation.ts"
+    - "app/api/cron/prune-blobs/route.ts"
+    - "vercel.json"
     - "lib/run-migrations.ts"
     - "lib/required-env.ts"
     - "tests/lib/run-migrations.test.ts"
@@ -68,7 +70,7 @@ invariants:
     enforcedBy: ["collections/SiteMedia.ts", "collections/Media.ts", "payload.config.ts"]
   - rule: "Waitlist rows are created ONLY by app/api/waitlist/route.ts via the Local API with overrideAccess — all collection access is adminOnly (same posture as Orders). Email is unique + lowercased (beforeValidate hook, same canonicalization as users.email)."
     enforcedBy: ["collections/Waitlist.ts", "tests/waitlist/waitlist.test.ts"]
-verifiedAt: 82f6095
+verifiedAt: 2a1e55a
 ---
 
 ## Purpose
