@@ -50,8 +50,13 @@ export async function POST(req: NextRequest) {
     extraMinutes: typeof extraMinutes === "number" ? extraMinutes : 0,
     addOns: Array.isArray(addOns) ? addOns : [],
     plotNote: typeof plotNote === "string" ? plotNote : "",
+    // Only configurator-prefixed blob pathnames may enter checkout metadata —
+    // they become order assets in the webhook, so an unscoped path would be an
+    // IDOR (attach someone else's blob to your order). Re-enforced at the sink too.
     assetPaths: Array.isArray(assetPaths)
-      ? assetPaths.filter((p): p is string => typeof p === "string").slice(0, 6)
+      ? assetPaths
+          .filter((p): p is string => typeof p === "string" && p.startsWith("configurator/"))
+          .slice(0, 6)
       : [],
     email,
   };

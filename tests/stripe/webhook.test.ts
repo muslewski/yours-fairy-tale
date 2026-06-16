@@ -110,6 +110,29 @@ test("checkout with assetPaths attaches metadata-only media and goes in_producti
   expect((order.assets as unknown[]).length).toBe(2);
 });
 
+test("assetPaths outside the configurator/ prefix are NOT attached (IDOR guard)", async () => {
+  const p = await getPayloadClient();
+  const email = `wh-idor-${Date.now()}@x.io`;
+  const sessionId = `cs_${Date.now()}_idor`;
+  const evt = completedEvent(email, sessionId);
+  // Mocked head() would return an image for ANY path; the prefix guard must
+  // reject these before head() so a foreign blob can't be attached.
+  (evt.data.object as { metadata: Record<string, string> }).metadata.assetPaths =
+    "media/someone-elses-photo.jpg,proof/another-order.mp4";
+
+  await handleStripeEvent(evt);
+
+  const orders = await p.find({
+    collection: "orders",
+    where: { stripeSessionId: { equals: sessionId } },
+    depth: 0,
+    overrideAccess: true,
+  });
+  const order = orders.docs[0];
+  expect((order.assets ?? []) as unknown[]).toHaveLength(0);
+  expect(order.status).toBe("paid"); // nothing attached → no in_production promotion
+});
+
 test("creates user + order on checkout.session.completed", async () => {
   const p = await getPayloadClient();
   const email = `wh-${Date.now()}@x.io`;

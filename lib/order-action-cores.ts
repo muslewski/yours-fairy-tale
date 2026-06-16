@@ -37,6 +37,13 @@ export async function attachCheckoutAssets(
 
   const newIds: string[] = [];
   for (const pathname of pathnames.slice(0, 6)) {
+    // Scope guard (IDOR defense-in-depth): only attach blobs from the public
+    // configurator upload prefix. assetPaths arrives via client-controlled
+    // checkout metadata, so without this a buyer could pass another order's /
+    // customer's blob pathname and have it attached to (and then viewable on)
+    // their own order. The upload token route enforces the same prefix; we
+    // re-enforce it here at the sink.
+    if (!pathname.startsWith("configurator/")) continue;
     try {
       const blob = await head(pathname);
       if (!blob.contentType?.startsWith("image/")) continue;
