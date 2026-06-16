@@ -4,8 +4,8 @@ summary: "Stripe checkout integration — mock UI simulation + real Checkout Ses
 tags: [ui, checkout, stripe, api, webhook, orders]
 status: active
 created: 2026-06-02
-updated: 2026-06-15
-related: ["[[configurator]]", "[[payload-backend]]", "[[studio]]", "[[delivery-promise-auto-from-length]]"]
+updated: 2026-06-16
+related: ["[[configurator]]", "[[payload-backend]]", "[[studio]]", "[[delivery-promise-auto-from-length]]", "[[auth-gating]]"]
 sources: ["[[checkout-is-a-simulation]]", "[[payments-stripe-over-shopify]]", "[[stripe-checkout-session-route]]", "[[webhook-orphan-events-retry]]"]
 owns:
   routes:
@@ -27,6 +27,7 @@ owns:
     - "tests/stripe/checkout.test.ts"
     - "tests/stripe/checkout-route.test.ts"
     - "tests/lib/checkout.test.ts"
+    - "tests/app/status-email-link.test.ts"
     - "tests/stripe/webhook.test.ts"
     - "tests/stripe/refund-email.test.ts"
     - "tests/lib/pricing.test.ts"
@@ -73,7 +74,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
     enforcedBy: ["tests/app/status-emails.test.ts"]
-verifiedAt: 2f29246
+verifiedAt: 168026c
 ---
 
 ## Purpose
@@ -176,3 +177,8 @@ the async webhook not having created the order yet. The unwrapped
 `stripe.checkout.sessions.create` call is now wrapped: a Stripe/network failure returns a
 clean `502` (was an unhandled 500). Guarded by `tests/lib/checkout.test.ts` (success_url) +
 `tests/stripe/checkout-route.test.ts` (502).
+Post-purchase UX (2026-06-16, Phase 4): the `proof_ready`/`delivered` status emails
+(`lib/order-status-email.ts`) no longer link to a bare `/sign-in` — they mint a one-click
+`createOrderTrackingLink` with `callbackURL=/app/orders/{id}`, so a click both signs the
+parent in AND opens that order. The link-mint is inside the existing non-fatal try/catch
+(`sendStatusTransitionEmail` now takes `orderId`). Guarded by `tests/app/status-email-link.test.ts`.

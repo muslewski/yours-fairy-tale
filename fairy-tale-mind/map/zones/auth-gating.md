@@ -4,7 +4,7 @@ summary: "Two-layer /app gating: optimistic proxy cookie check + authoritative l
 tags: [auth, security, customer-area]
 status: active
 created: 2026-06-03
-updated: 2026-06-15
+updated: 2026-06-16
 related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]", "[[video-ownership-route-over-static-url]]", "[[local-disk-video-delivery]]", "[[blob-pass-through-proxied-video]]", "[[prod-env-fail-closed]]", "[[studio]]", "[[delivery-promise-auto-from-length]]", "[[two-media-collections-public-and-gated]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
@@ -30,6 +30,10 @@ owns:
     - "app/(site)/(app)/api/orders/[id]/asset/[assetId]/route.ts"
     - "app/(site)/(app)/sign-in/page.tsx"
     - "app/(site)/(app)/sign-in/verify/page.tsx"
+    - "app/(site)/(app)/sign-in/verify/error/page.tsx"
+    - "app/(site)/(app)/app/orders/[id]/loading.tsx"
+    - "lib/safe-redirect.ts"
+    - "tests/lib/safe-redirect.test.ts"
     - "lib/auth-confirm-url.ts"
     - "lib/order-tracking-link.ts"
     - "collections/auth/Users.ts"
@@ -88,7 +92,7 @@ invariants:
     enforcedBy: ["tests/auth/gating.test.ts"]
   - rule: "Each photo-upload server-action call carries ONE file, client-side re-encoded (≤2048px JPEG q0.85, EXIF orientation baked in) when over MAX_REQUEST_BYTES (3.5MB), so every request fits Vercel's ~4.5MB body cap; retries skip files already saved in a previous attempt."
     enforcedBy: ["components/app/prepare-upload.ts", "components/app/photo-upload.tsx"]
-verifiedAt: 5da134f
+verifiedAt: 168026c
 ---
 
 ## Purpose
@@ -356,3 +360,10 @@ also proxy through an ownership-gated route
 `assertOwnsOrder` doorway, non-owner 403), and the detail page gained a "Photos
 you sent" gallery (`components/app/uploaded-photos.tsx`) that loads the small
 `preview` size through that gate (see `[[two-media-collections-public-and-gated]]`).
+Post-purchase UX (2026-06-16, Phase 4): sign-in now honors `?next=` deep links via a
+shared open-redirect guard (`lib/safe-redirect.ts`, also used by the verify page);
+a branded expired/used magic-link page (`sign-in/verify/error`) is wired through Better
+Auth's `errorCallbackURL`; `requestProofChange` also appends the parent's request to
+`customerNotes` (a receipt in their thread); the preview stays watchable read-only during
+`revisions` (`ProofReview readOnly`, `loadProof` guard widened to `proof_ready || revisions`);
+and the order-detail loading skeleton gained Photos + Notes blocks.
