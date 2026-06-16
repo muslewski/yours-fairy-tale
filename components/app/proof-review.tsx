@@ -27,9 +27,14 @@ interface ProofReviewProps {
   orderId: string;
   childName?: string;
   proof?: ProofMedia | null;
+  /**
+   * Preview-only mode (status: revisions). Shows the proof so the parent can
+   * re-watch what they commented on, with no approve / request-change actions.
+   */
+  readOnly?: boolean;
 }
 
-export function ProofReview({ orderId, childName, proof }: ProofReviewProps) {
+export function ProofReview({ orderId, childName, proof, readOnly = false }: ProofReviewProps) {
   const reduce = useReducedMotion();
   const [changing, setChanging] = useState(false);
   const [note, setNote] = useState("");
@@ -80,8 +85,9 @@ export function ProofReview({ orderId, childName, proof }: ProofReviewProps) {
         className="mt-1 text-sm text-brand-deep/70"
         style={{ fontFamily: "var(--font-quicksand)" }}
       >
-        Take your time. When it feels right, approve it. If anything should
-        change, tell us and we will make it right.
+        {readOnly
+          ? "Your change request is in, and we're working on it. You can re-watch the preview you commented on here."
+          : "Take your time. When it feels right, approve it. If anything should change, tell us and we will make it right."}
       </p>
 
       {/* The proof itself — video, image, or a plain link as a fallback. */}
@@ -129,6 +135,8 @@ export function ProofReview({ orderId, childName, proof }: ProofReviewProps) {
         </p>
       ) : null}
 
+      {readOnly ? null : (
+        <>
       <div className="mt-4 flex flex-wrap gap-3">
         <button
           type="button"
@@ -191,6 +199,8 @@ export function ProofReview({ orderId, childName, proof }: ProofReviewProps) {
           </motion.form>
         ) : null}
       </AnimatePresence>
+        </>
+      )}
     </div>
   );
 }

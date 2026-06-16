@@ -82,7 +82,7 @@ export default async function OrderDetailPage({
   const result = stageForStatus(status);
   const onHappyPath = "activeIndex" in result;
   const proof =
-    status === "proof_ready"
+    status === "proof_ready" || status === "revisions"
       ? await loadProof(String(order.id), order.proof as string | null)
       : null;
   const notes = (Array.isArray(order.customerNotes) ? order.customerNotes : []) as CustomerNote[];
@@ -171,6 +171,13 @@ function ActionSlot({
     return (
       <div className="mt-6">
         <ProofReview orderId={String(order.id)} childName={childName} proof={proof} />
+      </div>
+    );
+  }
+  if (status === "revisions") {
+    return (
+      <div className="mt-6">
+        <ProofReview orderId={String(order.id)} childName={childName} proof={proof} readOnly />
       </div>
     );
   }
