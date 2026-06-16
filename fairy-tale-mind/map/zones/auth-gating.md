@@ -140,15 +140,15 @@ read invariant). Renders the status timeline + the full status message (headline
 + `MascotImage` — days-granularity countdown to `promisedBy` from pure
 `countdownState` in `lib/delivery.ts`: calm overdue variant, never negative
 numbers, hidden once delivered and on refunded/cancelled — see
-`[[delivery-promise-auto-from-length]]`), the relocated per-status ACTION slot
-For `in_production` and `revisions` orders, `DeliveryCountdown` is replaced by
-**`StudioLiveCard`** (`components/app/studio-live-card.tsx`) — the perched
-auto-playing builder mascot (`MascotImage`) plus a live count-UP "crafting for
-2d 06h 14m 32s" clock (seconds-granularity, collapsed to days under reduced
-motion) derived from a new `orders.inStudioSince` stamp (formatted by
-`lib/studio-elapsed.ts`) and the ready-by date; the "stamp once" rule lives in
-the pure `lib/in-studio-stamp.ts` (see `[[2026-06-16-in-studio-live-card]]`).
-Every other status continues to use `DeliveryCountdown`.
+`[[delivery-promise-auto-from-length]]`). For `in_production` and `revisions`
+orders, `DeliveryCountdown` is replaced by **`StudioLiveCard`**
+(`components/app/studio-live-card.tsx`) — the perched auto-playing builder mascot
+(`MascotImage`) plus a live count-UP "crafting for 2d 06h 14m 32s" clock
+(seconds-granularity, collapsed to days under reduced motion) derived from a new
+`orders.inStudioSince` stamp (formatted by `lib/studio-elapsed.ts`) and the
+ready-by date; the "stamp once" rule lives in the pure `lib/in-studio-stamp.ts`
+(see `[[2026-06-16-in-studio-live-card]]`). Every other status continues to use
+`DeliveryCountdown`. The page also renders the relocated per-status ACTION slot
 (photo upload / proof review / finished-film player — same components as
 before), a read-only **"Your story"** panel (world, length, detail level, extra minutes, add-ons, the parent's original
 `plotNote`; labels from `lib/order-options.ts`), and the **notes thread**
