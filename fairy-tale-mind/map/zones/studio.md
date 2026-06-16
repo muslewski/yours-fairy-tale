@@ -4,7 +4,7 @@ summary: "The staff order panel at /studio — dashboard (revenue totals, needs-
 tags: [studio, staff, orders, security, video]
 status: active
 created: 2026-06-10
-updated: 2026-06-10
+updated: 2026-06-16
 related: ["[[payload-backend]]", "[[auth-gating]]", "[[checkout]]", "[[studio-gate-reuses-payload-admins-auth]]", "[[browser-to-blob-uploads-metadata-media]]", "[[delivery-promise-auto-from-length]]", "[[orphaned-blobs-no-cleanup]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-10-studio-panel.md"
@@ -22,10 +22,14 @@ owns:
     - "lib/studio-workflow.ts"
     - "lib/studio-actions.ts"
     - "lib/studio-order-mutations.ts"
+    - "lib/studio-status.ts"
+    - "lib/date-guard.ts"
     - "lib/delivery.ts"
     - "components/studio/**"
     - "tests/studio/*"
     - "tests/lib/delivery.test.ts"
+    - "tests/lib/studio-status.test.ts"
+    - "tests/lib/date-guard.test.ts"
     - "e2e/studio.spec.ts"
 depends: ["[[payload-backend]]"]
 invariants:
@@ -39,7 +43,7 @@ invariants:
     enforcedBy: ["tests/studio/attach-video.test.ts"]
   - rule: "Revenue sums Stripe-charged cents (amountTotalCents) excluding refunded/cancelled; never recomputed from pricing."
     enforcedBy: ["tests/studio/workflow.test.ts"]
-verifiedAt: cf03e40
+verifiedAt: 01f9d80
 ---
 
 ## Purpose
@@ -128,3 +132,10 @@ workflow core → guarded mutations (with the "use server" quarantine fix) →
 shell + sign-in → dashboard → order list → workstation → browser-to-Blob
 uploads → the customer-facing delivery countdown + proof-playback fix (owned by
 `[[auth-gating]]`) → Layer B e2e.
+Pre-launch polish (2026-06-16, Phase 5): a confirm step before destructive transitions
+(`isDestructiveStatus` in `lib/studio-status.ts` gates cancelled/refunded in
+`workflow-card.tsx`); in-flight "Saving…" + `aria-busy` on the workflow + promised-by
+buttons; a past-date guard on the promised-by date input (`min` + warning, `isPastDate`
+in `lib/date-guard.ts`); a "preview is with the parent" hint at `proof_ready` and a
+password-reset hint on the studio sign-in; and the customer photo `alt` no longer leaks
+the raw blob filename.
