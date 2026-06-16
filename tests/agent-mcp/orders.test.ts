@@ -34,6 +34,6 @@ test("getCheckoutIntent returns amount + the real success/cancel URLs", () => {
     childName: "Ada", world: "space", length: "short", detail: "detailed", extraMinutes: 0, addOns: [],
   });
   expect(typeof intent.amountCents).toBe("number");
-  expect(intent.successUrl).toContain("/app?session={CHECKOUT_SESSION_ID}");
+  expect(intent.successUrl).toContain("/order-confirmed?session={CHECKOUT_SESSION_ID}");
   expect(intent.cancelUrl).toContain("/#build");
 });
