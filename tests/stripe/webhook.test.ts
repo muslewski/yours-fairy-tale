@@ -107,6 +107,7 @@ test("checkout with assetPaths attaches metadata-only media and goes in_producti
   });
   const order = orders.docs[0];
   expect(order.status).toBe("in_production");
+  expect(typeof order.inStudioSince).toBe("string"); // stamped on first entry to production
   expect((order.assets as unknown[]).length).toBe(2);
 });
 
@@ -131,6 +132,7 @@ test("assetPaths outside the configurator/ prefix are NOT attached (IDOR guard)"
   const order = orders.docs[0];
   expect((order.assets ?? []) as unknown[]).toHaveLength(0);
   expect(order.status).toBe("paid"); // nothing attached → no in_production promotion
+  expect(order.inStudioSince ?? null).toBeNull(); // never entered production → no stamp
 });
 
 test("creates user + order on checkout.session.completed", async () => {

@@ -108,6 +108,31 @@ describe("applyOrderStatusCore", () => {
     const result = await applyOrderStatusCore(String(order.id), "exploded");
     expect(result.ok).toBe(false);
   });
+
+  test("stamps inStudioSince on first in_production and never resets it", async () => {
+    const { payload, order } = await seedOrder("paid");
+
+    await applyOrderStatusCore(String(order.id), "in_production");
+    const first = await payload.findByID({
+      collection: "orders",
+      id: order.id,
+      depth: 0,
+      overrideAccess: true,
+    });
+    expect(typeof first.inStudioSince).toBe("string");
+    const stamp = first.inStudioSince as string;
+
+    // Re-applying in_production must keep the original stamp.
+    await new Promise((r) => setTimeout(r, 10));
+    await applyOrderStatusCore(String(order.id), "in_production");
+    const again = await payload.findByID({
+      collection: "orders",
+      id: order.id,
+      depth: 0,
+      overrideAccess: true,
+    });
+    expect(again.inStudioSince).toBe(stamp);
+  });
 });
 
 describe("applyPromisedByCore", () => {

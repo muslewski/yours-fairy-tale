@@ -8,6 +8,7 @@
  */
 import { getPayloadClient } from "@/lib/payload";
 import { isServerAcceptedImage } from "@/lib/order-upload-validation";
+import { inStudioStamp } from "@/lib/in-studio-stamp";
 
 export interface UploadFileSpec {
   data: Buffer;
@@ -125,7 +126,15 @@ export async function uploadOrderAssetsCore(
   await payload.update({
     collection: "orders",
     id: orderId,
-    data: { assets: [...existing, ...newAssetIds], status: nextStatus },
+    data: {
+      assets: [...existing, ...newAssetIds],
+      status: nextStatus,
+      ...inStudioStamp({
+        nextStatus,
+        currentInStudioSince: (order.inStudioSince as string | null) ?? null,
+        now: new Date(),
+      }),
+    },
     overrideAccess: true,
   });
 

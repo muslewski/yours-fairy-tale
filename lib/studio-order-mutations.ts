@@ -20,6 +20,7 @@ import { NotFound } from "payload";
 import { getPayloadClient } from "@/lib/payload";
 import { ALL_STATUSES, requirementFor } from "@/lib/studio-workflow";
 import type { OrderStatus } from "@/lib/order-stages";
+import { inStudioStamp } from "@/lib/in-studio-stamp";
 
 export type StudioActionResult = { ok: true } | { ok: false; error: string };
 
@@ -68,7 +69,14 @@ export async function applyOrderStatusCore(
   await payload.update({
     collection: "orders",
     id: orderId,
-    data: { status: nextStatus },
+    data: {
+      status: nextStatus,
+      ...inStudioStamp({
+        nextStatus,
+        currentInStudioSince: (order.inStudioSince as string | null) ?? null,
+        now: new Date(),
+      }),
+    },
     overrideAccess: true,
   });
   return { ok: true };

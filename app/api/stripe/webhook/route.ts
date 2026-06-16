@@ -21,6 +21,7 @@ import { getPayloadClient } from "@/lib/payload";
 import { sendEmail } from "@/lib/email";
 import { renderBrandedEmail, emailParagraphs } from "@/lib/email-template";
 import { createOrderTrackingLink } from "@/lib/order-tracking-link";
+import { inStudioStamp } from "@/lib/in-studio-stamp";
 import { attachCheckoutAssets } from "@/lib/order-action-cores";
 import { promisedByForLength, formatPromisedDate } from "@/lib/delivery";
 import type { WorldId } from "@/lib/worlds";
@@ -307,7 +308,14 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
       await payload.update({
         collection: "orders",
         id: order.id,
-        data: { status: "in_production" },
+        data: {
+          status: "in_production",
+          ...inStudioStamp({
+            nextStatus: "in_production",
+            currentInStudioSince: null, // brand-new order; never stamped yet
+            now: new Date(),
+          }),
+        },
         overrideAccess: true,
       });
     }
