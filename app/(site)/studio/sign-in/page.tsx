@@ -61,6 +61,12 @@ export default function StudioSignInPage() {
         >
           Sign in with your staff account.
         </p>
+        <p
+          className="mt-1 text-center text-xs text-brand-deep/55"
+          style={{ fontFamily: "var(--font-quicksand)" }}
+        >
+          Forgot your password? Reset it in the Payload admin at /admin.
+        </p>
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
           <label className="flex flex-col gap-1 text-sm font-bold text-brand-deep">

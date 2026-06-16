@@ -297,6 +297,11 @@ export default async function StudioOrderPage({
             promisedBy={(order.promisedBy as string | null) ?? null}
           />
 
+          {status === "proof_ready" ? (
+            <p className="text-sm font-semibold text-brand-deep/70">
+              The preview is with the parent — they&apos;ll approve it or request a change.
+            </p>
+          ) : null}
           <VideoUpload
             orderId={String(order.id)}
             kind="proof"
