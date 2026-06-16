@@ -32,6 +32,7 @@ export function Configurator() {
   const [addOns, setAddOns] = useState<string[]>(["narration"]);
   const [status, setStatus] = useState<"idle" | "pending" | "error">("idle");
   const [plotNote, setPlotNote] = useState("");
+  const [photoPaths, setPhotoPaths] = useState<string[]>([]);
   const [step, setStep] = useState(1);
 
   const tier = LENGTHS.find((o) => o.id === length)!;
@@ -62,6 +63,7 @@ export function Configurator() {
           extraMinutes,
           addOns,
           plotNote: plotNote.trim(),
+          assetPaths: photoPaths,
         }),
       });
       if (!res.ok) throw new Error(`Checkout failed (${res.status})`);
@@ -208,6 +210,8 @@ export function Configurator() {
                 {step === 3 && (
                   <StepPhotos
                     summary={summarizeSelections({ length, detail, extraMinutes, addOns })}
+                    photoPaths={photoPaths}
+                    setPhotoPaths={setPhotoPaths}
                   />
                 )}
               </motion.div>
