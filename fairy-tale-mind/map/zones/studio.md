@@ -5,7 +5,7 @@ tags: [studio, staff, orders, security, video]
 status: active
 created: 2026-06-10
 updated: 2026-06-16
-related: ["[[payload-backend]]", "[[auth-gating]]", "[[checkout]]", "[[studio-gate-reuses-payload-admins-auth]]", "[[browser-to-blob-uploads-metadata-media]]", "[[delivery-promise-auto-from-length]]", "[[orphaned-blobs-no-cleanup]]"]
+related: ["[[payload-backend]]", "[[auth-gating]]", "[[checkout]]", "[[studio-gate-reuses-payload-admins-auth]]", "[[browser-to-blob-uploads-metadata-media]]", "[[delivery-promise-auto-from-length]]", "[[orphaned-blobs-no-cleanup]]", "[[2026-06-16-in-studio-live-card]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-10-studio-panel.md"
   - "fairy-tale-mind/specs/2026-06-10-studio-panel-design.md"
@@ -43,7 +43,7 @@ invariants:
     enforcedBy: ["tests/studio/attach-video.test.ts"]
   - rule: "Revenue sums Stripe-charged cents (amountTotalCents) excluding refunded/cancelled; never recomputed from pricing."
     enforcedBy: ["tests/studio/workflow.test.ts"]
-verifiedAt: 01f9d80
+verifiedAt: a50353d
 ---
 
 ## Purpose
@@ -109,6 +109,8 @@ panel, the parent's photos, the notes thread, and:
   cores (`applyOrderStatusCore`, `applyPromisedByCore`, `attachVideoCore`),
   quarantined so the Next compiler can never register them as POST-reachable
   actions (a security review caught this; see the decision record).
+  Moving an order to `in_production` stamps `orders.inStudioSince` once (never
+  reset), via the pure `lib/in-studio-stamp.ts`; see `[[2026-06-16-in-studio-live-card]]`.
 
 ## Tests
 - `tests/studio/auth.test.ts` — the admins-only bridge: a real admins token

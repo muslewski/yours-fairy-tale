@@ -25,6 +25,7 @@ owns:
     - "migrations/20260610_000000_waitlist.ts"
     - "migrations/20260610_000001_order_amount_promise.ts"
     - "migrations/20260613_000000_media_site_media.ts"
+    - "migrations/20260616_000001_order_in_studio_since.ts"
     - "collections/Admins.ts"
     - "collections/Waitlist.ts"
     - "collections/Media.ts"
@@ -70,7 +71,7 @@ invariants:
     enforcedBy: ["collections/SiteMedia.ts", "collections/Media.ts", "payload.config.ts"]
   - rule: "Waitlist rows are created ONLY by app/api/waitlist/route.ts via the Local API with overrideAccess — all collection access is adminOnly (same posture as Orders). Email is unique + lowercased (beforeValidate hook, same canonicalization as users.email)."
     enforcedBy: ["collections/Waitlist.ts", "tests/waitlist/waitlist.test.ts"]
-verifiedAt: 2a1e55a
+verifiedAt: a50353d
 ---
 
 ## Purpose

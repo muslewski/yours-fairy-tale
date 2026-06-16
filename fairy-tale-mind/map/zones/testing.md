@@ -24,7 +24,7 @@ invariants:
     enforcedBy: ["tests/setup-env.ts", "playwright.config.ts"]
   - rule: "CI runs `npx tsc --noEmit` as its own step — type errors fail the pipeline even when no test imports the broken file."
     enforcedBy: [".github/workflows/test.yml"]
-verifiedAt: 2a1e55a
+verifiedAt: a50353d
 ---
 
 ## Purpose
@@ -79,3 +79,5 @@ Agent order-tooling MCP (2026-06-14): added `tests/agent-mcp/*` (9 files — gua
 Stripe, cores, orders, customer, studio, payments, auth-maintenance, registration) and
 `e2e/agent-loop.spec.ts` (Layer B agent loop); the enabling refactor extracted customer cores
 into `lib/order-action-cores.ts` (see `[[agent-tooling]]`).
+In-studio live card (2026-06-16): added `tests/lib/studio-elapsed.test.ts` (elapsed-time
+formatting) and `tests/lib/in-studio-stamp.test.ts` (once-stamp idempotency guard).

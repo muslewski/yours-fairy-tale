@@ -5,7 +5,7 @@ tags: [ui, checkout, stripe, api, webhook, orders]
 status: active
 created: 2026-06-02
 updated: 2026-06-16
-related: ["[[configurator]]", "[[payload-backend]]", "[[studio]]", "[[delivery-promise-auto-from-length]]", "[[auth-gating]]"]
+related: ["[[configurator]]", "[[payload-backend]]", "[[studio]]", "[[delivery-promise-auto-from-length]]", "[[auth-gating]]", "[[2026-06-16-in-studio-live-card]]"]
 sources: ["[[checkout-is-a-simulation]]", "[[payments-stripe-over-shopify]]", "[[stripe-checkout-session-route]]", "[[webhook-orphan-events-retry]]"]
 owns:
   routes:
@@ -74,7 +74,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
     enforcedBy: ["tests/app/status-emails.test.ts"]
-verifiedAt: 2a1e55a
+verifiedAt: a50353d
 ---
 
 ## Purpose
@@ -119,6 +119,7 @@ Enacts the "checkout-gated, no public sign-up" model:
    `amount_total` — what Stripe actually charged) and `promisedBy` (purchase time + the
    length's production window via `promisedByForLength` in `lib/delivery.ts`), and lets
    `status` default to `"paid"`.
+   The `orders` schema and the webhook also carry `inStudioSince` (a nullable date stamped the first time an order enters production, never reset); see `[[2026-06-16-in-studio-live-card]]`.
 5. **Confirmation email** — sends a "your video is on its way — sign in to track it" email
    via `lib/email.ts` (Resend), including the expected-by date when a promise was stamped
    ("We expect it to be ready by …"). Email failure is logged and never re-throws; the
