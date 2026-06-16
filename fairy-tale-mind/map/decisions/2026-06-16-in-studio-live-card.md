@@ -45,3 +45,8 @@ message. We wanted the parent to feel that real work is happening right now.
 - `DeliveryCountdown`'s in_production branches are unreachable for those two
   statuses (left in place; still used by paid / awaiting_assets / proof_ready /
   approved).
+- GOTCHA (fixed post-launch): the mascot was first shipped with a
+  `drop-shadow` on the animated WebP `<img>`. A CSS filter on an animated WebP
+  makes Chromium accumulate frames (every previous frame smears on screen), so
+  the perched drop-shadow was removed. Never put a CSS filter on the animated
+  mascot; the `/studio` and overdue-card uses are filter-free for the same reason.
