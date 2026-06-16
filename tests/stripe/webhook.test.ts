@@ -7,11 +7,17 @@
  *
  * These tests hit the local Postgres DB via the Payload Local API.
  */
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import Stripe from "stripe";
 import { handleStripeEvent, POST } from "@/app/api/stripe/webhook/route";
 import { stripe } from "@/lib/stripe";
 import { getPayloadClient } from "@/lib/payload";
+
+// The webhook head()s each asset pathname for its content-type/size; mock Blob so
+// these DB-backed tests never hit the network. head() only runs when assetPaths exist.
+vi.mock("@vercel/blob", () => ({
+  head: vi.fn().mockResolvedValue({ contentType: "image/jpeg", size: 12345 }),
+}));
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -79,6 +85,27 @@ function completedEventWithExtras(email: string, sessionId: string): Stripe.Even
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
+
+test("checkout with assetPaths attaches metadata-only media and goes in_production", async () => {
+  const p = await getPayloadClient();
+  const email = `wh-assets-${Date.now()}@x.io`;
+  const sessionId = `cs_${Date.now()}_assets`;
+  const evt = completedEvent(email, sessionId);
+  (evt.data.object as { metadata: Record<string, string> }).metadata.assetPaths =
+    "configurator/a.jpg,configurator/b.jpg";
+
+  await handleStripeEvent(evt);
+
+  const orders = await p.find({
+    collection: "orders",
+    where: { stripeSessionId: { equals: sessionId } },
+    depth: 0,
+    overrideAccess: true,
+  });
+  const order = orders.docs[0];
+  expect(order.status).toBe("in_production");
+  expect((order.assets as unknown[]).length).toBe(2);
+});
 
 test("creates user + order on checkout.session.completed", async () => {
   const p = await getPayloadClient();

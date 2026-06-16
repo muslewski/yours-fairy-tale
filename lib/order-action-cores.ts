@@ -21,6 +21,57 @@ export interface UploadResult {
   error?: string;
 }
 
+/**
+ * Attach pre-checkout photos (already in Vercel Blob) to an order as metadata-only
+ * media docs (filename == blob pathname, same contract as attachVideoCore). Reads
+ * each blob's content-type/size via head(). Non-fatal per pathname: a missing or
+ * non-image blob is skipped, never fails the order. Returns the count attached.
+ */
+export async function attachCheckoutAssets(
+  orderId: string,
+  pathnames: string[],
+): Promise<number> {
+  if (pathnames.length === 0) return 0;
+  const { head } = await import("@vercel/blob");
+  const payload = await getPayloadClient();
+
+  const newIds: string[] = [];
+  for (const pathname of pathnames.slice(0, 6)) {
+    try {
+      const blob = await head(pathname);
+      if (!blob.contentType?.startsWith("image/")) continue;
+      const media = await payload.create({
+        collection: "media",
+        data: { filename: pathname, mimeType: blob.contentType, filesize: blob.size },
+        overrideAccess: true,
+      });
+      newIds.push(String(media.id));
+    } catch (err) {
+      console.error(`[webhook] skipped asset ${pathname}:`, err);
+    }
+  }
+  if (newIds.length === 0) return 0;
+
+  const order = await payload.findByID({
+    collection: "orders",
+    id: orderId,
+    depth: 0,
+    overrideAccess: true,
+  });
+  const existing = Array.isArray(order.assets)
+    ? order.assets.map((a) =>
+        typeof a === "object" && a !== null ? String((a as { id: string }).id) : String(a),
+      )
+    : [];
+  await payload.update({
+    collection: "orders",
+    id: orderId,
+    data: { assets: [...existing, ...newIds] },
+    overrideAccess: true,
+  });
+  return newIds.length;
+}
+
 /** Append photos to an order's `assets`; first photos advance awaiting_assets -> in_production. */
 export async function uploadOrderAssetsCore(
   orderId: string,

@@ -21,6 +21,7 @@ import { getPayloadClient } from "@/lib/payload";
 import { sendEmail } from "@/lib/email";
 import { renderBrandedEmail, emailParagraphs } from "@/lib/email-template";
 import { createOrderTrackingLink } from "@/lib/order-tracking-link";
+import { attachCheckoutAssets } from "@/lib/order-action-cores";
 import { promisedByForLength, formatPromisedDate } from "@/lib/delivery";
 import type { WorldId } from "@/lib/worlds";
 
@@ -206,7 +207,7 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
   const email = rawEmail ? rawEmail.trim().toLowerCase() : null;
 
   const meta = session.metadata ?? {};
-  const { childName, world, length, detailLevel, extraMinutes, addOns, plotNote } = meta;
+  const { childName, world, length, detailLevel, extraMinutes, addOns, plotNote, assetPaths } = meta;
 
   if (!email) {
     // No email on the event — we cannot create the account. THROW (not return)
@@ -275,7 +276,7 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
   // ------------------------------------------------------------------
   // Create the Order
   // ------------------------------------------------------------------
-  await payload.create({
+  const order = await payload.create({
     collection: "orders",
     data: {
       owner: userId,
@@ -292,10 +293,25 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
       plotNote: plotNote || undefined,
       amountTotalCents,
       promisedBy: promisedBy ? promisedBy.toISOString() : undefined,
-      // status defaults to "paid" via the collection schema
+      // status defaults to "paid"; promoted to in_production below when photos attach
     },
     overrideAccess: true,
   });
+
+  // Photos collected before checkout (Phase 3): attach them metadata-only and,
+  // when any land, skip the awaiting_assets limbo straight to in_production.
+  const pathnames = assetPaths ? assetPaths.split(",").filter(Boolean) : [];
+  if (pathnames.length > 0) {
+    const attached = await attachCheckoutAssets(String(order.id), pathnames);
+    if (attached > 0) {
+      await payload.update({
+        collection: "orders",
+        id: order.id,
+        data: { status: "in_production" },
+        overrideAccess: true,
+      });
+    }
+  }
 
   // ------------------------------------------------------------------
   // One-click "track your order" magic link for the confirmation email.
