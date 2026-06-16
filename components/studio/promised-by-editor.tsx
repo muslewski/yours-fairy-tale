@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { setPromisedBy } from "@/lib/studio-actions";
+import { isPastDate } from "@/lib/date-guard";
 
 function toDateInputValue(iso: string | null): string {
   if (!iso) return "";
@@ -32,6 +33,7 @@ export function PromisedByEditor({
 }) {
   const router = useRouter();
   const [value, setValue] = useState(toDateInputValue(promisedBy));
+  const todayISO = new Date().toISOString().slice(0, 10);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
 
@@ -65,13 +67,14 @@ export function PromisedByEditor({
         <input
           type="date"
           value={value}
+          min={todayISO}
           onChange={(e) => setValue(e.target.value)}
           aria-label="Promised delivery date"
           className="rounded-xl border-2 border-brand-deep bg-brand-cream px-3 py-2 text-sm font-semibold text-brand-deep"
         />
         <button
           type="button"
-          disabled={pending || !value}
+          disabled={pending || !value || isPastDate(value, todayISO)}
           aria-busy={pending}
           onClick={() => save(value)}
           className="rounded-full border-2 border-brand-deep bg-brand-blue px-4 py-2 text-sm font-bold text-brand-deep shadow-comic-sm transition-shadow hover:shadow-comic disabled:opacity-50"
@@ -79,6 +82,12 @@ export function PromisedByEditor({
           {pending ? "Saving…" : "Save"}
         </button>
       </div>
+
+      {isPastDate(value, todayISO) ? (
+        <p className="mt-2 text-sm font-semibold text-brand-pink">
+          That date is in the past. Pick today or later.
+        </p>
+      ) : null}
 
       <div className="mt-2 flex gap-2 text-xs font-bold">
         <button
