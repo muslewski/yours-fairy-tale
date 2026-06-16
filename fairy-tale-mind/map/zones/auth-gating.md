@@ -5,7 +5,7 @@ tags: [auth, security, customer-area]
 status: active
 created: 2026-06-03
 updated: 2026-06-16
-related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]", "[[video-ownership-route-over-static-url]]", "[[local-disk-video-delivery]]", "[[blob-pass-through-proxied-video]]", "[[prod-env-fail-closed]]", "[[studio]]", "[[delivery-promise-auto-from-length]]", "[[two-media-collections-public-and-gated]]"]
+related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]", "[[video-ownership-route-over-static-url]]", "[[local-disk-video-delivery]]", "[[blob-pass-through-proxied-video]]", "[[prod-env-fail-closed]]", "[[studio]]", "[[delivery-promise-auto-from-length]]", "[[two-media-collections-public-and-gated]]", "[[2026-06-16-in-studio-live-card]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
 owns:
@@ -33,7 +33,11 @@ owns:
     - "app/(site)/(app)/sign-in/verify/error/page.tsx"
     - "app/(site)/(app)/app/orders/[id]/loading.tsx"
     - "lib/safe-redirect.ts"
+    - "lib/studio-elapsed.ts"
+    - "lib/in-studio-stamp.ts"
     - "tests/lib/safe-redirect.test.ts"
+    - "tests/lib/studio-elapsed.test.ts"
+    - "tests/lib/in-studio-stamp.test.ts"
     - "lib/auth-confirm-url.ts"
     - "lib/order-tracking-link.ts"
     - "collections/auth/Users.ts"
@@ -44,6 +48,7 @@ owns:
     - "tests/auth/auth-confirm-url.test.ts"
     - "components/app/status-timeline.tsx"
     - "components/app/delivery-countdown.tsx"
+    - "components/app/studio-live-card.tsx"
     - "components/app/mascot-image.tsx"
     - "components/app/photo-upload.tsx"
     - "components/app/prepare-upload.ts"
@@ -92,7 +97,7 @@ invariants:
     enforcedBy: ["tests/auth/gating.test.ts"]
   - rule: "Each photo-upload server-action call carries ONE file, client-side re-encoded (≤2048px JPEG q0.85, EXIF orientation baked in) when over MAX_REQUEST_BYTES (3.5MB), so every request fits Vercel's ~4.5MB body cap; retries skip files already saved in a previous attempt."
     enforcedBy: ["components/app/prepare-upload.ts", "components/app/photo-upload.tsx"]
-verifiedAt: 2a1e55a
+verifiedAt: 687b8a5
 ---
 
 ## Purpose
@@ -136,6 +141,14 @@ read invariant). Renders the status timeline + the full status message (headline
 `countdownState` in `lib/delivery.ts`: calm overdue variant, never negative
 numbers, hidden once delivered and on refunded/cancelled — see
 `[[delivery-promise-auto-from-length]]`), the relocated per-status ACTION slot
+For `in_production` and `revisions` orders, `DeliveryCountdown` is replaced by
+**`StudioLiveCard`** (`components/app/studio-live-card.tsx`) — the perched
+auto-playing builder mascot (`MascotImage`) plus a live count-UP "crafting for
+2d 06h 14m 32s" clock (seconds-granularity, collapsed to days under reduced
+motion) derived from a new `orders.inStudioSince` stamp (formatted by
+`lib/studio-elapsed.ts`) and the ready-by date; the "stamp once" rule lives in
+the pure `lib/in-studio-stamp.ts` (see `[[2026-06-16-in-studio-live-card]]`).
+Every other status continues to use `DeliveryCountdown`.
 (photo upload / proof review / finished-film player — same components as
 before), a read-only **"Your story"** panel (world, length, detail level, extra minutes, add-ons, the parent's original
 `plotNote`; labels from `lib/order-options.ts`), and the **notes thread**
