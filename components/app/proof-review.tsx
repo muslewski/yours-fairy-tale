@@ -16,6 +16,7 @@ import { useState, useTransition } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { approveProof, requestProofChange } from "@/lib/order-actions";
+import { deliveryUrlHost } from "@/lib/delivery-url";
 
 interface ProofMedia {
   url?: string | null;
@@ -27,6 +28,8 @@ interface ProofReviewProps {
   orderId: string;
   childName?: string;
   proof?: ProofMedia | null;
+  /** External delivery link for the preview, if the studio set one. */
+  proofUrl?: string | null;
   /**
    * Preview-only mode (status: revisions). Shows the proof so the parent can
    * re-watch what they commented on, with no approve / request-change actions.
@@ -34,7 +37,7 @@ interface ProofReviewProps {
   readOnly?: boolean;
 }
 
-export function ProofReview({ orderId, childName, proof, readOnly = false }: ProofReviewProps) {
+export function ProofReview({ orderId, childName, proof, proofUrl, readOnly = false }: ProofReviewProps) {
   const reduce = useReducedMotion();
   const [changing, setChanging] = useState(false);
   const [note, setNote] = useState("");
@@ -44,6 +47,7 @@ export function ProofReview({ orderId, childName, proof, readOnly = false }: Pro
   const subject = childName?.trim() || "your child";
   const isVideo = proof?.mimeType?.startsWith("video/");
   const isImage = proof?.mimeType?.startsWith("image/");
+  const linkHost = deliveryUrlHost(proofUrl ?? null);
 
   function onApprove() {
     if (pending) return;
@@ -115,6 +119,16 @@ export function ProofReview({ orderId, childName, proof, readOnly = false }: Pro
           >
             Open your preview
           </a>
+        ) : linkHost ? (
+          <a
+            href={proofUrl!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center px-5 py-8 font-semibold text-brand-deep underline"
+            style={{ fontFamily: "var(--font-quicksand)" }}
+          >
+            Open your preview on {linkHost} ↗
+          </a>
         ) : (
           <p
             className="px-5 py-8 text-center text-sm text-brand-deep/60"
@@ -124,6 +138,20 @@ export function ProofReview({ orderId, childName, proof, readOnly = false }: Pro
           </p>
         )}
       </div>
+
+      {proof?.url && linkHost ? (
+        <p className="mt-2 text-xs text-brand-deep/60" style={{ fontFamily: "var(--font-quicksand)" }}>
+          Also available on {linkHost}:{" "}
+          <a
+            href={proofUrl!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold underline underline-offset-4"
+          >
+            open the link ↗
+          </a>
+        </p>
+      ) : null}
 
       {error ? (
         <p

@@ -13,33 +13,33 @@
  *
  * Copy runs through the brand-voice guide: calm, warm, parent-facing.
  */
+import { deliveryView } from "@/lib/delivery-url";
+
 interface VideoPlayerProps {
   orderId: string;
   childName?: string;
   /** False when the order is delivered but finalVideo is not attached yet. */
   hasVideo: boolean;
+  /** External delivery link (Google Drive etc.), if the studio set one. */
+  finalVideoUrl?: string | null;
 }
 
-export function VideoPlayer({ orderId, childName, hasVideo }: VideoPlayerProps) {
+export function VideoPlayer({ orderId, childName, hasVideo, finalVideoUrl }: VideoPlayerProps) {
   const subject = childName?.trim() || "your child";
   const src = `/api/orders/${orderId}/video`;
+  const view = deliveryView(hasVideo, finalVideoUrl ?? null);
+  const hasSomething = view.mode !== "none";
 
   return (
     <div
       className="mt-5 rounded-2xl border-2 border-brand-deep bg-brand-cream p-5"
       data-action-slot="delivered"
     >
-      <h3
-        className="text-lg text-brand-deep"
-        style={{ fontFamily: "var(--font-fredoka)" }}
-      >
+      <h3 className="text-lg text-brand-deep" style={{ fontFamily: "var(--font-fredoka)" }}>
         {childName ? `${childName}'s fairy tale is ready` : "Your fairy tale is ready"}
       </h3>
-      <p
-        className="mt-1 text-sm text-brand-deep/70"
-        style={{ fontFamily: "var(--font-quicksand)" }}
-      >
-        {hasVideo
+      <p className="mt-1 text-sm text-brand-deep/70" style={{ fontFamily: "var(--font-quicksand)" }}>
+        {hasSomething
           ? "Find a cozy spot and watch it together. It is yours to keep, again and again."
           : "We are adding the final touches to their film. It will appear here very soon."}
       </p>
@@ -56,7 +56,6 @@ export function VideoPlayer({ orderId, childName, hasVideo }: VideoPlayerProps) 
               aria-label={`${subject}'s finished fairy tale`}
             />
           </div>
-
           <div className="mt-4">
             <a
               href={`${src}?download`}
@@ -68,14 +67,44 @@ export function VideoPlayer({ orderId, childName, hasVideo }: VideoPlayerProps) 
             </a>
           </div>
         </>
-      ) : (
+      ) : null}
+
+      {view.mode === "upload-with-link" ? (
+        <p className="mt-3 text-sm text-brand-deep/70" style={{ fontFamily: "var(--font-quicksand)" }}>
+          Prefer to download it from {view.host}?{" "}
+          <a
+            href={finalVideoUrl!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold underline underline-offset-4"
+          >
+            Open the link ↗
+          </a>
+        </p>
+      ) : null}
+
+      {view.mode === "link-only" ? (
+        <div className="mt-4">
+          <a
+            href={finalVideoUrl!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center rounded-full border-2 border-brand-deep bg-brand-yellow px-6 py-3 font-bold text-brand-deep shadow-comic-sm transition-shadow hover:shadow-comic"
+            style={{ fontFamily: "var(--font-fredoka)" }}
+          >
+            {childName ? `Open ${childName}'s film on ${view.host} ↗` : `Open the film on ${view.host} ↗`}
+          </a>
+        </div>
+      ) : null}
+
+      {view.mode === "none" ? (
         <div
           className="mt-4 flex items-center justify-center rounded-2xl border-2 border-dashed border-brand-deep/30 bg-white px-5 py-10 text-center text-sm text-brand-deep/60"
           style={{ fontFamily: "var(--font-quicksand)" }}
         >
           Your video is being finalized.
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

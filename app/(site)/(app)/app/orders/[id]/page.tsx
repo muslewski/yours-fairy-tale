@@ -181,14 +181,25 @@ function ActionSlot({
   if (status === "proof_ready") {
     return (
       <div className="mt-6">
-        <ProofReview orderId={String(order.id)} childName={childName} proof={proof} />
+        <ProofReview
+          orderId={String(order.id)}
+          childName={childName}
+          proof={proof}
+          proofUrl={(order.proofUrl as string | null) ?? null}
+        />
       </div>
     );
   }
   if (status === "revisions") {
     return (
       <div className="mt-6">
-        <ProofReview orderId={String(order.id)} childName={childName} proof={proof} readOnly />
+        <ProofReview
+          orderId={String(order.id)}
+          childName={childName}
+          proof={proof}
+          proofUrl={(order.proofUrl as string | null) ?? null}
+          readOnly
+        />
       </div>
     );
   }
@@ -199,6 +210,7 @@ function ActionSlot({
           orderId={String(order.id)}
           childName={childName}
           hasVideo={Boolean(order.finalVideo)}
+          finalVideoUrl={(order.finalVideoUrl as string | null) ?? null}
         />
       </div>
     );
