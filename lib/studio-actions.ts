@@ -5,7 +5,7 @@
  *
  * SECURITY (non-negotiable): every export of a "use server" module becomes a
  * POST-reachable server action, so this file exports ONLY the guarded actions,
- * and each begins with `requireStudioUser()` (lib/studio-auth.ts) — only
+ * and each begins with `requireStudioUserOrRedirect()` (lib/studio-auth.ts) —
  * signed-in staff mutate. The auth-skipping cores live in
  * lib/studio-order-mutations.ts (no "use server") precisely so the Next.js
  * compiler can never register them as client-invokable actions.
@@ -13,7 +13,7 @@
 import { revalidatePath } from "next/cache";
 
 import { getPayloadClient } from "@/lib/payload";
-import { requireStudioUser } from "@/lib/studio-auth";
+import { requireStudioUserOrRedirect } from "@/lib/studio-auth";
 import {
   applyOrderStatusCore,
   applyPromisedByCore,
@@ -40,7 +40,7 @@ export async function setOrderStatus(
   orderId: string,
   nextStatus: OrderStatus,
 ): Promise<StudioActionResult> {
-  await requireStudioUser();
+  await requireStudioUserOrRedirect();
   try {
     const result = await applyOrderStatusCore(orderId, nextStatus);
     if (result.ok) revalidateStudioAndCustomer(orderId);
@@ -56,7 +56,7 @@ export async function setPromisedBy(
   orderId: string,
   promisedByIso: string | null,
 ): Promise<StudioActionResult> {
-  await requireStudioUser();
+  await requireStudioUserOrRedirect();
   try {
     const result = await applyPromisedByCore(orderId, promisedByIso);
     if (result.ok) revalidateStudioAndCustomer(orderId);
@@ -78,7 +78,7 @@ export async function attachUploadedVideo(args: {
   kind: VideoKind;
   pathname: string;
 }): Promise<StudioActionResult> {
-  await requireStudioUser();
+  await requireStudioUserOrRedirect();
   try {
     const { head, BlobNotFoundError } = await import("@vercel/blob");
     let blob;
@@ -120,7 +120,7 @@ export async function uploadVideoDirect(
   kind: VideoKind,
   formData: FormData,
 ): Promise<StudioActionResult> {
-  await requireStudioUser();
+  await requireStudioUserOrRedirect();
   if (kind !== "proof" && kind !== "finalVideo") {
     return { ok: false, error: "Unknown video slot." };
   }

@@ -16,6 +16,7 @@
  * The pretty UI is never the security boundary — this module is.
  */
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 import { getPayloadClient } from "@/lib/payload";
 
@@ -52,4 +53,22 @@ export async function requireStudioUser(): Promise<StudioUser> {
     throw new Error("You need to be signed in to the studio to do that.");
   }
   return user;
+}
+
+/**
+ * For REQUEST-handling contexts (server actions, pages): a missing/expired
+ * session bounces to /studio/sign-in — the same graceful handling the (gated)
+ * layout gives page GETs — instead of throwing a raw Error that Next surfaces
+ * as a generic 500. Pure given the resolved user, so it's unit-tested directly.
+ * Security is unchanged: a non-staff caller is redirected and never reaches the
+ * guarded work. Prefer this over requireStudioUser() inside server actions.
+ */
+export function studioUserOrRedirect(user: StudioUser | null): StudioUser {
+  if (!user) redirect("/studio/sign-in");
+  return user;
+}
+
+/** The staff member on the current request, or a redirect to studio sign-in. */
+export async function requireStudioUserOrRedirect(): Promise<StudioUser> {
+  return studioUserOrRedirect(await getStudioUser());
 }
