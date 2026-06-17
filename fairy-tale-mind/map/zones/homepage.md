@@ -25,7 +25,7 @@ invariants:
     enforcedBy: []
   - rule: "The hero headline must not overflow on mobile: it scales fluidly (clamp) and wraps below lg; whitespace-nowrap is restored only at lg+. The character column moves above the headline on mobile (order-first) at a capped width, restored to the right column at lg."
     enforcedBy: []
-verifiedAt: 01f9d80
+verifiedAt: 5e7957b
 ---
 
 ## Purpose
@@ -34,9 +34,12 @@ The conversion path runs to `#build` (the `[[configurator]]`) and `#collections`
 
 ## Anchors & layout
 Section ids: `top`, `sample`, `collections`, `faq`, `series`. Components in `components/home/`.
-The `#sample` section (`components/home/sample.tsx`) sits directly below the hero — a calm
-"coming soon" placeholder until the real sample video lands (set `SAMPLE_VIDEO_SRC`). It is
-`cream`, same as the Categories section below it, so it needs no `[[section-waves]]` divider.
+The `#sample` section (`components/home/sample.tsx`) sits directly below the hero — it plays
+the real sample film (a public `site-media` Blob URL in `SAMPLE_VIDEO_SRC`) in an inline
+`<video>` with native controls (click-to-play, never autoplays). `preload="none"` + a poster
+frame (`public/sample/sample-poster.webp`) means zero video bytes load until the visitor
+presses play. The "coming soon" placeholder remains as a fallback if the src is ever cleared.
+It is `cream`, same as the Categories section below it, so it needs no `[[section-waves]]` divider.
 
 ## Invariants
 See frontmatter; the href='#' rule is currently unenforced (see tech-debt).
@@ -48,3 +51,7 @@ artist" to crafted with editing tools + AI (2026-06-04, see `[[ai-crafted-not-ha
 Pre-launch UX (2026-06-15, Phase 2): added the `#sample` section below the hero and retargeted
 the hero + CTA-banner "Watch a sample" buttons from `#collections` to `#sample` (the honest
 target). Phase 1 had already replaced the fabricated "40,000+" social proof in the hero.
+Sample film went live (2026-06-17): `SAMPLE_VIDEO_SRC` set to the uploaded `site-media` Blob
+URL, with a `public/sample/sample-poster.webp` poster + `preload="none"` (click-to-play, zero
+bytes until pressed). The film was encoded down to ~18MB (H.264, tune=animation) and uploaded
+via /admin → Site media (which now accepts video — see `[[payload-backend]]`).
