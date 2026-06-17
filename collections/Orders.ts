@@ -166,6 +166,26 @@ export const Orders: CollectionConfig = {
       relationTo: "media",
     },
     {
+      name: "proofUrl",
+      type: "text",
+      admin: {
+        description:
+          "External delivery link for the PREVIEW (e.g. Google Drive). A backup " +
+          "so the parent always has a way to get it, or the delivery itself when " +
+          "the file is too large to upload. Set from the studio workstation.",
+      },
+    },
+    {
+      name: "finalVideoUrl",
+      type: "text",
+      admin: {
+        description:
+          "External delivery link for the FINAL film (e.g. Google Drive). A backup " +
+          "or the delivery itself when the file is too large to upload. Set from " +
+          "the studio workstation.",
+      },
+    },
+    {
       name: "revisionNote",
       type: "textarea",
       admin: {
