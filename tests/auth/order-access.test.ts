@@ -15,6 +15,7 @@ import {
   resolveOrderByAccessToken,
   mintEphemeralSignin,
 } from "@/lib/order-access";
+import { GET as openRoute } from "@/app/(site)/(app)/open/[token]/route";
 
 const created: { collection: "users" | "orders"; id: string }[] = [];
 
@@ -97,5 +98,26 @@ describe("mintEphemeralSignin", () => {
       asResponse: true,
     });
     expect(res.headers.get("location") ?? "").not.toContain("error=");
+  });
+});
+
+describe("/open/[token] route", () => {
+  test("unknown token → 302 to /open/expired", async () => {
+    const res = await openRoute(new Request("https://x.test/open/zzz"), {
+      params: Promise.resolve({ token: "z".repeat(32) }),
+    });
+    expect(res.status).toBe(302);
+    expect(res.headers.get("location") ?? "").toContain("/open/expired");
+  });
+
+  test("live token → a session response (no error redirect)", async () => {
+    const email = `oa-${Date.now()}-e@example.com`;
+    const { order } = await seedOrder(email);
+    const token = await ensureOrderAccessToken(String(order.id));
+    const res = await openRoute(new Request("https://x.test/open/" + token, { headers: { origin: "https://x.test" } }), {
+      params: Promise.resolve({ token }),
+    });
+    expect(res.headers.get("location") ?? "").not.toContain("error=");
+    expect(res.headers.get("location") ?? "").not.toContain("/open/expired");
   });
 });
