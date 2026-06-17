@@ -19,6 +19,7 @@ import { StatusChip } from "@/components/studio/status-chip";
 import { WorkflowCard } from "@/components/studio/workflow-card";
 import { PromisedByEditor } from "@/components/studio/promised-by-editor";
 import { VideoUpload } from "@/components/studio/video-upload";
+import { DeliveryLinkEditor } from "@/components/studio/delivery-link-editor";
 import { isBlobStorageEnabled } from "@/lib/video-access";
 import { WORLD_LABELS, type WorldId } from "@/lib/worlds";
 import { LENGTH_LABELS, DETAIL_LEVEL_LABELS } from "@/lib/order-options";
@@ -302,26 +303,40 @@ export default async function StudioOrderPage({
               The preview is with the parent — they&apos;ll approve it or request a change.
             </p>
           ) : null}
-          <VideoUpload
-            orderId={String(order.id)}
-            kind="proof"
-            title="Preview film"
-            hint="Sharing the proof emails the parent automatically."
-            blobEnabled={isBlobStorageEnabled()}
-            current={proof ? { filename: proof.filename ?? null, url: proof.url ?? null } : null}
-          />
-          <VideoUpload
-            orderId={String(order.id)}
-            kind="finalVideo"
-            title="Final film"
-            hint="Marking the order delivered emails the parent automatically."
-            blobEnabled={isBlobStorageEnabled()}
-            current={
-              finalVideo
-                ? { filename: finalVideo.filename ?? null, url: finalVideo.url ?? null }
-                : null
-            }
-          />
+          <div>
+            <VideoUpload
+              orderId={String(order.id)}
+              kind="proof"
+              title="Preview film"
+              hint="Sharing the proof emails the parent automatically."
+              blobEnabled={isBlobStorageEnabled()}
+              current={proof ? { filename: proof.filename ?? null, url: proof.url ?? null } : null}
+            />
+            <DeliveryLinkEditor
+              orderId={String(order.id)}
+              kind="proof"
+              current={(order.proofUrl as string | null) ?? null}
+            />
+          </div>
+          <div>
+            <VideoUpload
+              orderId={String(order.id)}
+              kind="finalVideo"
+              title="Final film"
+              hint="Marking the order delivered emails the parent automatically."
+              blobEnabled={isBlobStorageEnabled()}
+              current={
+                finalVideo
+                  ? { filename: finalVideo.filename ?? null, url: finalVideo.url ?? null }
+                  : null
+              }
+            />
+            <DeliveryLinkEditor
+              orderId={String(order.id)}
+              kind="finalVideo"
+              current={(order.finalVideoUrl as string | null) ?? null}
+            />
+          </div>
         </div>
       </div>
     </div>
