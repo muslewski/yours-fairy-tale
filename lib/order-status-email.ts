@@ -19,7 +19,7 @@
 import { sendEmail } from "@/lib/email";
 import { renderBrandedEmail, emailParagraphs } from "@/lib/email-template";
 import { messageForStatus, type OrderStatus } from "@/lib/order-stages";
-import { createOrderTrackingLink } from "@/lib/order-tracking-link";
+import { ensureOrderAccessToken } from "@/lib/order-access";
 
 /** Statuses that warrant a proactive "heads-up" email to the customer. */
 const NOTIFYING_STATUSES = new Set<OrderStatus>(["proof_ready", "delivered"]);
@@ -64,17 +64,14 @@ export async function sendStatusTransitionEmail({
   const label = newStatus === "delivered" ? "Watch now" : "Watch your preview";
 
   try {
-    // One-click: a magic-link that signs the parent in AND lands them straight
-    // on this order, instead of a bare /sign-in. Minted inside the try so a
+    // The durable, reusable order-access link: signs the parent in AND lands
+    // them on this order, reusable for 30 days. Minted inside the try so a
     // link-mint failure stays non-fatal (the order update must never fail here).
     const baseUrl = (
       process.env.NEXT_PUBLIC_APP_URL ?? "https://www.yoursfairytale.com"
     ).replace(/\/$/, "");
-    const href = await createOrderTrackingLink({
-      email: ownerEmail,
-      baseUrl,
-      callbackURL: `/app/orders/${orderId}`,
-    });
+    const token = await ensureOrderAccessToken(orderId);
+    const href = `${baseUrl}/open/${token}`;
 
     const html = renderBrandedEmail({
       preheader: headline,

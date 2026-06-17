@@ -1,19 +1,15 @@
 import { expect, test, vi } from "vitest";
 
 vi.mock("@/lib/email", () => ({ sendEmail: vi.fn().mockResolvedValue(undefined) }));
-vi.mock("@/lib/order-tracking-link", () => ({
-  createOrderTrackingLink: vi
-    .fn()
-    .mockResolvedValue(
-      "https://example.com/sign-in/verify?token=abc&callbackURL=%2Fapp%2Forders%2Forder_1",
-    ),
+vi.mock("@/lib/order-access", () => ({
+  ensureOrderAccessToken: vi.fn().mockResolvedValue("tok_test_access_token_32xxxxxxxxxx"),
 }));
 
 import { sendEmail } from "@/lib/email";
-import { createOrderTrackingLink } from "@/lib/order-tracking-link";
+import { ensureOrderAccessToken } from "@/lib/order-access";
 import { sendStatusTransitionEmail } from "@/lib/order-status-email";
 
-test("status email links to the order via a one-click tracking link, not bare /sign-in", async () => {
+test("status email links to the order via the durable /open access link, not bare /sign-in", async () => {
   await sendStatusTransitionEmail({
     orderId: "order_1",
     ownerEmail: "ada@example.com",
@@ -21,12 +17,10 @@ test("status email links to the order via a one-click tracking link, not bare /s
     childName: "Mia",
   });
 
-  // The tracking link was minted with a callbackURL deep-linking to the order.
-  expect(createOrderTrackingLink).toHaveBeenCalledWith(
-    expect.objectContaining({ email: "ada@example.com", callbackURL: "/app/orders/order_1" }),
-  );
-  // The sent email embeds that link and no longer hardcodes /sign-in.
+  // The durable access token was ensured for this exact order.
+  expect(ensureOrderAccessToken).toHaveBeenCalledWith("order_1");
+  // The sent email embeds the /open/<token> link and no longer hardcodes /sign-in.
   const html = (sendEmail as ReturnType<typeof vi.fn>).mock.calls[0][0].html as string;
-  expect(html).toContain("/sign-in/verify?token=abc");
+  expect(html).toContain("/open/tok_test_access_token_32xxxxxxxxxx");
   expect(html).not.toContain('yoursfairytale.com/sign-in"');
 });

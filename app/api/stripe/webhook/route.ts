@@ -20,7 +20,7 @@ import { stripe } from "@/lib/stripe";
 import { getPayloadClient } from "@/lib/payload";
 import { sendEmail } from "@/lib/email";
 import { renderBrandedEmail, emailParagraphs } from "@/lib/email-template";
-import { createOrderTrackingLink } from "@/lib/order-tracking-link";
+import { ensureOrderAccessToken } from "@/lib/order-access";
 import { inStudioStamp } from "@/lib/in-studio-stamp";
 import { attachCheckoutAssets } from "@/lib/order-action-cores";
 import { promisedByForLength, formatPromisedDate } from "@/lib/delivery";
@@ -322,15 +322,14 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
   }
 
   // ------------------------------------------------------------------
-  // One-click "track your order" magic link for the confirmation email.
-  // Non-fatal: if it can't be minted, fall back to the plain sign-in page.
+  // The durable "track your order" access link for the confirmation email.
   // ------------------------------------------------------------------
-  const baseUrl = process.env.BETTER_AUTH_URL ?? "https://www.yoursfairytale.com";
-  let trackUrl = `${baseUrl.replace(/\/$/, "")}/sign-in`;
+  const baseUrl = (process.env.BETTER_AUTH_URL ?? "https://www.yoursfairytale.com").replace(/\/$/, "");
+  let trackUrl = `${baseUrl}/sign-in`;
   try {
-    trackUrl = await createOrderTrackingLink({ email, baseUrl });
+    trackUrl = `${baseUrl}/open/${await ensureOrderAccessToken(String(order.id))}`;
   } catch (err) {
-    console.error("[webhook] tracking link mint failed (using /sign-in fallback):", err);
+    console.error("[webhook] access link mint failed (using /sign-in fallback):", err);
   }
 
   // ------------------------------------------------------------------
