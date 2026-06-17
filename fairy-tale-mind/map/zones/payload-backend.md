@@ -73,7 +73,7 @@ invariants:
     enforcedBy: ["collections/SiteMedia.ts", "collections/Media.ts", "payload.config.ts"]
   - rule: "Waitlist rows are created ONLY by app/api/waitlist/route.ts via the Local API with overrideAccess — all collection access is adminOnly (same posture as Orders). Email is unique + lowercased (beforeValidate hook, same canonicalization as users.email)."
     enforcedBy: ["collections/Waitlist.ts", "tests/waitlist/waitlist.test.ts"]
-verifiedAt: ad57454
+verifiedAt: 83b0524
 ---
 
 ## Purpose
@@ -193,6 +193,13 @@ Studio delivery links (2026-06-17): `collections/Orders.ts` gained `proofUrl` +
 accessToken), with migration `20260617_000001_orders_delivery_urls` (additive: `proof_url`
 + `final_video_url` text, no index). The external delivery link owned by `[[studio]]`
 (see `[[2026-06-17-studio-delivery-link]]`).
+
+Public sample video (2026-06-17): `site-media` now also accepts `video/mp4` + `video/webm`
+(sharp passes video through; it stays the PUBLIC direct-CDN-URL collection, unlike the gated
+`media`) so a homepage sample film can be uploaded via /admin. `vercelBlobStorage` gained
+`addRandomSuffix: true` — @vercel/blob v2 throws on an existing pathname ("blob already
+exists"), so every plugin upload now gets a unique name (the /studio video route is separate
+and owns its own pathnames, so it is unaffected).
 
 ## Notes / tech debt
 - `payload generate:importmap` / `generate:types` fail under Node 25 (the CLI's tsx worker
