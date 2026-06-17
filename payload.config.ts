@@ -75,6 +75,11 @@ export default buildConfig({
       // ~4.5MB request cap — final films are hundreds of MB). The /studio
       // panel has its own client-upload route for the same reason.
       clientUploads: true,
+      // @vercel/blob v2 THROWS on an existing pathname (no silent overwrite),
+      // so re-uploading a same-named asset would 500 with "blob already exists".
+      // Suffix every plugin upload to a unique name. (The /studio video route is
+      // separate — it owns its own unique `${orderId}-${kind}-${ts}` pathnames.)
+      addRandomSuffix: true,
     }),
   ],
   editor: lexicalEditor(),
