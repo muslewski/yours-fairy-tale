@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 
+import { videoUploadOptions } from "@/lib/blob-upload-options";
 import { attachUploadedVideo, uploadVideoDirect } from "@/lib/studio-actions";
 import type { VideoKind } from "@/lib/studio-order-mutations";
 
@@ -49,12 +50,13 @@ export function VideoUpload({
           ? file.name.split(".").pop()
           : "mp4";
         const pathname = `${orderId}-${kind === "proof" ? "proof" : "final"}-${Date.now()}.${ext}`;
-        await upload(pathname, file, {
-          access: "public",
-          handleUploadUrl: "/studio/api/blob-upload",
-          onUploadProgress: ({ percentage }) =>
+        await upload(
+          pathname,
+          file,
+          videoUploadOptions("/studio/api/blob-upload", ({ percentage }) =>
             setState({ phase: "uploading", percent: Math.round(percentage) }),
-        });
+          ),
+        );
         const result = await attachUploadedVideo({ orderId, kind, pathname });
         if (!result.ok) {
           setState({ phase: "error", message: result.error });
