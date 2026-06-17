@@ -6,7 +6,12 @@
  *     expired / unknown.
  *   - mintEphemeralSignin mints a verification Better Auth's real verify accepts.
  */
-import { afterAll, describe, expect, test } from "vitest";
+import { afterAll, describe, expect, test, vi } from "vitest";
+
+// The afterChange-hook regression test below triggers a real status email; mock
+// the transport so no network send happens (the hook's link mint is the part
+// under test, not delivery).
+vi.mock("@/lib/email", () => ({ sendEmail: vi.fn().mockResolvedValue(undefined) }));
 
 import { getPayloadClient } from "@/lib/payload";
 import { auth } from "@/lib/auth";
@@ -122,5 +127,30 @@ describe("/open/[token] route", () => {
     expect(res.headers.get("location")).toBeTruthy();
     expect(res.headers.get("location") ?? "").not.toContain("error=");
     expect(res.headers.get("location") ?? "").not.toContain("/open/expired");
+  });
+});
+
+describe("ensureOrderAccessToken inside the Orders afterChange hook", () => {
+  test("advancing to proof_ready persists an accessToken without deadlocking", async () => {
+    const { payload, order } = await seedOrder(`oa-${Date.now()}-hook@example.com`);
+    // A real status transition fires statusTransitionEmailHook → sendStatusTransitionEmail
+    // → ensureOrderAccessToken, which writes THIS order row from inside the hook's
+    // transaction. Before req was threaded through, that ran in a separate
+    // transaction and deadlocked on the row lock (30s timeout). It must now finish
+    // and leave the order with a durable token.
+    await payload.update({
+      collection: "orders",
+      id: order.id,
+      data: { status: "proof_ready" },
+      overrideAccess: true,
+    });
+    const after = await payload.findByID({
+      collection: "orders",
+      id: order.id,
+      depth: 0,
+      overrideAccess: true,
+    });
+    expect(after.accessToken).toMatch(/^[a-zA-Z]{32}$/);
+    expect(after.accessTokenExpiresAt).toBeTruthy();
   });
 });

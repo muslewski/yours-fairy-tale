@@ -58,6 +58,9 @@ const statusTransitionEmailHook: CollectionAfterChangeHook = async ({
     ownerEmail,
     newStatus: newStatus as "proof_ready" | "delivered",
     childName: doc.childName ?? null,
+    // Share the hook's transaction so ensureOrderAccessToken's write to this
+    // same order row doesn't deadlock on the row lock this hook still holds.
+    req,
   });
 };
 

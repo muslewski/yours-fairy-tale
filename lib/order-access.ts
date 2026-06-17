@@ -5,6 +5,8 @@
  * (the exact shape BA's verify consumes) so we reuse BA's real verify→session
  * flow instead of hand-rolling sessions. Tested in tests/auth/order-access.test.ts.
  */
+import type { PayloadRequest } from "payload";
+
 import { getPayloadClient } from "@/lib/payload";
 import {
   newAccessToken,
@@ -14,14 +16,28 @@ import {
 
 const EPHEMERAL_TTL_MS = 10 * 60 * 1000; // 10 minutes — minted and used in one request
 
-/** Mint (once) or refresh (always) the order's durable access token; returns it. */
-export async function ensureOrderAccessToken(orderId: string): Promise<string> {
-  const payload = await getPayloadClient();
+/**
+ * Mint (once) or refresh (always) the order's durable access token; returns it.
+ *
+ * CRITICAL: when called from inside the Orders afterChange hook (the status
+ * email), the caller MUST pass that hook's `req`. This update writes the SAME
+ * order row the hook is firing for; without the hook's transaction it runs in a
+ * separate transaction and blocks forever on the row lock the still-open hook
+ * transaction holds (an app-level deadlock → the operation hangs). Passing `req`
+ * joins that transaction, so the write reuses the existing lock. The webhook
+ * path calls this AFTER its create has committed, so it passes no `req`.
+ */
+export async function ensureOrderAccessToken(
+  orderId: string,
+  req?: PayloadRequest,
+): Promise<string> {
+  const payload = req?.payload ?? (await getPayloadClient());
   const order = await payload.findByID({
     collection: "orders",
     id: orderId,
     depth: 0,
     overrideAccess: true,
+    req,
   });
   const token =
     typeof order.accessToken === "string" && order.accessToken
@@ -32,6 +48,7 @@ export async function ensureOrderAccessToken(orderId: string): Promise<string> {
     id: orderId,
     data: { accessToken: token, accessTokenExpiresAt: accessTokenExpiresAt(new Date()) },
     overrideAccess: true,
+    req,
   });
   return token;
 }

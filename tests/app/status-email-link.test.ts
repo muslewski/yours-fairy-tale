@@ -17,8 +17,11 @@ test("status email links to the order via the durable /open access link, not bar
     childName: "Mia",
   });
 
-  // The durable access token was ensured for this exact order.
-  expect(ensureOrderAccessToken).toHaveBeenCalledWith("order_1");
+  // The durable access token was ensured for this exact order. (The second arg
+  // is the optional afterChange-hook transaction `req` — undefined here since
+  // this unit test calls the helper directly; assert the order id specifically.)
+  expect(ensureOrderAccessToken).toHaveBeenCalledTimes(1);
+  expect(vi.mocked(ensureOrderAccessToken).mock.calls[0][0]).toBe("order_1");
   // The sent email embeds the /open/<token> link and no longer hardcodes /sign-in.
   const html = (sendEmail as ReturnType<typeof vi.fn>).mock.calls[0][0].html as string;
   expect(html).toContain("/open/tok_test_access_token_32xxxxxxxxxx");

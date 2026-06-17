@@ -16,6 +16,8 @@
  * never fail the underlying order update.
  */
 
+import type { PayloadRequest } from "payload";
+
 import { sendEmail } from "@/lib/email";
 import { renderBrandedEmail, emailParagraphs } from "@/lib/email-template";
 import { messageForStatus, type OrderStatus } from "@/lib/order-stages";
@@ -53,11 +55,18 @@ export async function sendStatusTransitionEmail({
   ownerEmail,
   newStatus,
   childName,
+  req,
 }: {
   orderId: string;
   ownerEmail: string;
   newStatus: "proof_ready" | "delivered";
   childName?: string | null;
+  /**
+   * The afterChange hook's request — carries the open transaction. MUST be
+   * passed when called from the hook so ensureOrderAccessToken's order update
+   * joins that transaction instead of dead-locking on the order's row lock.
+   */
+  req?: PayloadRequest;
 }): Promise<void> {
   const { headline, body } = messageForStatus(newStatus, childName ?? undefined);
   const accent = newStatus === "delivered" ? "blue" : "pink";
@@ -70,7 +79,7 @@ export async function sendStatusTransitionEmail({
     const baseUrl = (
       process.env.NEXT_PUBLIC_APP_URL ?? "https://www.yoursfairytale.com"
     ).replace(/\/$/, "");
-    const token = await ensureOrderAccessToken(orderId);
+    const token = await ensureOrderAccessToken(orderId, req);
     const href = `${baseUrl}/open/${token}`;
 
     const html = renderBrandedEmail({
