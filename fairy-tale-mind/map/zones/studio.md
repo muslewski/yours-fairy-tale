@@ -47,7 +47,7 @@ invariants:
     enforcedBy: ["tests/studio/attach-video.test.ts"]
   - rule: "Revenue sums Stripe-charged cents (amountTotalCents) excluding refunded/cancelled; never recomputed from pricing."
     enforcedBy: ["tests/studio/workflow.test.ts"]
-verifiedAt: ad57454
+verifiedAt: d08ff33
 ---
 
 ## Purpose
@@ -157,3 +157,9 @@ stored on `orders.proofUrl` / `orders.finalVideoUrl` via `setDeliveryUrl` →
 to an uploaded file (a link alone can mark proof_ready / delivered), and the customer
 sees the in-app player and/or an "open the link" affordance (owned by `[[auth-gating]]`).
 See `[[2026-06-17-studio-delivery-link]]`.
+Photo proxy fix (2026-06-17): the workstation's customer-photo grid now serves via a new
+staff-gated proxy `app/(site)/studio/api/media/[id]/route.ts` (getStudioUser + head/stream),
+keyed by the media id. Configurator photos have a `configurator/`-prefixed filename (a "/"),
+and Payload's single-segment `/api/media/file/<filename>` 404'd ("Route not found") on the
+slash — so `<img src={media.url}>` showed `alt` instead of the photo. The proxy never exposes
+the child photo's raw Blob URL to the staff browser (mirrors the customer asset route).
