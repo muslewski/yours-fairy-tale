@@ -5,6 +5,7 @@ import * as migration_20260610_000001_order_amount_promise from "./20260610_0000
 import * as migration_20260613_000000_media_site_media from "./20260613_000000_media_site_media";
 import * as migration_20260616_000000_locked_docs_rels_waitlist_sitemedia from "./20260616_000000_locked_docs_rels_waitlist_sitemedia";
 import * as migration_20260616_000001_order_in_studio_since from "./20260616_000001_order_in_studio_since";
+import * as migration_20260617_000000_orders_access_token from "./20260617_000000_orders_access_token";
 
 export const migrations = [
   {
@@ -41,5 +42,10 @@ export const migrations = [
     up: migration_20260616_000001_order_in_studio_since.up,
     down: migration_20260616_000001_order_in_studio_since.down,
     name: "20260616_000001_order_in_studio_since",
+  },
+  {
+    up: migration_20260617_000000_orders_access_token.up,
+    down: migration_20260617_000000_orders_access_token.down,
+    name: "20260617_000000_orders_access_token",
   },
 ];

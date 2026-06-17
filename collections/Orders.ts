@@ -230,6 +230,28 @@ export const Orders: CollectionConfig = {
           "live clock. Never reset on re-entry.",
       },
     },
+    {
+      name: "accessToken",
+      type: "text",
+      index: true,
+      admin: {
+        readOnly: true,
+        description:
+          "Durable, reusable token for the order's email links (/open/<token>). " +
+          "Signs the customer in and lands them on this order; refreshed to 30 " +
+          "days on every status email. System-managed; never shown in the UI.",
+      },
+    },
+    {
+      name: "accessTokenExpiresAt",
+      type: "date",
+      admin: {
+        readOnly: true,
+        description:
+          "When the order's /open/<token> link stops working. Refreshed to 30 " +
+          "days on every status email. System-managed.",
+      },
+    },
   ],
   timestamps: true,
 };
