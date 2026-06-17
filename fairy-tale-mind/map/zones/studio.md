@@ -5,7 +5,7 @@ tags: [studio, staff, orders, security, video]
 status: active
 created: 2026-06-10
 updated: 2026-06-16
-related: ["[[payload-backend]]", "[[auth-gating]]", "[[checkout]]", "[[studio-gate-reuses-payload-admins-auth]]", "[[browser-to-blob-uploads-metadata-media]]", "[[delivery-promise-auto-from-length]]", "[[orphaned-blobs-no-cleanup]]", "[[2026-06-16-in-studio-live-card]]"]
+related: ["[[payload-backend]]", "[[auth-gating]]", "[[checkout]]", "[[studio-gate-reuses-payload-admins-auth]]", "[[browser-to-blob-uploads-metadata-media]]", "[[delivery-promise-auto-from-length]]", "[[orphaned-blobs-no-cleanup]]", "[[2026-06-16-in-studio-live-card]]", "[[2026-06-17-studio-delivery-link]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-10-studio-panel.md"
   - "fairy-tale-mind/specs/2026-06-10-studio-panel-design.md"
@@ -25,9 +25,13 @@ owns:
     - "lib/studio-status.ts"
     - "lib/date-guard.ts"
     - "lib/delivery.ts"
+    - "lib/delivery-url.ts"
+    - "lib/blob-upload-options.ts"
     - "components/studio/**"
     - "tests/studio/*"
     - "tests/lib/delivery.test.ts"
+    - "tests/lib/delivery-url.test.ts"
+    - "tests/lib/blob-upload-options.test.ts"
     - "tests/lib/studio-status.test.ts"
     - "tests/lib/date-guard.test.ts"
     - "e2e/studio.spec.ts"
@@ -37,13 +41,13 @@ invariants:
     enforcedBy: ["tests/studio/auth.test.ts", "tests/studio/auth-redirect.test.ts"]
   - rule: "Auth-skipping cores live in lib/studio-order-mutations.ts, NEVER exported from the 'use server' module — every export of a 'use server' file is a POST-reachable server action."
     enforcedBy: ["tests/studio/actions.test.ts"]
-  - rule: "proof_ready requires a proof attached; delivered requires the final film — server-enforced, not just disabled buttons."
+  - rule: "proof_ready requires a proof attached OR an external delivery link (proofUrl); delivered requires the final film OR a delivery link (finalVideoUrl) — server-enforced in applyOrderStatusCore, not just disabled buttons. The link is an https-validated paste (lib/delivery-url.ts) that can stand alone as the delivery or back up an upload."
     enforcedBy: ["tests/studio/actions.test.ts"]
   - rule: "Video bytes never pass through the server in Blob mode; media docs for studio uploads are metadata-only with filename == blob pathname (what the playback proxy's head(filename) resolves)."
     enforcedBy: ["tests/studio/attach-video.test.ts"]
   - rule: "Revenue sums Stripe-charged cents (amountTotalCents) excluding refunded/cancelled; never recomputed from pricing."
     enforcedBy: ["tests/studio/workflow.test.ts"]
-verifiedAt: 8cf8e3e
+verifiedAt: ad57454
 ---
 
 ## Purpose
@@ -143,3 +147,13 @@ buttons; a past-date guard on the promised-by date input (`min` + warning, `isPa
 in `lib/date-guard.ts`); a "preview is with the parent" hint at `proof_ready` and a
 password-reset hint on the studio sign-in; and the customer photo `alt` no longer leaks
 the raw blob filename.
+Video delivery (2026-06-17): the browser→Blob upload now passes `multipart: true`
+(`lib/blob-upload-options.ts`) so 200–500 MB films upload as resilient parallel chunks
+(the 2 GB token cap is unchanged). Each upload slot also gained a
+`DeliveryLinkEditor` (`components/studio/delivery-link-editor.tsx`) for an external
+https delivery link (Google Drive / Dropbox / …) — validated by `lib/delivery-url.ts`,
+stored on `orders.proofUrl` / `orders.finalVideoUrl` via `setDeliveryUrl` →
+`applyDeliveryUrlCore`. The status guardrail now accepts a link as an equal alternative
+to an uploaded file (a link alone can mark proof_ready / delivered), and the customer
+sees the in-app player and/or an "open the link" affordance (owned by `[[auth-gating]]`).
+See `[[2026-06-17-studio-delivery-link]]`.

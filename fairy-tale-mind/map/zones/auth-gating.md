@@ -106,7 +106,7 @@ invariants:
     enforcedBy: ["tests/auth/gating.test.ts"]
   - rule: "Each photo-upload server-action call carries ONE file, client-side re-encoded (≤2048px JPEG q0.85, EXIF orientation baked in) when over MAX_REQUEST_BYTES (3.5MB), so every request fits Vercel's ~4.5MB body cap; retries skip files already saved in a previous attempt."
     enforcedBy: ["components/app/prepare-upload.ts", "components/app/photo-upload.tsx"]
-verifiedAt: 44286fe
+verifiedAt: ad57454
 ---
 
 ## Purpose
@@ -428,3 +428,10 @@ the agent-mcp test tools. A self-deadlock — `ensureOrderAccessToken`'s write t
 from inside the Orders afterChange hook ran in a separate transaction and blocked on the
 hook's row lock, hanging every proof_ready/delivered transition — was fixed by threading
 the hook's `req` through (the integration checkpoint caught it).
+Studio delivery links (2026-06-17): the customer order-detail action slots now also
+surface an external delivery link. `components/app/video-player.tsx` branches on
+`deliveryView` (in-app player + Download, a secondary "open the link" line, a link-only
+CTA, or the "finalizing" fallback); `components/app/proof-review.tsx` shows the preview
+link when there is no uploaded proof (and an "also available" line when both exist). The
+order page passes `order.proofUrl` / `order.finalVideoUrl` through `ActionSlot`. The link
+itself is set + validated in the studio (`[[studio]]`, `[[2026-06-17-studio-delivery-link]]`).

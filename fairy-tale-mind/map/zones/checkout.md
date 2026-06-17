@@ -74,7 +74,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
     enforcedBy: ["tests/app/status-emails.test.ts"]
-verifiedAt: 44286fe
+verifiedAt: ad57454
 ---
 
 ## Purpose
@@ -198,3 +198,6 @@ self-deadlock inside the hook transaction. The confirmation-email path in
 `app/api/stripe/webhook/route.ts` calls `ensureOrderAccessToken` AFTER the order create has
 committed (no hook transaction), so it passes no `req`. See
 `[[2026-06-17-durable-order-access-link]]`.
+Studio delivery links (2026-06-17): `collections/Orders.ts` gained `proofUrl` +
+`finalVideoUrl` text fields (the studio's external delivery links — owned by `[[studio]]`,
+see `[[2026-06-17-studio-delivery-link]]`). No checkout/webhook/email behavior changed.

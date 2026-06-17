@@ -24,7 +24,7 @@ invariants:
     enforcedBy: ["tests/setup-env.ts", "playwright.config.ts"]
   - rule: "CI runs `npx tsc --noEmit` as its own step — type errors fail the pipeline even when no test imports the broken file."
     enforcedBy: [".github/workflows/test.yml"]
-verifiedAt: 44286fe
+verifiedAt: ad57454
 ---
 
 ## Purpose
@@ -86,3 +86,7 @@ token/TTL) and `tests/auth/order-access.test.ts` (DB-backed cores, the `/open` r
 regression for the afterChange-hook self-deadlock — advancing to proof_ready must persist a
 token without hanging); `tests/app/status-email-link.test.ts` repointed to the new mechanism
 (see `[[2026-06-17-durable-order-access-link]]`).
+Studio video delivery (2026-06-17): added `tests/lib/blob-upload-options.test.ts` (pins the
+multipart upload flag) and `tests/lib/delivery-url.test.ts` (https validation + display
+helpers); `tests/studio/actions.test.ts` gained delivery-link cases (store/clear/reject +
+link-only satisfies the proof_ready/delivered guardrail). See `[[2026-06-17-studio-delivery-link]]`.
