@@ -117,6 +117,9 @@ describe("/open/[token] route", () => {
     const res = await openRoute(new Request("https://x.test/open/" + token, { headers: { origin: "https://x.test" } }), {
       params: Promise.resolve({ token }),
     });
+    expect(res.status).toBeGreaterThanOrEqual(300);
+    expect(res.status).toBeLessThan(400);
+    expect(res.headers.get("location")).toBeTruthy();
     expect(res.headers.get("location") ?? "").not.toContain("error=");
     expect(res.headers.get("location") ?? "").not.toContain("/open/expired");
   });

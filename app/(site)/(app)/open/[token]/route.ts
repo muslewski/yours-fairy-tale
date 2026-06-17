@@ -32,11 +32,19 @@ export async function GET(
 
   try {
     const ephemeral = await mintEphemeralSignin(resolved.ownerEmail);
-    return await auth.api.magicLinkVerify({
+    const authRes = await auth.api.magicLinkVerify({
       query: { token: ephemeral, callbackURL: `/app/orders/${resolved.orderId}` },
       headers: req.headers,
       asResponse: true,
     });
+    // BA returns (never throws) an error redirect for business-logic failures —
+    // e.g. the owner account vanished between resolve and verify. Normalize any
+    // such ?error= redirect to the calm expired page rather than bouncing the
+    // customer onto a gated /app order URL carrying an error param.
+    if ((authRes.headers.get("location") ?? "").includes("error=")) {
+      return Response.redirect(expired, 302);
+    }
+    return authRes;
   } catch (err) {
     console.error("[open] sign-in handoff failed:", err);
     return Response.redirect(expired, 302);
