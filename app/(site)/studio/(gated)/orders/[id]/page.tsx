@@ -207,14 +207,20 @@ export default async function StudioOrderPage({
               <ul className="flex flex-wrap gap-3">
                 {assets.map((m) => (
                   <li key={m.id}>
-                    {/* Staff browsers carry the payload-token cookie, so the
-                        adminOnly-gated media URL serves for us (and 403s for
-                        everyone else). */}
-                    {m.url ? (
-                      <a href={m.url} target="_blank" rel="noopener noreferrer">
-                        {/* eslint-disable-next-line @next/next/no-img-element -- gated dynamic media URL */}
+                    {/* Served through the staff-gated proxy keyed by media id
+                        (/studio/api/media/[id]) — NOT Payload's /api/media/file,
+                        which 404s on the configurator/ slash in the filename. The
+                        proxy requires a studio session and never exposes the raw
+                        Blob URL of a child's photo. */}
+                    {m.filename ? (
+                      <a
+                        href={`/studio/api/media/${m.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element -- gated dynamic media proxy */}
                         <img
-                          src={m.url}
+                          src={`/studio/api/media/${m.id}`}
                           alt="Customer photo"
                           width={96}
                           height={96}
