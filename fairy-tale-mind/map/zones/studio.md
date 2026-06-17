@@ -33,8 +33,8 @@ owns:
     - "e2e/studio.spec.ts"
 depends: ["[[payload-backend]]"]
 invariants:
-  - rule: "Every studio read and mutation independently calls requireStudioUser/getStudioUser — the (gated) layout is only a navigation gate (layouts do not re-run on client-side transitions)."
-    enforcedBy: ["tests/studio/auth.test.ts"]
+  - rule: "Every studio read and mutation independently checks the admin session — the (gated) layout is only a navigation gate (layouts do not re-run on client-side transitions). Reads/pages use requireStudioUser (throws); the 'use server' mutation ACTIONS use requireStudioUserOrRedirect, which bounces an expired/missing session to /studio/sign-in instead of throwing a raw Error that Next surfaces as a generic 500."
+    enforcedBy: ["tests/studio/auth.test.ts", "tests/studio/auth-redirect.test.ts"]
   - rule: "Auth-skipping cores live in lib/studio-order-mutations.ts, NEVER exported from the 'use server' module — every export of a 'use server' file is a POST-reachable server action."
     enforcedBy: ["tests/studio/actions.test.ts"]
   - rule: "proof_ready requires a proof attached; delivered requires the final film — server-enforced, not just disabled buttons."
@@ -43,7 +43,7 @@ invariants:
     enforcedBy: ["tests/studio/attach-video.test.ts"]
   - rule: "Revenue sums Stripe-charged cents (amountTotalCents) excluding refunded/cancelled; never recomputed from pricing."
     enforcedBy: ["tests/studio/workflow.test.ts"]
-verifiedAt: a50353d
+verifiedAt: 8cf8e3e
 ---
 
 ## Purpose
@@ -58,10 +58,12 @@ The single doorway for "who is the staff member on this request":
 `getStudioUserFromHeaders(h)` resolves the payload-token cookie via the Local API
 (`payload.auth`) and returns the user ONLY if they come from the `admins`
 collection — customer (Better Auth) sessions live in a different cookie namespace
-and resolve to null. `requireStudioUser()` throws unless staff; it opens every
-mutation (mirroring `assertOwnsOrder` on the customer side). The `(gated)` layout
-redirects to `/studio/sign-in`, but it is ONLY a navigation gate — the data layer
-and the actions are the security boundary.
+and resolve to null. `requireStudioUser()` throws unless staff and opens the data
+reads; the `use server` mutation actions instead call `requireStudioUserOrRedirect()`,
+which bounces an expired/missing session to `/studio/sign-in` (the same graceful
+redirect the layout gives page GETs) rather than throwing a raw Error that Next
+surfaces as a generic 500. The `(gated)` layout redirects too, but it is ONLY a
+navigation gate — the data layer and the actions are the security boundary.
 
 ### Shell + sign-in (app/(site)/studio/layout.tsx, app/(site)/studio/sign-in)
 `noindex` metadata (plus `/studio` in robots disallow, see `[[app-shell]]`), a
