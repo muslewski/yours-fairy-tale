@@ -5,7 +5,7 @@ tags: [ui, checkout, stripe, api, webhook, orders]
 status: active
 created: 2026-06-02
 updated: 2026-06-16
-related: ["[[configurator]]", "[[payload-backend]]", "[[studio]]", "[[delivery-promise-auto-from-length]]", "[[auth-gating]]", "[[2026-06-16-in-studio-live-card]]"]
+related: ["[[configurator]]", "[[payload-backend]]", "[[studio]]", "[[delivery-promise-auto-from-length]]", "[[auth-gating]]", "[[2026-06-16-in-studio-live-card]]", "[[2026-06-17-durable-order-access-link]]"]
 sources: ["[[checkout-is-a-simulation]]", "[[payments-stripe-over-shopify]]", "[[stripe-checkout-session-route]]", "[[webhook-orphan-events-retry]]"]
 owns:
   routes:
@@ -74,7 +74,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
     enforcedBy: ["tests/app/status-emails.test.ts"]
-verifiedAt: a50353d
+verifiedAt: 44286fe
 ---
 
 ## Purpose
@@ -189,3 +189,12 @@ Post-purchase UX (2026-06-16, Phase 4): the `proof_ready`/`delivered` status ema
 `createOrderTrackingLink` with `callbackURL=/app/orders/{id}`, so a click both signs the
 parent in AND opens that order. The link-mint is inside the existing non-fatal try/catch
 (`sendStatusTransitionEmail` now takes `orderId`). Guarded by `tests/app/status-email-link.test.ts`.
+Durable order-access link (2026-06-17): both the webhook confirmation "track your order"
+link AND the status emails now use `ensureOrderAccessToken(orderId)` → the durable, reusable
+`/open/<token>` link (owned by `[[auth-gating]]`) instead of a single-use magic link, so the
+parent's preview link works repeatedly for 30 days. `sendStatusTransitionEmail` now also
+threads the afterChange hook's `req` into `ensureOrderAccessToken` to avoid a same-row
+self-deadlock inside the hook transaction. The confirmation-email path in
+`app/api/stripe/webhook/route.ts` calls `ensureOrderAccessToken` AFTER the order create has
+committed (no hook transaction), so it passes no `req`. See
+`[[2026-06-17-durable-order-access-link]]`.

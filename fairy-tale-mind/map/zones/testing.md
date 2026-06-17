@@ -24,7 +24,7 @@ invariants:
     enforcedBy: ["tests/setup-env.ts", "playwright.config.ts"]
   - rule: "CI runs `npx tsc --noEmit` as its own step — type errors fail the pipeline even when no test imports the broken file."
     enforcedBy: [".github/workflows/test.yml"]
-verifiedAt: d412920
+verifiedAt: 44286fe
 ---
 
 ## Purpose
@@ -81,3 +81,8 @@ Stripe, cores, orders, customer, studio, payments, auth-maintenance, registratio
 into `lib/order-action-cores.ts` (see `[[agent-tooling]]`).
 In-studio live card (2026-06-16): added `tests/lib/studio-elapsed.test.ts` (elapsed-time
 formatting) and `tests/lib/in-studio-stamp.test.ts` (once-stamp idempotency guard).
+Durable order-access link (2026-06-17): added `tests/lib/order-access-token.test.ts` (pure
+token/TTL) and `tests/auth/order-access.test.ts` (DB-backed cores, the `/open` route, AND a
+regression for the afterChange-hook self-deadlock — advancing to proof_ready must persist a
+token without hanging); `tests/app/status-email-link.test.ts` repointed to the new mechanism
+(see `[[2026-06-17-durable-order-access-link]]`).

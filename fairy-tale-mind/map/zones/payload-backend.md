@@ -26,6 +26,7 @@ owns:
     - "migrations/20260610_000001_order_amount_promise.ts"
     - "migrations/20260613_000000_media_site_media.ts"
     - "migrations/20260616_000001_order_in_studio_since.ts"
+    - "migrations/20260617_000000_orders_access_token.ts"
     - "collections/Admins.ts"
     - "collections/Waitlist.ts"
     - "collections/Media.ts"
@@ -71,7 +72,7 @@ invariants:
     enforcedBy: ["collections/SiteMedia.ts", "collections/Media.ts", "payload.config.ts"]
   - rule: "Waitlist rows are created ONLY by app/api/waitlist/route.ts via the Local API with overrideAccess — all collection access is adminOnly (same posture as Orders). Email is unique + lowercased (beforeValidate hook, same canonicalization as users.email)."
     enforcedBy: ["collections/Waitlist.ts", "tests/waitlist/waitlist.test.ts"]
-verifiedAt: a50353d
+verifiedAt: 44286fe
 ---
 
 ## Purpose
@@ -177,6 +178,14 @@ collection (direct CDN URLs via per-collection `disablePayloadAccessControl` +
 `site/` prefix) carries admin-managed brand imagery; migration
 `20260613_000000_media_site_media` adds the site_media tables and the `media`
 preview-size columns (see `[[two-media-collections-public-and-gated]]`).
+
+Durable order-access link (2026-06-17): `collections/Orders.ts` gained `accessToken` +
+`accessTokenExpiresAt` (admin read-only), with migration `20260617_000000_orders_access_token`
+(additive + idempotent: `access_token` text + `access_token_expires_at` timestamptz + a btree
+index) — the durable, reusable `/open/<token>` order-access link owned by `[[auth-gating]]`
+(see `[[2026-06-17-durable-order-access-link]]`). The Orders afterChange status-email hook now
+threads its `req` into `ensureOrderAccessToken` so the in-hook write to the same order row
+joins the hook transaction instead of dead-locking on its row lock.
 
 ## Notes / tech debt
 - `payload generate:importmap` / `generate:types` fail under Node 25 (the CLI's tsx worker

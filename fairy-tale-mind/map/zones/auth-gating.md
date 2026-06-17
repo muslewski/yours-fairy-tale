@@ -5,7 +5,7 @@ tags: [auth, security, customer-area]
 status: active
 created: 2026-06-03
 updated: 2026-06-16
-related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]", "[[video-ownership-route-over-static-url]]", "[[local-disk-video-delivery]]", "[[blob-pass-through-proxied-video]]", "[[prod-env-fail-closed]]", "[[studio]]", "[[delivery-promise-auto-from-length]]", "[[two-media-collections-public-and-gated]]", "[[2026-06-16-in-studio-live-card]]"]
+related: ["[[payload-backend]]", "[[upload-auto-advances-to-production]]", "[[video-ownership-route-over-static-url]]", "[[local-disk-video-delivery]]", "[[blob-pass-through-proxied-video]]", "[[prod-env-fail-closed]]", "[[studio]]", "[[delivery-promise-auto-from-length]]", "[[two-media-collections-public-and-gated]]", "[[2026-06-16-in-studio-live-card]]", "[[2026-06-17-durable-order-access-link]]", "[[durable-order-access-link-followups]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
 owns:
@@ -40,9 +40,14 @@ owns:
     - "tests/lib/in-studio-stamp.test.ts"
     - "lib/auth-confirm-url.ts"
     - "lib/order-tracking-link.ts"
+    - "lib/order-access.ts"
+    - "lib/order-access-token.ts"
+    - "app/(site)/(app)/open/**"
     - "collections/auth/Users.ts"
     - "tests/auth/email-normalization.test.ts"
     - "tests/auth/order-tracking-link.test.ts"
+    - "tests/auth/order-access.test.ts"
+    - "tests/lib/order-access-token.test.ts"
     - "lib/auth.ts"
     - "lib/auth-emails.ts"
     - "tests/auth/auth-confirm-url.test.ts"
@@ -85,7 +90,11 @@ invariants:
     enforcedBy: ["e2e/fixtures/auth.ts", "tests/auth/auth-confirm-url.test.ts"]
   - rule: "User emails are stored LOWERCASE (Users.email beforeValidate hook + the webhook lowercases at resolution). Better Auth looks up users with email.toLowerCase() and Postgres equality is case-sensitive, so a mixed-case stored email would fail sign-in (new_user_signup_disabled). Storage and lookup MUST stay lowercase-aligned."
     enforcedBy: ["tests/auth/email-normalization.test.ts"]
-  - rule: "The order-confirmation 'track your order' link (lib/order-tracking-link.ts) mints a verification in Better Auth's exact magic-link format (plain token identifier, value JSON {email}, expiresAt) and wraps it through toConfirmSignInUrl. It MUST stay consumable by BA's real verify endpoint."
+  - rule: "Order emails (preview-ready / delivered status emails AND the order-confirmation 'track your order' link) link the DURABLE, reusable /open/<token> access link — NOT a single-use magic link. Each order carries orders.accessToken (+ accessTokenExpiresAt), minted once and refreshed to now+30d on every send by ensureOrderAccessToken; the token is never consumed, so the email link is reusable for 30 days. /open/<token> resolves the order, re-mints a SHORT-LIVED internal BA magic-link verification for the owner, and returns auth.api.magicLinkVerify({asResponse:true}) — instant session + 302 to the order, no interstitial. Expired/unknown → /open/expired (no order id leaked). See [[2026-06-17-durable-order-access-link]]."
+    enforcedBy: ["tests/auth/order-access.test.ts", "tests/app/status-email-link.test.ts", "tests/stripe/webhook.test.ts"]
+  - rule: "ensureOrderAccessToken writes the SAME order row it is called for. When invoked from the Orders afterChange status-email hook it MUST receive that hook's `req` (the open transaction) so its update joins the transaction; without it the update runs in a separate transaction and DEADLOCKS on the row lock the still-open hook holds (every proof_ready/delivered transition hangs ~30s — would freeze the studio Share-proof/Deliver actions in prod). The webhook path calls it AFTER its create has committed, so it passes no req."
+    enforcedBy: ["tests/auth/order-access.test.ts"]
+  - rule: "lib/order-tracking-link.ts (single-use magic-sign-in-link minter, BA's exact verification format: plain token identifier, value JSON {email}, expiresAt, wrapped through toConfirmSignInUrl) is SUPERSEDED by the /open link for the order emails, but RETAINED: its only remaining callers are the agent-mcp test tools (tools/agent-mcp/tools/{auth,orders}.ts), which need a general 'sign in as this email → callbackURL' minter the order-scoped /open link can't provide. It MUST stay consumable by BA's real verify endpoint. (Now misnamed for that role — see [[durable-order-access-link-followups]].)"
     enforcedBy: ["tests/auth/order-tracking-link.test.ts"]
   - rule: "The status → stage mapping and parent-facing copy live ONLY in lib/order-stages.ts (DOM-free, tested). The timeline component and dashboard page render FROM it; they never re-derive stage indices or hardcode status copy."
     enforcedBy: ["tests/app/order-stages.test.ts"]
@@ -97,7 +106,7 @@ invariants:
     enforcedBy: ["tests/auth/gating.test.ts"]
   - rule: "Each photo-upload server-action call carries ONE file, client-side re-encoded (≤2048px JPEG q0.85, EXIF orientation baked in) when over MAX_REQUEST_BYTES (3.5MB), so every request fits Vercel's ~4.5MB body cap; retries skip files already saved in a previous attempt."
     enforcedBy: ["components/app/prepare-upload.ts", "components/app/photo-upload.tsx"]
-verifiedAt: 3eef7a6
+verifiedAt: 44286fe
 ---
 
 ## Purpose
@@ -276,6 +285,35 @@ with a link back to `/app` and a **SignOutButton**.
 Client component. Email input + submit calling `authClient.signIn.magicLink({ email, callbackURL: "/app" })`. On success, "check your email" state. No-account explainer (with a "Place an order" → `/#build` CTA) below the form per brand-voice: calm, warm, explains checkout → email → account flow.
 Design: a **split-screen** comic card (mirrors the configurator) — left brand-deep dotted "Welcome back" panel with the astronaut (hidden below lg), right panel holds the form + explainer. Gets the full site chrome via its own `app/(site)/(app)/sign-in/layout.tsx` (SiteNav + SiteFooter — see `[[app-shell]]`); the gated `/app` deliberately does not.
 
+### Durable order-access link (/open) — instant, reusable preview sign-in
+The order emails (preview-ready / delivered, and the webhook's confirmation
+"track your order" link) no longer carry a single-use magic link behind the
+`/sign-in/verify` interstitial. Each order carries a durable, reusable
+`accessToken` (+ `accessTokenExpiresAt`); receiving the email at the order
+address already proves ownership, so the link signs the customer in instantly
+and works for 30 days. See `[[2026-06-17-durable-order-access-link]]`.
+- **`lib/order-access-token.ts`** (pure, no DB) — `newAccessToken` (32-char
+  [a-zA-Z], ~182 bits), `ACCESS_TOKEN_TTL_DAYS = 30`, `accessTokenExpiresAt`,
+  `isAccessTokenLive`.
+- **`lib/order-access.ts`** (DB cores) — `ensureOrderAccessToken(orderId, req?)`
+  mints once + refreshes the 30-day expiry on every call (the durable token is
+  stable; only the expiry advances); `resolveOrderByAccessToken(token, now)` →
+  `{orderId, ownerEmail}` for a live token, `null` for unknown/expired (constant
+  shape — no order enumeration); `mintEphemeralSignin(email)` writes a 10-min,
+  single-use BA magic-link verification. The `req?` param is the
+  deadlock-prevention contract — see the invariant.
+- **`app/(site)/(app)/open/[token]/route.ts`** (PUBLIC route handler — route
+  handlers never inherit the `/app` gate) — resolves the token, mints the
+  ephemeral verification, and returns `auth.api.magicLinkVerify({asResponse:true})`
+  (session cookie + 302 to `/app/orders/<id>`, no interstitial). Any `?error=`
+  redirect BA returns (e.g. owner vanished between resolve and verify) is
+  normalized back to `/open/expired`. The durable token is never consumed.
+- **`app/(site)/(app)/open/expired/page.tsx`** (+ `open/layout.tsx`) — the calm
+  "this link has expired, sign in with your email" page; the layout supplies the
+  marketing chrome (nav + cream + footer), mirroring `sign-in/layout.tsx`. Lives
+  under `(app)` but OUTSIDE `(app)/app/`, so it is NOT gated — a signed-out
+  visitor with a stale link must be able to see it.
+
 ### E2E auth fixture (e2e/fixtures/auth.ts — Playwright `setup` project)
 Produces the signed-in `storageState` (`e2e/.auth/customer.json`) the `chromium`
 project consumes. The flow is version-proof — it never reads tokens from the DB
@@ -380,3 +418,13 @@ Auth's `errorCallbackURL`; `requestProofChange` also appends the parent's reques
 `customerNotes` (a receipt in their thread); the preview stays watchable read-only during
 `revisions` (`ProofReview readOnly`, `loadProof` guard widened to `proof_ready || revisions`);
 and the order-detail loading skeleton gained Photos + Notes blocks.
+Durable order-access link (2026-06-17): the preview-ready / delivered status emails and
+the webhook confirmation link moved off the single-use 7-day magic link onto a durable,
+reusable `/open/<token>` link (`orders.accessToken`, 30-day, refreshed per send) that
+signs the customer in instantly with no interstitial (`lib/order-access{,-token}.ts`,
+`app/(site)/(app)/open/**`; see `[[2026-06-17-durable-order-access-link]]`). The
+single-use `lib/order-tracking-link.ts` is retained as a general magic-sign-in minter for
+the agent-mcp test tools. A self-deadlock — `ensureOrderAccessToken`'s write to the order
+from inside the Orders afterChange hook ran in a separate transaction and blocked on the
+hook's row lock, hanging every proof_ready/delivered transition — was fixed by threading
+the hook's `req` through (the integration checkpoint caught it).
