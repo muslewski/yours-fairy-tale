@@ -1,12 +1,16 @@
 import { AnimatedHeading } from "@/components/motion/animated-heading";
 
 /**
- * The sample-film section, first thing below the hero. Until the real sample
- * video is provided, it shows a calm "coming soon" placeholder. To go live,
- * set SAMPLE_VIDEO_SRC to the video URL — the placeholder is replaced by an
- * inline <video> automatically; nothing else changes.
+ * The sample-film section, first thing below the hero. Shows the real sample
+ * film in an inline <video> with native controls — click-to-play, it never
+ * autoplays. `preload="none"` + a poster frame (public/sample/sample-poster.webp)
+ * means ZERO video bytes load until the visitor presses play; the film itself is
+ * a public site-media Blob URL. The "coming soon" branch stays as a graceful
+ * fallback if SAMPLE_VIDEO_SRC is ever cleared.
  */
-const SAMPLE_VIDEO_SRC: string | null = null;
+const SAMPLE_VIDEO_SRC: string | null =
+  "https://vnbkdvadf65nev7m.public.blob.vercel-storage.com/site/sample-movie1-cIJRpGT7nq8rXiOMxT7Acs3nEyGRlv.mp4";
+const SAMPLE_VIDEO_POSTER = "/sample/sample-poster.webp";
 
 export function Sample() {
   return (
@@ -24,6 +28,8 @@ export function Sample() {
           {SAMPLE_VIDEO_SRC ? (
             <video
               src={SAMPLE_VIDEO_SRC}
+              poster={SAMPLE_VIDEO_POSTER}
+              preload="none"
               controls
               playsInline
               className="aspect-video w-full bg-brand-deep"
