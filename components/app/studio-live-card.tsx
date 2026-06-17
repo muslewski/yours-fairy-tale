@@ -52,11 +52,12 @@ export function StudioLiveCard({
   return (
     <div className="mt-6 rounded-3xl border-2 border-brand-deep bg-white px-6 pb-6 pt-3 text-center shadow-comic">
       {/*
-        Do NOT put a CSS filter (drop-shadow, blur, etc.) on the animated mascot.
-        A filter on an animated WebP makes Chromium accumulate frames instead of
-        disposing them — every previous frame stacks up and the mascot smears.
-        The /studio and overdue-card uses animate cleanly precisely because they
-        carry no filter; keep this one filter-free too.
+        The builder webp is full-canvas frames that MUST be encoded "overwrite"
+        (no-blend), or Chromium accumulates them and the mascot smears — the
+        source arrived as alpha-blend + dispose-none and was byte-patched to
+        overwrite (see decisions/2026-06-16-in-studio-live-card). Also keep this
+        filter-free: a CSS filter on an animated webp can trigger a separate
+        Chromium frame-compositing bug.
       */}
       <MascotImage
         animatedSrc="/mascot/builder-360.webp"

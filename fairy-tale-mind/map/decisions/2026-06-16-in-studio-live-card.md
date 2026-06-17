@@ -45,8 +45,14 @@ message. We wanted the parent to feel that real work is happening right now.
 - `DeliveryCountdown`'s in_production branches are unreachable for those two
   statuses (left in place; still used by paid / awaiting_assets / proof_ready /
   approved).
-- GOTCHA (fixed post-launch): the mascot was first shipped with a
-  `drop-shadow` on the animated WebP `<img>`. A CSS filter on an animated WebP
-  makes Chromium accumulate frames (every previous frame smears on screen), so
-  the perched drop-shadow was removed. Never put a CSS filter on the animated
-  mascot; the `/studio` and overdue-card uses are filter-free for the same reason.
+- GOTCHA (fixed post-launch, 2026-06-17): the mascot smeared — every animation
+  frame piled up on screen. ROOT CAUSE was the ASSET, not CSS: `builder-360.webp`
+  and `builder-240.webp` shipped with every frame as a full-canvas `alpha-blend`
+  + `dispose=none`, so each transparent-background frame composited over the last
+  and accumulated. FIX: a lossless byte-patch flipping each ANMF frame's blend
+  bit to `no-blend` (overwrite) — each full frame now fully replaces the canvas
+  (verified in Chromium). `dispose=background` was NOT usable here: the file's
+  ANIM background is opaque white, which would box the mascot. An earlier guess
+  (removing a `drop-shadow` CSS filter) did NOT fix it; the mascot is kept
+  filter-free anyway as a precaution (a CSS filter on an animated webp is a
+  separate Chromium frame bug).
