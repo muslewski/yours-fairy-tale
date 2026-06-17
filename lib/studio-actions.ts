@@ -15,6 +15,7 @@ import { revalidatePath } from "next/cache";
 import { getPayloadClient } from "@/lib/payload";
 import { requireStudioUserOrRedirect } from "@/lib/studio-auth";
 import {
+  applyDeliveryUrlCore,
   applyOrderStatusCore,
   applyPromisedByCore,
   attachVideoCore,
@@ -63,6 +64,23 @@ export async function setPromisedBy(
     return result;
   } catch (err) {
     console.error("[studio] setPromisedBy failed:", err);
+    return { ok: false, error: GENERIC_ERROR };
+  }
+}
+
+/** Action: staff set/clear the external delivery link for the preview or final film. */
+export async function setDeliveryUrl(
+  orderId: string,
+  kind: VideoKind,
+  rawUrl: string | null,
+): Promise<StudioActionResult> {
+  await requireStudioUserOrRedirect();
+  try {
+    const result = await applyDeliveryUrlCore(orderId, kind, rawUrl);
+    if (result.ok) revalidateStudioAndCustomer(orderId);
+    return result;
+  } catch (err) {
+    console.error("[studio] setDeliveryUrl failed:", err);
     return { ok: false, error: GENERIC_ERROR };
   }
 }

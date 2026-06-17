@@ -5,7 +5,7 @@
  */
 import { afterAll, describe, expect, test } from "vitest";
 
-import { applyOrderStatusCore, applyPromisedByCore } from "@/lib/studio-order-mutations";
+import { applyDeliveryUrlCore, applyOrderStatusCore, applyPromisedByCore } from "@/lib/studio-order-mutations";
 import { getPayloadClient } from "@/lib/payload";
 
 /** Docs seeded by tests, deleted (reverse order) in afterAll. */
@@ -161,6 +161,50 @@ describe("applyPromisedByCore", () => {
   test("rejects an unparseable date", async () => {
     const { order } = await seedOrder("in_production");
     const result = await applyPromisedByCore(String(order.id), "not-a-date");
+    expect(result.ok).toBe(false);
+  });
+});
+
+describe("delivery links (applyDeliveryUrlCore + widened guardrail)", () => {
+  test("stores a valid https link on proofUrl, rejects an invalid one", async () => {
+    const { payload, order } = await seedOrder("in_production");
+
+    const ok = await applyDeliveryUrlCore(String(order.id), "proof", "https://drive.google.com/x");
+    expect(ok).toEqual({ ok: true });
+    let after = await payload.findByID({ collection: "orders", id: order.id, depth: 0, overrideAccess: true });
+    expect(after.proofUrl).toBe("https://drive.google.com/x");
+
+    const bad = await applyDeliveryUrlCore(String(order.id), "proof", "ftp://nope");
+    expect(bad.ok).toBe(false);
+    after = await payload.findByID({ collection: "orders", id: order.id, depth: 0, overrideAccess: true });
+    expect(after.proofUrl).toBe("https://drive.google.com/x"); // unchanged
+  });
+
+  test("null clears the link", async () => {
+    const { payload, order } = await seedOrder("in_production");
+    await applyDeliveryUrlCore(String(order.id), "finalVideo", "https://www.dropbox.com/s/x");
+    await applyDeliveryUrlCore(String(order.id), "finalVideo", null);
+    const after = await payload.findByID({ collection: "orders", id: order.id, depth: 0, overrideAccess: true });
+    expect(after.finalVideoUrl ?? null).toBeNull();
+  });
+
+  test("a proofUrl alone satisfies the proof_ready guardrail (no uploaded proof)", async () => {
+    const { order } = await seedOrder("in_production");
+    await applyDeliveryUrlCore(String(order.id), "proof", "https://drive.google.com/x");
+    const result = await applyOrderStatusCore(String(order.id), "proof_ready");
+    expect(result).toEqual({ ok: true });
+  });
+
+  test("a finalVideoUrl alone satisfies the delivered guardrail (no uploaded film)", async () => {
+    const { order } = await seedOrder("proof_ready");
+    await applyDeliveryUrlCore(String(order.id), "finalVideo", "https://drive.google.com/x");
+    const result = await applyOrderStatusCore(String(order.id), "delivered");
+    expect(result).toEqual({ ok: true });
+  });
+
+  test("neither an upload nor a link still rejects proof_ready", async () => {
+    const { order } = await seedOrder("in_production");
+    const result = await applyOrderStatusCore(String(order.id), "proof_ready");
     expect(result.ok).toBe(false);
   });
 });

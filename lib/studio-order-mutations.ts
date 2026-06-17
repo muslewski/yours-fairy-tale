@@ -21,12 +21,15 @@ import { getPayloadClient } from "@/lib/payload";
 import { ALL_STATUSES, requirementFor } from "@/lib/studio-workflow";
 import type { OrderStatus } from "@/lib/order-stages";
 import { inStudioStamp } from "@/lib/in-studio-stamp";
+import { normalizeDeliveryUrl } from "@/lib/delivery-url";
 
 export type StudioActionResult = { ok: true } | { ok: false; error: string };
+export type VideoKind = "proof" | "finalVideo";
 
 /**
  * Core: set an order's status, enforcing the attachment guardrails
- * (proof_ready needs a proof; delivered needs the final film).
+ * (proof_ready needs a proof OR a delivery link; delivered needs the final film
+ * OR a delivery link).
  */
 export async function applyOrderStatusCore(
   orderId: string,
@@ -53,16 +56,16 @@ export async function applyOrderStatusCore(
   }
 
   const requirement = requirementFor(nextStatus);
-  if (requirement === "proof" && !order.proof) {
+  if (requirement === "proof" && !order.proof && !order.proofUrl) {
     return {
       ok: false,
-      error: "Add a preview film before sharing the proof with the parent.",
+      error: "Add a preview film or a delivery link before sharing the proof with the parent.",
     };
   }
-  if (requirement === "finalVideo" && !order.finalVideo) {
+  if (requirement === "finalVideo" && !order.finalVideo && !order.finalVideoUrl) {
     return {
       ok: false,
-      error: "Upload the final film before marking the order delivered.",
+      error: "Add the final film or a delivery link before marking the order delivered.",
     };
   }
 
@@ -110,7 +113,42 @@ export async function applyPromisedByCore(
   return { ok: true };
 }
 
-export type VideoKind = "proof" | "finalVideo";
+/**
+ * Core: set (validated https URL) or clear (null) an order's external delivery
+ * link for the preview (kind "proof" → proofUrl) or final film (kind
+ * "finalVideo" → finalVideoUrl). Auth-skipping ON PURPOSE (DB tests) — the
+ * action wraps it with requireStudioUserOrRedirect.
+ */
+export async function applyDeliveryUrlCore(
+  orderId: string,
+  kind: VideoKind,
+  rawUrl: string | null,
+): Promise<StudioActionResult> {
+  const field = kind === "proof" ? "proofUrl" : "finalVideoUrl";
+  let value: string | null = null;
+  // null or whitespace-only → clear the link (not a validation error); a
+  // non-empty value must pass https validation before it is stored.
+  if (rawUrl !== null && rawUrl.trim() !== "") {
+    const normalized = normalizeDeliveryUrl(rawUrl);
+    if (!normalized.ok) return { ok: false, error: normalized.error };
+    value = normalized.url;
+  }
+  const payload = await getPayloadClient();
+  try {
+    await payload.update({
+      collection: "orders",
+      id: orderId,
+      data: { [field]: value },
+      overrideAccess: true,
+    });
+  } catch (err) {
+    if (err instanceof NotFound) {
+      return { ok: false, error: "We could not find that order." };
+    }
+    throw err;
+  }
+  return { ok: true };
+}
 
 export interface BlobMeta {
   pathname: string;
