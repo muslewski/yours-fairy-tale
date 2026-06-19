@@ -8,7 +8,7 @@ updated: 2026-06-04
 related: ["[[checkout]]"]
 sources: []
 decided: 2026-06-04
-supersededBy: ""
+supersededBy: "[[stripe-go-live]]"
 ---
 
 ## Context

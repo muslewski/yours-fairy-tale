@@ -6,7 +6,7 @@ status: active
 created: 2026-06-02
 updated: 2026-06-16
 related: ["[[configurator]]", "[[payload-backend]]", "[[studio]]", "[[delivery-promise-auto-from-length]]", "[[auth-gating]]", "[[2026-06-16-in-studio-live-card]]", "[[2026-06-17-durable-order-access-link]]"]
-sources: ["[[checkout-is-a-simulation]]", "[[payments-stripe-over-shopify]]", "[[stripe-checkout-session-route]]", "[[webhook-orphan-events-retry]]"]
+sources: ["[[checkout-is-a-simulation]]", "[[payments-stripe-over-shopify]]", "[[stripe-checkout-session-route]]", "[[webhook-orphan-events-retry]]", "[[stripe-go-live]]"]
 owns:
   routes:
     - "/api/stripe/checkout"
@@ -74,7 +74,9 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Status-transition email failure never blocks the order update — errors are logged, not thrown."
     enforcedBy: ["tests/app/status-emails.test.ts"]
-verifiedAt: ad57454
+  - rule: "Checkout sets allow_promotion_codes: true so the hosted page shows the promotion-code field and buyers can redeem a coupon; never combined with a `discounts` param."
+    enforcedBy: ["tests/stripe/checkout.test.ts"]
+verifiedAt: 7c5a4fd
 ---
 
 ## Purpose
@@ -201,3 +203,14 @@ committed (no hook transaction), so it passes no `req`. See
 Studio delivery links (2026-06-17): `collections/Orders.ts` gained `proofUrl` +
 `finalVideoUrl` text fields (the studio's external delivery links — owned by `[[studio]]`,
 see `[[2026-06-17-studio-delivery-link]]`). No checkout/webhook/email behavior changed.
+Go-live (2026-06-19): Production flipped from Stripe TEST to LIVE mode — real payments.
+Live webhook endpoint `we_1Tk8DHPNnqZRtjXH2wVVXGgw` at the www host; prod
+`STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` set to live (Production scope only — dev/preview
+keep test keys in local `.env`); old live endpoint `we_1TeMUo…` deleted. Verified by a
+`cs_live_…` session from `POST /api/stripe/checkout`. See `[[stripe-go-live]]` (supersedes
+`[[stripe-webhook-test-mode]]`); the unused `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` and the
+USD-presentment-on-a-PLN-account note live there too.
+Coupons (2026-06-19): `buildCheckoutSessionParams` sets `allow_promotion_codes: true` so the
+hosted Checkout shows the promotion-code field. Three live promotion codes —
+`GOOGLE50`/`META50`/`TIKTOK50`, each → its 50%-off coupon (Google/Meta/TikTok), unlimited, no
+expiry. The webhook stamps the actual (discounted) `amount_total`, so revenue stays correct.
