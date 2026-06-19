@@ -76,7 +76,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Checkout sets allow_promotion_codes: true so the hosted page shows the promotion-code field and buyers can redeem a coupon; never combined with a `discounts` param."
     enforcedBy: ["tests/stripe/checkout.test.ts"]
-verifiedAt: 7c5a4fd
+verifiedAt: 2c8160b
 ---
 
 ## Purpose

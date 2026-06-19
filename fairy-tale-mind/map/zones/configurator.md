@@ -26,7 +26,7 @@ invariants:
     enforcedBy: ["e2e/checkout.spec.ts"]
   - rule: "World ids match collections/Orders.ts world options and lib/worlds.ts WORLD_LABELS; childName is optional (empty is allowed, parent adds it later)."
     enforcedBy: []
-verifiedAt: 2a1e55a
+verifiedAt: 2c8160b
 ---
 
 ## Purpose
@@ -76,3 +76,8 @@ Pricing extracted to `lib/pricing.ts` + worlds to `lib/worlds.ts`; child-name an
 inputs added; CTA wired to real server-priced Stripe Checkout (2026-06-03).
 Restructured into a 3-step wizard + UI-only photo dropzone; `extraMinutes/addOns/plotNote`
 now persisted onto the order (2026-06-04, see `[[configurator-wizard]]`).
+Add-on change (2026-06-19): the digital "4K master file" ($50) add-on became a "Physical DVD"
+keepsake ($25). The internal add-on id stays `master` (existing orders' `addOns` keep
+resolving); only label/note/price changed in `lib/pricing.ts`, plus the FAQ copy. A physical
+DVD needs a mailing address but checkout collects none yet — see
+`[[dvd-add-on-no-shipping-address]]`.
