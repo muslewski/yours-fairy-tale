@@ -28,16 +28,16 @@ describe("computeTotalCents", () => {
   });
 
   test("applies the detail multiplier to the full subtotal, rounded", () => {
-    // long (900) + 5 extra * 100 (500) + narration (60) + music (40) + master (50) = 1550
-    // premium multiplier 1.3 => surcharge = round(1550 * 0.3) = 465
-    // total = 2015 dollars => 201500 cents
+    // long (900) + 5 extra * 100 (500) + narration (60) + music (40) + master (25) = 1525
+    // premium multiplier 1.3 => surcharge = round(1525 * 0.3) = 458
+    // total = 1983 dollars => 198300 cents
     const sel: OrderSelections = {
       length: "long",
       detail: "premium",
       extraMinutes: 5,
       addOns: ["narration", "music", "master"],
     };
-    expect(computeTotalCents(sel)).toBe(201500);
+    expect(computeTotalCents(sel)).toBe(198300);
   });
 
   test("detailed multiplier rounds the surcharge to whole dollars", () => {

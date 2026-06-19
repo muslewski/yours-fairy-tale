@@ -73,7 +73,7 @@ test("prices the line item from the selections — server-computed, never client
     addOns: sel.addOns,
   });
   expect(p.line_items?.[0]?.price_data?.unit_amount).toBe(expected);
-  expect(expected).toBe(201500);
+  expect(expected).toBe(198300);
   expect(p.line_items?.[0]?.price_data?.currency).toBe("usd");
   expect(typeof p.line_items?.[0]?.price_data?.product_data?.name).toBe("string");
 });

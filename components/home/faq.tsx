@@ -27,7 +27,7 @@ const FAQS = [
   },
   {
     q: "How do I watch it, and what quality?",
-    a: "You'll get a private link to stream or download in crisp HD. A 4K master file is available as an add-on.",
+    a: "You'll get a private link to stream or download in crisp HD. A physical DVD is available as an add-on.",
   },
 ];
 

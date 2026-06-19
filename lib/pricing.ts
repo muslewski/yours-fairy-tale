@@ -48,7 +48,7 @@ export const DETAILS: DetailLevel[] = [
 export const ADDONS: AddOn[] = [
   { id: "narration", label: "Custom narration", price: 60, note: "A warm voice reads the story aloud." },
   { id: "music", label: "Original music", price: 40, note: "A score written to match their adventure." },
-  { id: "master", label: "4K master file", price: 50, note: "A downloadable copy in the highest quality." },
+  { id: "master", label: "Physical DVD", price: 25, note: "Their film on a real DVD, mailed to you to keep and watch again and again." },
 ];
 
 /** Each extra minute beyond the base length adds this many US dollars. */
