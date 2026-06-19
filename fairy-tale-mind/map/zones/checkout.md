@@ -214,3 +214,8 @@ Coupons (2026-06-19): `buildCheckoutSessionParams` sets `allow_promotion_codes: 
 hosted Checkout shows the promotion-code field. Three live promotion codes —
 `GOOGLE50`/`META50`/`TIKTOK50`, each → its 50%-off coupon (Google/Meta/TikTok), unlimited, no
 expiry. The webhook stamps the actual (discounted) `amount_total`, so revenue stays correct.
+Verification note: the field is confirmed present on the live hosted page, and the codes are
+confirmed active/valid/unrestricted via the Stripe API. Redemption could NOT be confirmed from
+an automated (Playwright) browser — Stripe returns `payment_pages_promotion_code_invalid` amid
+hCaptcha/PerimeterX bot challenges, i.e. it gates promo redemption on detected automation.
+Verify redemption in a normal human browser (apply `GOOGLE50` → $300 becomes $150).
