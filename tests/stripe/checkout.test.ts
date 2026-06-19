@@ -28,6 +28,18 @@ test("builds a session carrying config in metadata + customer_email", () => {
   expect(p.success_url).toContain("{CHECKOUT_SESSION_ID}");
 });
 
+test("enables the promotion-code field so buyers can redeem coupons", () => {
+  const p = buildCheckoutSessionParams({
+    childName: "",
+    world: "bedtime",
+    length: "short",
+    detail: "basic",
+    extraMinutes: 0,
+    addOns: [],
+  });
+  expect(p.allow_promotion_codes).toBe(true);
+});
+
 test("plotNote is capped to Stripe's 500-char metadata limit", () => {
   const long = "x".repeat(600);
   const p = buildCheckoutSessionParams({

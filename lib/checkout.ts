@@ -63,6 +63,11 @@ export function buildCheckoutSessionParams(
 
   const params: Stripe.Checkout.SessionCreateParams = {
     mode: "payment",
+    // Show the "Add promotion code" field on the hosted Checkout page so buyers
+    // can redeem a promotion code (which maps to a Stripe coupon). Safe to set
+    // unconditionally: it only renders the field; it cannot be combined with a
+    // `discounts` param, and we never pass one.
+    allow_promotion_codes: true,
     line_items: [
       {
         quantity: 1,
