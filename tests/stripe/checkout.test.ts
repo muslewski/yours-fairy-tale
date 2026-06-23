@@ -73,7 +73,8 @@ test("prices the line item from the selections — server-computed, never client
     addOns: sel.addOns,
   });
   expect(p.line_items?.[0]?.price_data?.unit_amount).toBe(expected);
-  expect(expected).toBe(198300);
+  // long 580 + 5×55 (275) + narration 10 + music 10 + master 25 = 900; flat multipliers → no surcharge
+  expect(expected).toBe(90000);
   expect(p.line_items?.[0]?.price_data?.currency).toBe("usd");
   expect(typeof p.line_items?.[0]?.price_data?.product_data?.name).toBe("string");
 });
@@ -89,7 +90,7 @@ test("a tampered/forged price has no path in — the builder only takes selectio
     extraMinutes: 0,
     addOns: [],
   });
-  expect(cheap.line_items?.[0]?.price_data?.unit_amount).toBe(30000);
+  expect(cheap.line_items?.[0]?.price_data?.unit_amount).toBe(18000);
 });
 
 test("empty childName is allowed (parent can add it later)", () => {
@@ -102,7 +103,8 @@ test("empty childName is allowed (parent can add it later)", () => {
     addOns: ["narration"],
   });
   expect(p.metadata).toMatchObject({ childName: "", world: "forest" });
-  expect(p.line_items?.[0]?.price_data?.unit_amount).toBe(51000);
+  // medium 290 + narration 10 = 300
+  expect(p.line_items?.[0]?.price_data?.unit_amount).toBe(30000);
 });
 
 test("invalid selections throw (so the route can answer 400)", () => {
