@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { buildCheckoutSessionParams, type CheckoutInput } from "@/lib/checkout";
+import { getPricing } from "@/lib/pricing-source";
 import { stripe } from "@/lib/stripe";
 import { isWorldId } from "@/lib/worlds";
 
@@ -61,11 +62,16 @@ export async function POST(req: NextRequest) {
     email,
   };
 
+  // Live pricing from the admin-editable Payload global (falls back to the
+  // built-in defaults if unseeded/unreadable). Read server-side, never trusted
+  // from the client.
+  const pricing = await getPricing();
+
   let params;
   try {
     // Recomputes (and validates) the price from the selections — throws on
     // anything invalid (unknown length/detail/add-on, out-of-range minutes).
-    params = buildCheckoutSessionParams(input);
+    params = buildCheckoutSessionParams(input, undefined, pricing);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Invalid selections.";
     return NextResponse.json({ error: message }, { status: 400 });
