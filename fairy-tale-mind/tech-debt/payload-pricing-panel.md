@@ -1,31 +1,44 @@
 ---
 type: debt
-summary: "Pricing Global is built (code on feat/payload-pricing-panel). Remaining: run generate:types + migrate:create in an env with a DB, then payload migrate against prod to create the `pricing` table."
+summary: "Pricing Global shipped to main + migration created and build-verified. Remaining: prod deploy (instrumentation auto-runs payload migrate) and an optional one-time studio seed."
 tags: [payload, pricing, checkout, migration]
-status: open
+status: resolved
 created: 2026-06-23
 updated: 2026-06-23
-related: ["[[checkout]]", "[[configurator]]", "[[payload-backend]]", "[[2026-06-23-pricing-in-payload-global]]", "[[no-production-db-migrations]]"]
+related: ["[[checkout]]", "[[configurator]]", "[[payload-backend]]", "[[2026-06-23-pricing-in-payload-global]]", "[[no-production-db-migrations]]", "[[migrate-on-deploy-via-instrumentation]]"]
 sources: ["fairy-tale-mind/specs/2026-06-23-payload-pricing-panel-design.md", "fairy-tale-mind/plans/2026-06-23-payload-pricing-panel.md"]
 severity: medium
 effort: low
 ---
 
-## Remaining (2026-06-23) — type-gen + migration
+## Resolved 2026-06-23
 
-The code shipped (Global, getPricing() resolver, configurator + checkout wiring,
-review fix). NOT done in the build sandbox (no local DB / PAYLOAD_SECRET):
+Done and on `main`:
 
-1. `npm run generate:types` — adds the `Pricing` global type to `payload-types.ts`.
-2. `npm run migrate:create` — generates the `pricing`-table migration; commit it.
-3. `payload migrate` against prod (the gated human step — see
-   `[[no-production-db-migrations]]`).
-4. Local studio smoke: panel pre-filled, edit propagates to the configurator,
-   non-admin cannot update, checkout charges the edited value.
+- Global + `getPricing()` resolver + configurator/checkout wiring + review fix.
+- **Migration** `migrations/20260623_000000_pricing_global.ts` (pricing +
+  pricing_lengths/details/add_ons) — hand-authored idempotent delta matching the
+  repo convention, introspected from a real dev `push` (pg_dump), verified to
+  apply cleanly AND idempotently on a pricing-less DB.
+- **Full `npm run build` passes** (caught + fixed a Next-16 `revalidateTag(tag,
+  profile)` arity change).
+- End-to-end smoke: unseeded → fallback; after a studio edit `getPricing()`
+  returns the new values and the authoritative charge reflects them.
 
-Until the migration runs, prod has no `pricing` table → `getPricing()` falls back
-to `DEFAULT_PRICING` (current live values), so the site is correct but not yet
-editable.
+The standalone `payload` CLI (`migrate:create`/`generate:types`) can't load this
+config's module graph under node 22 (tsx scoped loader fails on extensionless
+nested imports; swc hits an ESM named-export quirk). Workaround used: generate
+the schema via dev `push` + introspect, hand-author the migration. `payload-
+types.ts` was skipped — nothing imports `@/payload-types`; the resolver maps the
+global defensively without generated types.
+
+Remaining (not blocking, no code):
+
+1. **Prod deploy** — `instrumentation.ts` auto-runs `payload migrate` on boot
+   (`[[migrate-on-deploy-via-instrumentation]]`), creating the `pricing` table.
+2. **Optional**: open the studio Pricing screen once and Save to seed the row
+   (until then `getPricing()` falls back to `DEFAULT_PRICING` = current live
+   values, so the storefront is already correct).
 
 ## Original problem
 All configurator/checkout pricing lives in `lib/pricing.ts` constants. Every
