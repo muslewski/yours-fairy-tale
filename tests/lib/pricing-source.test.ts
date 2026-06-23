@@ -32,6 +32,19 @@ describe("readPricing", () => {
     await expect(readPricing()).resolves.toEqual(DEFAULT_PRICING);
   });
 
+  test("falls back when details is emptied (would crash the configurator)", async () => {
+    mockClient.mockResolvedValue({
+      findGlobal: vi.fn().mockResolvedValue({
+        lengths: [{ id: "short", label: "Short", minutes: 3, price: 200, note: null }],
+        details: [],
+        addOns: [],
+        extraMinutePrice: 55,
+        maxExtraMinutes: 30,
+      }),
+    });
+    await expect(readPricing()).resolves.toEqual(DEFAULT_PRICING);
+  });
+
   test("maps a populated global to the Pricing shape", async () => {
     const doc = {
       lengths: [{ id: "short", label: "Short", minutes: 3, price: 200, note: null }],

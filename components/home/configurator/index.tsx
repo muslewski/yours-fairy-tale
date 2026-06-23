@@ -32,8 +32,12 @@ export function Configurator({ pricing }: { pricing: Pricing }) {
   const [photoPaths, setPhotoPaths] = useState<string[]>([]);
   const [step, setStep] = useState(1);
 
-  const tier = lengths.find((o) => o.id === length)!;
-  const lvl = details.find((o) => o.id === detail)!;
+  // Fall back to the first option if the selected id is missing — an admin who
+  // renames/removes a tier or detail id via the pricing panel must never
+  // white-screen the homepage. (getPricing guarantees both arrays are
+  // non-empty, so [0] always exists.)
+  const tier = lengths.find((o) => o.id === length) ?? lengths[0];
+  const lvl = details.find((o) => o.id === detail) ?? details[0];
   const chosenAddOns = useMemo(
     () => addOnDefs.filter((o) => addOns.includes(o.id)),
     [addOnDefs, addOns],

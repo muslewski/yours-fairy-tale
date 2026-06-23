@@ -38,6 +38,10 @@ export async function readPricing(): Promise<Pricing> {
       !Array.isArray(g.lengths) ||
       g.lengths.length === 0 ||
       !Array.isArray(g.details) ||
+      g.details.length === 0 ||
+      // addOns may legitimately be empty (a store offering no add-ons); the
+      // configurator filters over them. lengths/details must be non-empty —
+      // the configurator resolves the selected tier/level out of them.
       !Array.isArray(g.addOns) ||
       typeof g.extraMinutePrice !== "number" ||
       typeof g.maxExtraMinutes !== "number"
