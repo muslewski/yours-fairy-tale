@@ -4,7 +4,7 @@ summary: "The personalized video builder — the homepage's conversion centerpie
 tags: [surface, conversion]
 status: active
 created: 2026-06-02
-updated: 2026-06-16
+updated: 2026-06-23
 related: ["[[checkout]]", "[[2026-06-16-photos-before-checkout-association]]"]
 sources: []
 owns:
@@ -26,7 +26,7 @@ invariants:
     enforcedBy: ["e2e/checkout.spec.ts"]
   - rule: "World ids match collections/Orders.ts world options and lib/worlds.ts WORLD_LABELS; childName is optional (empty is allowed, parent adds it later)."
     enforcedBy: []
-verifiedAt: 2c8160b
+verifiedAt: 55e29ee
 ---
 
 ## Purpose
@@ -81,3 +81,11 @@ keepsake ($25). The internal add-on id stays `master` (existing orders' `addOns`
 resolving); only label/note/price changed in `lib/pricing.ts`, plus the FAQ copy. A physical
 DVD needs a mailing address but checkout collects none yet — see
 `[[dvd-add-on-no-shipping-address]]`.
+Reprice (2026-06-23): tier base prices Short/Medium/Long → $180/$290/$580,
+`EXTRA_MINUTE_PRICE` → $55, all detail multipliers flattened to ×1.0 (detail
+level adds no surcharge for now), and digital add-ons narration/music → $10 each
+(DVD stays $25). Values-only change in `lib/pricing.ts`; the multiplier-driven UI
+self-corrects (caption shows "Base price", the surcharge line stops rendering).
+Admin-editable pricing is the next step — a Payload `pricing` Global, see
+`fairy-tale-mind/specs/2026-06-23-payload-pricing-panel-design.md` and
+`[[payload-pricing-panel]]`.

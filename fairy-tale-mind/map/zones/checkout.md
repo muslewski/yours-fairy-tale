@@ -4,7 +4,7 @@ summary: "Stripe checkout integration — mock UI simulation + real Checkout Ses
 tags: [ui, checkout, stripe, api, webhook, orders]
 status: active
 created: 2026-06-02
-updated: 2026-06-16
+updated: 2026-06-23
 related: ["[[configurator]]", "[[payload-backend]]", "[[studio]]", "[[delivery-promise-auto-from-length]]", "[[auth-gating]]", "[[2026-06-16-in-studio-live-card]]", "[[2026-06-17-durable-order-access-link]]"]
 sources: ["[[checkout-is-a-simulation]]", "[[payments-stripe-over-shopify]]", "[[stripe-checkout-session-route]]", "[[webhook-orphan-events-retry]]", "[[stripe-go-live]]"]
 owns:
@@ -76,7 +76,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Checkout sets allow_promotion_codes: true so the hosted page shows the promotion-code field and buyers can redeem a coupon; never combined with a `discounts` param."
     enforcedBy: ["tests/stripe/checkout.test.ts"]
-verifiedAt: 2c8160b
+verifiedAt: 55e29ee
 ---
 
 ## Purpose
