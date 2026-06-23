@@ -62,3 +62,10 @@ next-env.d.ts
 # Obsidian per-user workspace (the rest of .obsidian is shared/committed)
 fairy-tale-mind/.obsidian/workspace*.json
 .env
+
+# context-mode nav index (machine-local; content lives in ~/.claude/context-mode)
+.navidx-code/
+.navidx-mind/
+.navidx.log
+.navidx.lock
+.navidx.stamp

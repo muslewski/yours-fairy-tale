@@ -11,9 +11,15 @@ import { fileURLToPath } from 'node:url'
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url))) // <repo>/scripts/ -> <repo>
 
 function findMindDir() {
+  // Detect the vault by structure (map/ dir), not name — finds -mind, -brain, etc.
   try {
-    const hit = readdirSync(ROOT, { withFileTypes: true }).find((e) => e.isDirectory() && e.name.endsWith('-mind'))
-    return hit ? join(ROOT, hit.name) : null
+    const dirs = readdirSync(ROOT, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && !e.name.startsWith('.') && e.name !== 'node_modules')
+      .map((e) => e.name)
+    const byStructure = dirs.find((n) => existsSync(join(ROOT, n, 'map', 'index.md')) || existsSync(join(ROOT, n, 'map', 'zones')))
+    if (byStructure) return join(ROOT, byStructure)
+    const bySuffix = dirs.find((n) => n.endsWith('-mind') || n.endsWith('-brain'))
+    return bySuffix ? join(ROOT, bySuffix) : null
   } catch { return null }
 }
 

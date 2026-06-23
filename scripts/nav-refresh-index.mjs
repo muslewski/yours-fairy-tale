@@ -15,7 +15,7 @@
 
 import { execFileSync, spawn } from 'node:child_process'
 import { readdir, stat, writeFile, appendFile, unlink } from 'node:fs/promises'
-import { existsSync, mkdirSync, readdirSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -37,10 +37,17 @@ function detectCodeDir() {
   return null
 }
 function detectMindDir() {
+  // Detect the Obsidian vault by STRUCTURE (a map/ dir), not by name —
+  // so it finds <x>-mind, <x>-brain, etc. Falls back to the -mind suffix.
   try {
-    const hit = readdirSync(ROOT, { withFileTypes: true })
-      .find((e) => e.isDirectory() && e.name.endsWith('-mind'))
-    return hit ? join(ROOT, hit.name) : null
+    const dirs = readdirSync(ROOT, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && !e.name.startsWith('.') && e.name !== 'node_modules')
+      .map((e) => e.name)
+    const byStructure = dirs.find((n) =>
+      existsSync(join(ROOT, n, 'map', 'index.md')) || existsSync(join(ROOT, n, 'map', 'zones')))
+    if (byStructure) return join(ROOT, byStructure)
+    const bySuffix = dirs.find((n) => n.endsWith('-mind') || n.endsWith('-brain'))
+    return bySuffix ? join(ROOT, bySuffix) : null
   } catch {
     return null
   }
@@ -123,13 +130,16 @@ async function runWorker(force) {
     await log(`cli: ${cli}`)
     let allOk = true
     for (const b of buckets) {
-      if (!existsSync(b.project)) mkdirSync(b.project, { recursive: true })
       const t = Date.now()
       await log(`indexing ${b.label}: ${b.srcDir}`)
       try {
+        // NOTE: do NOT set CONTEXT_MODE_DIR — that changes the *storage root* on write
+        // while the MCP ctx_search reader uses the default global root, so reads come back
+        // empty (writer/reader store-path mismatch). Use --project as the DB *identity*
+        // only; both writer and reader then share ~/.claude/context-mode and agree by hash.
         const out = execFileSync(process.execPath,
-          [cli, 'index', b.srcDir, '--project', b.project, '--max-depth', '15', '--max-files', '5000', '--ext', b.ext],
-          { cwd: ROOT, timeout: 300_000, env: { ...process.env, CONTEXT_MODE_DIR: b.project }, encoding: 'utf8' })
+          [cli, 'index', b.srcDir, '--project', b.project, '--source', b.label, '--max-depth', '15', '--max-files', '5000', '--ext', b.ext],
+          { cwd: ROOT, timeout: 300_000, env: process.env, encoding: 'utf8' })
         await log(`done ${b.label} in ${((Date.now() - t) / 1000).toFixed(1)}s — ${(out || '').trim().split('\n').pop() || ''}`)
       } catch (err) {
         allOk = false

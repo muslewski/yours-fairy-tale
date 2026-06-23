@@ -19,9 +19,11 @@ Default to **ctx_search** (context-mode MCP tool) — it returns the relevant sl
 
 ## Per-bucket mode
 
-**Mind (`<repo>-mind/`)** — `ctx_search` snippet is enough; the returned snippet captures the zone/decision summary inline. Project dir: `.navidx-mind` (repo root).
+Pass the **`project`** param to `ctx_search` as the **ABSOLUTE** path of the bucket identity — `/home/kento/Repositories/yours-fairy-tale/.navidx-code` or `/home/kento/Repositories/yours-fairy-tale/.navidx-mind`. A relative value (`.navidx-code`) hashes to a different DB and returns "Knowledge base is empty". The index lives in the global store (`~/.claude/context-mode`), keyed by this identity — the `.navidx-*` dirs themselves are just the identity label, not where data lives.
 
-**Code (`src/`)** — `ctx_search` to **RANK**, then **Read the top ~3 whole hit files** (snippets alone miss the answer span; parse `Source:` paths and Read those files whole). Project dir: `.navidx-code` (repo root).
+**Mind (`fairy-tale-mind/`)** — `ctx_search` snippet is enough; the returned snippet captures the zone/decision summary inline. `project: /home/kento/Repositories/yours-fairy-tale/.navidx-mind`.
+
+**Code (`src/`)** — `ctx_search` to **RANK**, then **Read the top ~3 whole hit files** (snippets alone miss the answer span; parse `Source:` paths and Read those files whole). `project: /home/kento/Repositories/yours-fairy-tale/.navidx-code`.
 
 ## Rules
 
