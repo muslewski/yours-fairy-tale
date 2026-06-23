@@ -54,11 +54,16 @@ function detectMindDir() {
 }
 
 function buildBuckets() {
+  // Both buckets are keyed to the REPO ROOT as --project (distinguished by --source),
+  // because the MCP ctx_search reader's DEFAULT project is the cwd (= repo root). Keying
+  // to the root means a plain ctx_search with NO project param Just Works — no need for
+  // the caller to pass an exact absolute identity. One content DB per repo; results are
+  // tagged `Source: code:…` / `Source: mind:…`.
   const buckets = []
   const code = detectCodeDir()
-  if (code) buckets.push({ label: 'code', srcDir: code, project: join(ROOT, '.navidx-code'), ext: '.ts,.tsx,.js,.jsx,.mjs,.cjs,.astro,.vue,.svelte' })
+  if (code) buckets.push({ label: 'code', srcDir: code, project: ROOT, ext: '.ts,.tsx,.js,.jsx,.mjs,.cjs,.astro,.vue,.svelte' })
   const mind = detectMindDir()
-  if (mind) buckets.push({ label: 'mind', srcDir: mind, project: join(ROOT, '.navidx-mind'), ext: '.md' })
+  if (mind) buckets.push({ label: 'mind', srcDir: mind, project: ROOT, ext: '.md' })
   return buckets
 }
 

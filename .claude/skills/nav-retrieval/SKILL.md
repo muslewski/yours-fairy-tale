@@ -5,7 +5,9 @@ description: Use when navigating this repo's code or Mind — find a definition/
 
 # Navigating with ctx_search (default retrieval)
 
-Default to **ctx_search** (context-mode MCP tool) — it returns the relevant slice, far cheaper than grep+read-whole-file at equal correctness. Two indexes are kept fresh automatically by the SessionStart hook (`scripts/nav-refresh-index.mjs`); queries never cross buckets.
+Default to **ctx_search** (context-mode MCP tool) — it returns the relevant slice, far cheaper than grep+read-whole-file at equal correctness. The index (code + this repo's Mind) is kept fresh automatically by the SessionStart hook (`scripts/nav-refresh-index.mjs`).
+
+**Just call `ctx_search` with NO `project` param** — it defaults to this repo (cwd), which is exactly where both buckets are indexed. Do NOT pass `project: global` or a `.navidx-*` path — those resolve to a different/empty store and return "Knowledge base is empty". Results are tagged `Source: code:…` or `Source: mind:…`; optionally narrow with `source: code` / `source: mind`.
 
 ## Route by intent
 
@@ -19,11 +21,9 @@ Default to **ctx_search** (context-mode MCP tool) — it returns the relevant sl
 
 ## Per-bucket mode
 
-Pass the **`project`** param to `ctx_search` as the **ABSOLUTE** path of the bucket identity — `/home/kento/Repositories/yours-fairy-tale/.navidx-code` or `/home/kento/Repositories/yours-fairy-tale/.navidx-mind`. A relative value (`.navidx-code`) hashes to a different DB and returns "Knowledge base is empty". The index lives in the global store (`~/.claude/context-mode`), keyed by this identity — the `.navidx-*` dirs themselves are just the identity label, not where data lives.
+**Mind (`fairy-tale-mind/`)** — `Source: mind:…` hits; the snippet captures the zone/decision summary inline, usually enough — no follow-up Read for orientation.
 
-**Mind (`fairy-tale-mind/`)** — `ctx_search` snippet is enough; the returned snippet captures the zone/decision summary inline. `project: /home/kento/Repositories/yours-fairy-tale/.navidx-mind`.
-
-**Code (`src/`)** — `ctx_search` to **RANK**, then **Read the top ~3 whole hit files** (snippets alone miss the answer span; parse `Source:` paths and Read those files whole). `project: /home/kento/Repositories/yours-fairy-tale/.navidx-code`.
+**Code (`src/`)** — `Source: code:…` hits; use `ctx_search` to **RANK**, then **Read the top ~3 whole hit files** (snippets alone miss the answer span; parse the `Source:` paths and Read those files whole).
 
 ## Rules
 
