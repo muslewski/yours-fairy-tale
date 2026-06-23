@@ -1,5 +1,3 @@
-import "server-only";
-
 import { unstable_cache } from "next/cache";
 
 import { getPayloadClient } from "@/lib/payload";
@@ -13,7 +11,8 @@ import { DEFAULT_PRICING, type Pricing } from "@/lib/pricing";
  * global is unseeded/empty or the read throws, so a DB hiccup can never break
  * the configurator or — critically — the checkout charge.
  *
- * Never import this (or getPayloadClient) into a "use client" module.
+ * Server-only by construction — it imports getPayloadClient (→ payload), so it
+ * cannot be bundled into a "use client" module. Do not import it from one.
  */
 
 // Loose view of the global doc — the generated `Pricing` global type only

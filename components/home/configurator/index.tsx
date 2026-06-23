@@ -3,13 +3,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { AnimatedHeading } from "@/components/motion/animated-heading";
-import {
-  ADDONS,
-  DETAILS,
-  EXTRA_MINUTE_PRICE,
-  LENGTHS,
-  summarizeSelections,
-} from "@/lib/pricing";
+import { summarizeSelections, type Pricing } from "@/lib/pricing";
 import { type SegOption } from "./segmented";
 import { PriceRail } from "./price-rail";
 import { StepNav } from "./step-nav";
@@ -21,8 +15,11 @@ import type { WorldId } from "@/lib/worlds";
 const pct = (multiplier: number) => Math.round((multiplier - 1) * 100);
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
 
-export function Configurator() {
+export function Configurator({ pricing }: { pricing: Pricing }) {
   const reduce = useReducedMotion();
+
+  // Live, admin-editable pricing (resolved server-side, passed in as a prop).
+  const { lengths, details, addOns: addOnDefs, extraMinutePrice, maxExtraMinutes } = pricing;
 
   const [childName, setChildName] = useState("");
   const [world, setWorld] = useState<WorldId>("bedtime");
@@ -35,11 +32,14 @@ export function Configurator() {
   const [photoPaths, setPhotoPaths] = useState<string[]>([]);
   const [step, setStep] = useState(1);
 
-  const tier = LENGTHS.find((o) => o.id === length)!;
-  const lvl = DETAILS.find((o) => o.id === detail)!;
-  const chosenAddOns = useMemo(() => ADDONS.filter((o) => addOns.includes(o.id)), [addOns]);
+  const tier = lengths.find((o) => o.id === length)!;
+  const lvl = details.find((o) => o.id === detail)!;
+  const chosenAddOns = useMemo(
+    () => addOnDefs.filter((o) => addOns.includes(o.id)),
+    [addOnDefs, addOns],
+  );
 
-  const minutesCost = extraMinutes * EXTRA_MINUTE_PRICE;
+  const minutesCost = extraMinutes * extraMinutePrice;
   const addOnsCost = chosenAddOns.reduce((s, o) => s + o.price, 0);
   const subtotal = tier.price + minutesCost + addOnsCost;
   const surcharge = Math.round(subtotal * (lvl.multiplier - 1));
@@ -83,13 +83,13 @@ export function Configurator() {
   const primaryLabel =
     step < 3 ? "Continue →" : status === "pending" ? "Taking you to checkout…" : "Create their video →";
 
-  const lengthOptions: SegOption[] = LENGTHS.map((o) => ({
+  const lengthOptions: SegOption[] = lengths.map((o) => ({
     id: o.id,
     label: o.label,
     caption: `${usd(o.price)} · ${o.minutes} min`,
     note: o.note,
   }));
-  const detailOptions: SegOption[] = DETAILS.map((o) => ({
+  const detailOptions: SegOption[] = details.map((o) => ({
     id: o.id,
     label: o.label,
     caption: o.multiplier === 1 ? "Base price" : `+${pct(o.multiplier)}%`,
@@ -189,10 +189,13 @@ export function Configurator() {
                     setExtraMinutes={setExtraMinutes}
                     totalMinutes={totalMinutes}
                     minutesCost={minutesCost}
+                    maxExtraMinutes={maxExtraMinutes}
+                    extraMinutePrice={extraMinutePrice}
                     detailOptions={detailOptions}
                     detail={detail}
                     setDetail={setDetail}
                     addOns={addOns}
+                    addOnDefs={addOnDefs}
                     toggleAddOn={toggleAddOn}
                     chosenAddOns={chosenAddOns}
                   />
@@ -209,7 +212,7 @@ export function Configurator() {
                 )}
                 {step === 3 && (
                   <StepPhotos
-                    summary={summarizeSelections({ length, detail, extraMinutes, addOns })}
+                    summary={summarizeSelections({ length, detail, extraMinutes, addOns }, pricing)}
                     photoPaths={photoPaths}
                     setPhotoPaths={setPhotoPaths}
                   />

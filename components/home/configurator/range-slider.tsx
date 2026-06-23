@@ -1,5 +1,3 @@
-import { EXTRA_MINUTE_PRICE } from "@/lib/pricing";
-
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
 
 export function RangeSlider({
@@ -8,12 +6,14 @@ export function RangeSlider({
   max,
   totalMinutes,
   cost,
+  extraMinutePrice,
 }: {
   value: number;
   onChange: (v: number) => void;
   max: number;
   totalMinutes: number;
   cost: number;
+  extraMinutePrice: number;
 }) {
   const pctFilled = (value / max) * 100;
   return (
@@ -43,7 +43,7 @@ export function RangeSlider({
         }}
       />
       <p className="mt-3 text-sm font-medium text-brand-deep/60">
-        Each extra minute adds ${EXTRA_MINUTE_PRICE} to the base length.
+        Each extra minute adds ${extraMinutePrice} to the base length.
       </p>
     </fieldset>
   );

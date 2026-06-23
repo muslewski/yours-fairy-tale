@@ -1,7 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from "vitest";
 
-// server-only throws outside an RSC bundler; stub it for the node test runner.
-vi.mock("server-only", () => ({}));
 // Make unstable_cache a pass-through so the resolver logic is tested directly.
 vi.mock("next/cache", () => ({
   unstable_cache: (fn: unknown) => fn,

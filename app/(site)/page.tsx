@@ -8,8 +8,10 @@ import { Faq } from "@/components/home/faq";
 import { CtaBanner } from "@/components/home/cta-banner";
 import { SiteFooter } from "@/components/home/site-footer";
 import { SectionWave } from "@/components/home/section-wave";
+import { getPricing } from "@/lib/pricing-source";
 
-export default function Home() {
+export default async function Home() {
+  const pricing = await getPricing();
   return (
     <>
       <SiteNav />
@@ -19,7 +21,7 @@ export default function Home() {
         <Sample />
         <Categories />
         <SectionWave from="cream" to="deep" flip />
-        <Configurator />
+        <Configurator pricing={pricing} />
         <SectionWave from="deep" to="yellow" />
         <SeriesTeaser />
         <SectionWave from="yellow" to="cream" flip />
