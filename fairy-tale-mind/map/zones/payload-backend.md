@@ -4,8 +4,8 @@ summary: "Payload v3 backend — the in-app CMS, /admin panel, REST/GraphQL API,
 tags: [backend, payload, auth, infrastructure]
 status: active
 created: 2026-06-03
-updated: 2026-06-16
-related: ["[[migrate-on-deploy-via-instrumentation]]", "[[prod-env-fail-closed]]", "[[blob-pass-through-proxied-video]]", "[[waitlist-signups-payload-plus-resend]]", "[[studio]]", "[[browser-to-blob-uploads-metadata-media]]", "[[two-media-collections-public-and-gated]]"]
+updated: 2026-06-23
+related: ["[[migrate-on-deploy-via-instrumentation]]", "[[prod-env-fail-closed]]", "[[blob-pass-through-proxied-video]]", "[[waitlist-signups-payload-plus-resend]]", "[[studio]]", "[[browser-to-blob-uploads-metadata-media]]", "[[two-media-collections-public-and-gated]]", "[[configurator]]", "[[2026-06-23-pricing-in-payload-global]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
   - "fairy-tale-mind/plans/2026-06-10-launch-hardening.md"
@@ -32,6 +32,7 @@ owns:
     - "collections/Waitlist.ts"
     - "collections/Media.ts"
     - "collections/SiteMedia.ts"
+    - "globals/Pricing.ts"
     - "instrumentation.ts"
     - "app/api/cron/prune-blobs/route.ts"
     - "vercel.json"
@@ -73,7 +74,9 @@ invariants:
     enforcedBy: ["collections/SiteMedia.ts", "collections/Media.ts", "payload.config.ts"]
   - rule: "Waitlist rows are created ONLY by app/api/waitlist/route.ts via the Local API with overrideAccess — all collection access is adminOnly (same posture as Orders). Email is unique + lowercased (beforeValidate hook, same canonicalization as users.email)."
     enforcedBy: ["collections/Waitlist.ts", "tests/waitlist/waitlist.test.ts"]
-verifiedAt: 83b0524
+  - rule: "The `pricing` Global (globals/Pricing.ts) is read: PUBLIC (the configurator + checkout need it) but update: adminOnly — only staff change money. Its afterChange revalidates the `pricing` cache tag. Consumed via getPricing() ([[configurator]] / [[checkout]]), never written from customer code. NOTE: the pricing table migration (migrate:create) is not yet generated — pending an env with a DB."
+    enforcedBy: ["globals/Pricing.ts"]
+verifiedAt: 2b76d1d
 ---
 
 ## Purpose

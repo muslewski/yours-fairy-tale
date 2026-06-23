@@ -1,6 +1,19 @@
 import { expect, test } from "vitest";
 import { buildCheckoutSessionParams } from "@/lib/checkout";
-import { computeTotalCents } from "@/lib/pricing";
+import { computeTotalCents, DEFAULT_PRICING } from "@/lib/pricing";
+
+test("charge uses injected pricing when provided (3rd arg)", () => {
+  const pricing = {
+    ...DEFAULT_PRICING,
+    lengths: DEFAULT_PRICING.lengths.map((l) => (l.id === "short" ? { ...l, price: 500 } : l)),
+  };
+  const p = buildCheckoutSessionParams(
+    { childName: "", world: "bedtime", length: "short", detail: "basic", extraMinutes: 0, addOns: [] },
+    undefined,
+    pricing,
+  );
+  expect(p.line_items?.[0]?.price_data?.unit_amount).toBe(50000);
+});
 
 test("builds a session carrying config in metadata + customer_email", () => {
   const p = buildCheckoutSessionParams({

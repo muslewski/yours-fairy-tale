@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from "motion/react";
-import { ADDONS, MAX_EXTRA_MINUTES } from "@/lib/pricing";
 import { Segmented, type SegOption } from "./segmented";
 import { RangeSlider } from "./range-slider";
 import type { AddOn } from "@/lib/pricing";
@@ -14,10 +13,13 @@ export function StepFilm({
   setExtraMinutes,
   totalMinutes,
   minutesCost,
+  maxExtraMinutes,
+  extraMinutePrice,
   detailOptions,
   detail,
   setDetail,
   addOns,
+  addOnDefs,
   toggleAddOn,
   chosenAddOns,
 }: {
@@ -28,10 +30,13 @@ export function StepFilm({
   setExtraMinutes: (v: number) => void;
   totalMinutes: number;
   minutesCost: number;
+  maxExtraMinutes: number;
+  extraMinutePrice: number;
   detailOptions: SegOption[];
   detail: string;
   setDetail: (v: string) => void;
   addOns: string[];
+  addOnDefs: AddOn[];
   toggleAddOn: (id: string) => void;
   chosenAddOns: AddOn[];
 }) {
@@ -47,9 +52,10 @@ export function StepFilm({
       <RangeSlider
         value={extraMinutes}
         onChange={setExtraMinutes}
-        max={MAX_EXTRA_MINUTES}
+        max={maxExtraMinutes}
         totalMinutes={totalMinutes}
         cost={minutesCost}
+        extraMinutePrice={extraMinutePrice}
       />
       <Segmented
         legend="Detail level"
@@ -64,7 +70,7 @@ export function StepFilm({
           Add-ons
         </legend>
         <div className="mt-4 flex flex-wrap gap-2.5">
-          {ADDONS.map((o) => {
+          {addOnDefs.map((o) => {
             const checked = addOns.includes(o.id);
             return (
               <motion.label

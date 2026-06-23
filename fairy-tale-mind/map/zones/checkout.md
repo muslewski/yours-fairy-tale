@@ -19,6 +19,7 @@ owns:
     - "lib/stripe.ts"
     - "lib/checkout.ts"
     - "lib/pricing.ts"
+    - "lib/pricing-source.ts"
     - "lib/email.ts"
     - "lib/order-status-email.ts"
     - "app/api/stripe/checkout/route.ts"
@@ -36,8 +37,8 @@ depends: ["[[payload-backend]]"]
 invariants:
   - rule: "The mock UI (components/checkout/*) never makes network calls or charges money — simulation only. It is NO LONGER on the live configurator flow."
     enforcedBy: []
-  - rule: "The charge amount is computed SERVER-SIDE via computeTotalCents(selections) — the request body carries selections, never a price. A tampered client cannot change what they pay."
-    enforcedBy: ["tests/stripe/checkout.test.ts", "tests/lib/pricing.test.ts"]
+  - rule: "The charge amount is computed SERVER-SIDE via computeTotalCents(selections, pricing) over pricing resolved from getPricing() (the Payload pricing global, lib/pricing-source.ts) — the request body carries selections, never a price. A tampered client cannot change what they pay; a DB miss falls back to DEFAULT_PRICING."
+    enforcedBy: ["tests/stripe/checkout.test.ts", "tests/lib/pricing.test.ts", "tests/lib/pricing-source.test.ts"]
   - rule: "Invalid selections (unknown length/detail/add-on, out-of-range minutes) → computeTotalCents throws → route returns 400."
     enforcedBy: ["tests/lib/pricing.test.ts"]
   - rule: "STRIPE_SECRET_KEY must be set; singleton throws at boot if missing."
@@ -76,7 +77,7 @@ invariants:
     enforcedBy: ["tests/app/status-emails.test.ts"]
   - rule: "Checkout sets allow_promotion_codes: true so the hosted page shows the promotion-code field and buyers can redeem a coupon; never combined with a `discounts` param."
     enforcedBy: ["tests/stripe/checkout.test.ts"]
-verifiedAt: 55e29ee
+verifiedAt: 2b76d1d
 ---
 
 ## Purpose

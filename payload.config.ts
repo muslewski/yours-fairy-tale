@@ -15,6 +15,7 @@ import { Media } from "./collections/Media";
 import { SiteMedia } from "./collections/SiteMedia";
 import { Orders } from "./collections/Orders";
 import { Waitlist } from "./collections/Waitlist";
+import { Pricing } from "./globals/Pricing";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
@@ -51,6 +52,7 @@ export default buildConfig({
     Media,
     SiteMedia,
   ],
+  globals: [Pricing],
   plugins: [
     // Media storage. Pass-through mode (disablePayloadAccessControl NOT set):
     // file URLs stay on Payload's /api/media/file/* endpoint, so the

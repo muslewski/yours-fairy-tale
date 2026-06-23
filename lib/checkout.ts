@@ -13,7 +13,9 @@ import type Stripe from "stripe";
 import {
   computeTotalCents,
   summarizeSelections,
+  DEFAULT_PRICING,
   type OrderSelections,
+  type Pricing,
 } from "@/lib/pricing";
 import { MAX_CHECKOUT_PHOTOS } from "@/lib/order-upload-validation";
 import type { WorldId } from "@/lib/worlds";
@@ -39,6 +41,7 @@ export type CheckoutInput = {
 export function buildCheckoutSessionParams(
   input: CheckoutInput,
   baseUrl: string = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  pricing: Pricing = DEFAULT_PRICING,
 ): Stripe.Checkout.SessionCreateParams {
   const { childName, world, length, detail, extraMinutes, addOns, email, plotNote, assetPaths } =
     input;
@@ -58,8 +61,8 @@ export function buildCheckoutSessionParams(
 
   // Authoritative amount — recomputed server-side from the selections. Throws
   // on any invalid selection so the route can return 400.
-  const unitAmount = computeTotalCents(selections);
-  const description = summarizeSelections(selections);
+  const unitAmount = computeTotalCents(selections, pricing);
+  const description = summarizeSelections(selections, pricing);
 
   const params: Stripe.Checkout.SessionCreateParams = {
     mode: "payment",

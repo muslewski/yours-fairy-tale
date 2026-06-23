@@ -51,9 +51,32 @@ export const ADDONS: AddOn[] = [
   { id: "master", label: "Physical DVD", price: 25, note: "Their film on a real DVD, mailed to you to keep and watch again and again." },
 ];
 
+/**
+ * The full pricing model as one object. The Payload `pricing` Global is an
+ * editable copy of this shape; `DEFAULT_PRICING` below is the fallback used when
+ * the global is unseeded or unreadable (see lib/pricing-source.ts).
+ */
+export type Pricing = {
+  lengths: LengthTier[];
+  details: DetailLevel[];
+  addOns: AddOn[];
+  /** Each extra minute beyond the base length adds this many US dollars. */
+  extraMinutePrice: number;
+  maxExtraMinutes: number;
+};
+
+/** The built-in fallback — the values that ship in code (current live prices). */
+export const DEFAULT_PRICING: Pricing = {
+  lengths: LENGTHS,
+  details: DETAILS,
+  addOns: ADDONS,
+  extraMinutePrice: 55,
+  maxExtraMinutes: 30,
+};
+
 /** Each extra minute beyond the base length adds this many US dollars. */
-export const EXTRA_MINUTE_PRICE = 55;
-export const MAX_EXTRA_MINUTES = 30;
+export const EXTRA_MINUTE_PRICE = DEFAULT_PRICING.extraMinutePrice;
+export const MAX_EXTRA_MINUTES = DEFAULT_PRICING.maxExtraMinutes;
 
 export type OrderSelections = {
   length: string;
@@ -67,17 +90,20 @@ export type OrderSelections = {
  * Throws a descriptive Error on any unknown id or out-of-range minutes so the
  * checkout route can answer with a 400 and never price an invalid order.
  */
-function resolve(sel: OrderSelections): {
+function resolve(
+  sel: OrderSelections,
+  pricing: Pricing,
+): {
   tier: LengthTier;
   level: DetailLevel;
   chosenAddOns: AddOn[];
 } {
-  const tier = LENGTHS.find((o) => o.id === sel.length);
+  const tier = pricing.lengths.find((o) => o.id === sel.length);
   if (!tier) {
     throw new Error(`Unknown length: ${JSON.stringify(sel.length)}`);
   }
 
-  const level = DETAILS.find((o) => o.id === sel.detail);
+  const level = pricing.details.find((o) => o.id === sel.detail);
   if (!level) {
     throw new Error(`Unknown detail level: ${JSON.stringify(sel.detail)}`);
   }
@@ -86,10 +112,10 @@ function resolve(sel: OrderSelections): {
     typeof sel.extraMinutes !== "number" ||
     !Number.isInteger(sel.extraMinutes) ||
     sel.extraMinutes < 0 ||
-    sel.extraMinutes > MAX_EXTRA_MINUTES
+    sel.extraMinutes > pricing.maxExtraMinutes
   ) {
     throw new Error(
-      `extraMinutes must be an integer between 0 and ${MAX_EXTRA_MINUTES}, got ${JSON.stringify(sel.extraMinutes)}`,
+      `extraMinutes must be an integer between 0 and ${pricing.maxExtraMinutes}, got ${JSON.stringify(sel.extraMinutes)}`,
     );
   }
 
@@ -98,7 +124,7 @@ function resolve(sel: OrderSelections): {
   }
 
   const chosenAddOns = sel.addOns.map((id) => {
-    const addOn = ADDONS.find((o) => o.id === id);
+    const addOn = pricing.addOns.find((o) => o.id === id);
     if (!addOn) {
       throw new Error(`Unknown add-on: ${JSON.stringify(id)}`);
     }
@@ -115,10 +141,10 @@ function resolve(sel: OrderSelections): {
  *   total     = subtotal + surcharge   (whole dollars)
  * then converted to cents.
  */
-export function computeTotalCents(sel: OrderSelections): number {
-  const { tier, level, chosenAddOns } = resolve(sel);
+export function computeTotalCents(sel: OrderSelections, pricing: Pricing = DEFAULT_PRICING): number {
+  const { tier, level, chosenAddOns } = resolve(sel, pricing);
 
-  const minutesCost = sel.extraMinutes * EXTRA_MINUTE_PRICE;
+  const minutesCost = sel.extraMinutes * pricing.extraMinutePrice;
   const addOnsCost = chosenAddOns.reduce((s, o) => s + o.price, 0);
   const subtotal = tier.price + minutesCost + addOnsCost;
   const surcharge = Math.round(subtotal * (level.multiplier - 1));
@@ -131,8 +157,8 @@ export function computeTotalCents(sel: OrderSelections): number {
  * A human-readable one-liner for the Stripe line-item description, e.g.
  * "Medium film · 7 min · Premium detail · Custom narration".
  */
-export function summarizeSelections(sel: OrderSelections): string {
-  const { tier, level, chosenAddOns } = resolve(sel);
+export function summarizeSelections(sel: OrderSelections, pricing: Pricing = DEFAULT_PRICING): string {
+  const { tier, level, chosenAddOns } = resolve(sel, pricing);
 
   const totalMinutes = tier.minutes + sel.extraMinutes;
   const parts = [
