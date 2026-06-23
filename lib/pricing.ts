@@ -34,25 +34,25 @@ export type AddOn = {
 };
 
 export const LENGTHS: LengthTier[] = [
-  { id: "short", label: "Short", minutes: 3, price: 300, note: "A short and sweet first story." },
-  { id: "medium", label: "Medium", minutes: 5, price: 450, note: "Room for a fuller adventure." },
-  { id: "long", label: "Long", minutes: 10, price: 900, note: "The full journey, start to finish." },
+  { id: "short", label: "Short", minutes: 3, price: 180, note: "A short and sweet first story." },
+  { id: "medium", label: "Medium", minutes: 5, price: 290, note: "Room for a fuller adventure." },
+  { id: "long", label: "Long", minutes: 10, price: 580, note: "The full journey, start to finish." },
 ];
 
 export const DETAILS: DetailLevel[] = [
   { id: "basic", label: "Basic", multiplier: 1, note: "Clean, charming animation with all the essentials." },
-  { id: "detailed", label: "Detailed", multiplier: 1.1, note: "Richer backgrounds and more movement in every scene." },
-  { id: "premium", label: "Premium", multiplier: 1.3, note: "Our finest work, with lush detail in every frame." },
+  { id: "detailed", label: "Detailed", multiplier: 1, note: "Richer backgrounds and more movement in every scene." },
+  { id: "premium", label: "Premium", multiplier: 1, note: "Our finest work, with lush detail in every frame." },
 ];
 
 export const ADDONS: AddOn[] = [
-  { id: "narration", label: "Custom narration", price: 60, note: "A warm voice reads the story aloud." },
-  { id: "music", label: "Original music", price: 40, note: "A score written to match their adventure." },
+  { id: "narration", label: "Custom narration", price: 10, note: "A warm voice reads the story aloud." },
+  { id: "music", label: "Original music", price: 10, note: "A score written to match their adventure." },
   { id: "master", label: "Physical DVD", price: 25, note: "Their film on a real DVD, mailed to you to keep and watch again and again." },
 ];
 
 /** Each extra minute beyond the base length adds this many US dollars. */
-export const EXTRA_MINUTE_PRICE = 100;
+export const EXTRA_MINUTE_PRICE = 55;
 export const MAX_EXTRA_MINUTES = 30;
 
 export type OrderSelections = {

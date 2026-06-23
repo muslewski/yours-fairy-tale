@@ -7,45 +7,45 @@ import {
 } from "@/lib/pricing";
 
 describe("computeTotalCents", () => {
-  test("medium + 0 extra + basic + narration matches the old configurator total", () => {
-    // subtotal = 450 (medium) + 0 (extra) + 60 (narration) = 510
-    // surcharge = round(510 * (1 - 1)) = 0
-    // total = 510 dollars => 51000 cents
+  test("medium + 0 extra + basic + narration is the configurator total", () => {
+    // subtotal = 290 (medium) + 0 (extra) + 10 (narration) = 300
+    // surcharge = round(300 * (1 - 1)) = 0
+    // total = 300 dollars => 30000 cents
     const sel: OrderSelections = {
       length: "medium",
       detail: "basic",
       extraMinutes: 0,
       addOns: ["narration"],
     };
-    expect(computeTotalCents(sel)).toBe(51000);
+    expect(computeTotalCents(sel)).toBe(30000);
   });
 
   test("short + 0 extra + basic + no add-ons is the bare base price", () => {
-    // 300 dollars => 30000 cents
+    // 180 dollars => 18000 cents
     expect(
       computeTotalCents({ length: "short", detail: "basic", extraMinutes: 0, addOns: [] }),
-    ).toBe(30000);
+    ).toBe(18000);
   });
 
-  test("applies the detail multiplier to the full subtotal, rounded", () => {
-    // long (900) + 5 extra * 100 (500) + narration (60) + music (40) + master (25) = 1525
-    // premium multiplier 1.3 => surcharge = round(1525 * 0.3) = 458
-    // total = 1983 dollars => 198300 cents
+  test("detail level no longer adds a surcharge (flat multipliers)", () => {
+    // long (580) + 5 extra * 55 (275) + narration (10) + music (10) + master (25) = 900
+    // all multipliers are 1.0 => surcharge = 0
+    // total = 900 dollars => 90000 cents
     const sel: OrderSelections = {
       length: "long",
       detail: "premium",
       extraMinutes: 5,
       addOns: ["narration", "music", "master"],
     };
-    expect(computeTotalCents(sel)).toBe(198300);
+    expect(computeTotalCents(sel)).toBe(90000);
   });
 
-  test("detailed multiplier rounds the surcharge to whole dollars", () => {
-    // medium (450) + 0 + no add-ons = 450
-    // detailed 1.1 => surcharge = round(450 * 0.1) = 45 => total 495 dollars => 49500 cents
-    expect(
-      computeTotalCents({ length: "medium", detail: "detailed", extraMinutes: 0, addOns: [] }),
-    ).toBe(49500);
+  test("detailed and premium cost the same as basic while multipliers are flat", () => {
+    const base = { length: "medium", extraMinutes: 0, addOns: [] } as const;
+    // medium = 290 dollars => 29000 cents, regardless of detail level
+    expect(computeTotalCents({ ...base, detail: "basic" })).toBe(29000);
+    expect(computeTotalCents({ ...base, detail: "detailed" })).toBe(29000);
+    expect(computeTotalCents({ ...base, detail: "premium" })).toBe(29000);
   });
 
   test("throws on an unknown length", () => {
