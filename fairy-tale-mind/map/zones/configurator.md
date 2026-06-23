@@ -5,7 +5,7 @@ tags: [surface, conversion]
 status: active
 created: 2026-06-02
 updated: 2026-06-23
-related: ["[[checkout]]", "[[2026-06-16-photos-before-checkout-association]]"]
+related: ["[[checkout]]", "[[payload-backend]]", "[[2026-06-16-photos-before-checkout-association]]", "[[2026-06-23-pricing-in-payload-global]]"]
 sources: []
 owns:
   routes: []
@@ -14,19 +14,21 @@ owns:
     - "components/home/configurator/**"
     - "app/(site)/api/configurator/**"
     - "lib/pricing.ts"
+    - "lib/pricing-source.ts"
     - "lib/worlds.ts"
     - "tests/lib/pricing.test.ts"
+    - "tests/lib/pricing-source.test.ts"
 depends: ["[[checkout]]"]
 invariants:
-  - rule: "Prices live ONLY in lib/pricing.ts — the configurator imports them; it never re-declares LENGTHS/DETAILS/ADDONS. Same module is the server's authoritative price source."
-    enforcedBy: ["tests/lib/pricing.test.ts", "tests/stripe/checkout.test.ts"]
-  - rule: "The displayed total === computeTotalCents(selections) / 100 — client display and server charge use the same math."
+  - rule: "Editable prices live in the Payload `pricing` Global; lib/pricing.ts holds DEFAULT_PRICING (the code fallback) + the math. The configurator receives the resolved pricing as a PROP (getPricing() server-side, via app/(site)/page.tsx) — it never re-declares or value-imports LENGTHS/DETAILS/ADDONS, only types + summarizeSelections."
+    enforcedBy: ["tests/lib/pricing.test.ts", "tests/lib/pricing-source.test.ts", "tests/stripe/checkout.test.ts"]
+  - rule: "The displayed total === computeTotalCents(selections, pricing) / 100 — client display and server charge use the same math over the same resolved pricing."
     enforcedBy: ["tests/lib/pricing.test.ts"]
   - rule: "The CTA POSTs SELECTIONS (childName, world, length, detail, extraMinutes, addOns, plotNote) plus assetPaths (blob pathnames of photos uploaded in step 3) to /api/stripe/checkout and redirects to the returned Stripe url — it never sends a price and never opens the mock checkout."
     enforcedBy: ["e2e/checkout.spec.ts"]
   - rule: "World ids match collections/Orders.ts world options and lib/worlds.ts WORLD_LABELS; childName is optional (empty is allowed, parent adds it later)."
     enforcedBy: []
-verifiedAt: 55e29ee
+verifiedAt: 2b76d1d
 ---
 
 ## Purpose
@@ -51,13 +53,23 @@ Files are split under `components/home/configurator/`: `index.tsx` (shell), `ste
 `price-rail`, `photo-dropzone`). Only `index.tsx` carries `"use client"` — the leaves are
 imported into its client boundary, so a redundant directive would trip Next 16 warning 71007.
 
-## Pricing model (shared)
-All prices live in `lib/pricing.ts` (the single source of truth): `LENGTHS`, `DETAILS`,
-`ADDONS`, `EXTRA_MINUTE_PRICE`, `MAX_EXTRA_MINUTES`, plus `computeTotalCents(selections)`
-(authoritative amount, in cents) and `summarizeSelections()` (the Stripe line-item
-description). The configurator imports these for display; the checkout route imports the
-same `computeTotalCents` to charge — so the number shown is the number paid. Story worlds
-live in `lib/worlds.ts` (`WORLD_LABELS`, shared with the customer dashboard).
+## Pricing model (admin-editable, code fallback)
+Editable prices live in the Payload **`pricing` Global** (`globals/Pricing.ts`, owned by
+`[[payload-backend]]`). `lib/pricing.ts` now holds the `Pricing` type, `DEFAULT_PRICING`
+(the code fallback, kept in sync with live values), and the math —
+`computeTotalCents(sel, pricing = DEFAULT_PRICING)` + `summarizeSelections(sel, pricing)`;
+the legacy `LENGTHS/DETAILS/ADDONS/EXTRA_MINUTE_PRICE/MAX_EXTRA_MINUTES` exports remain as
+views onto `DEFAULT_PRICING` for any non-configurator importer.
+
+`lib/pricing-source.ts` `getPricing()` reads the global server-side (cached via
+`unstable_cache`, tag `"pricing"`; the global's `afterChange` calls
+`revalidateTag("pricing")`) and falls back to `DEFAULT_PRICING` if the global is
+unseeded/empty or the read throws — so a DB hiccup never breaks the page or the charge.
+The homepage server component (`app/(site)/page.tsx`) calls `getPricing()` and passes the
+resolved `pricing` down as a prop; the configurator and its leaves consume it (no value
+imports). The checkout route reads the same `getPricing()` for the authoritative charge —
+so the number shown is the number paid. Story worlds live in `lib/worlds.ts`
+(`WORLD_LABELS`, shared with the customer dashboard).
 
 ## Checkout wiring
 On step 3, "Create their video" POSTs the SELECTIONS to `POST /api/stripe/checkout` and
@@ -86,6 +98,9 @@ Reprice (2026-06-23): tier base prices Short/Medium/Long → $180/$290/$580,
 level adds no surcharge for now), and digital add-ons narration/music → $10 each
 (DVD stays $25). Values-only change in `lib/pricing.ts`; the multiplier-driven UI
 self-corrects (caption shows "Base price", the surcharge line stops rendering).
-Admin-editable pricing is the next step — a Payload `pricing` Global, see
-`fairy-tale-mind/specs/2026-06-23-payload-pricing-panel-design.md` and
-`[[payload-pricing-panel]]`.
+Admin-editable pricing landed (2026-06-23): a Payload `pricing` Global now drives the
+configurator (props) and the authoritative charge (`getPricing()`), with `DEFAULT_PRICING`
+as the fallback. The configurator no longer value-imports from `lib/pricing.ts`. See
+`[[2026-06-23-pricing-in-payload-global]]`. Still pending in prod: `generate:types` +
+`migrate:create` (creates the `pricing` table) must run in an env with a DB, then
+`payload migrate` against prod — see `[[payload-pricing-panel]]`.
