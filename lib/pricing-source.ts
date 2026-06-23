@@ -79,8 +79,11 @@ export async function readPricing(): Promise<Pricing> {
 
 /**
  * Cached entry point. Tagged "pricing"; the Global's afterChange hook calls
- * `revalidateTag("pricing")` so a studio edit propagates without a deploy.
+ * `revalidateTag("pricing", "max")` so a studio edit propagates immediately.
+ * The `revalidate` TTL is a safety net so an edit still shows within the window
+ * even if tag invalidation is missed.
  */
 export const getPricing = unstable_cache(readPricing, ["pricing-global"], {
   tags: ["pricing"],
+  revalidate: 300,
 });

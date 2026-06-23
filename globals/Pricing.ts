@@ -32,7 +32,9 @@ export const Pricing: GlobalConfig = {
         // deploy. Dynamic import keeps next/cache out of the Payload CLI graph
         // (migrate / generate:types load this config outside a request).
         const { revalidateTag } = await import("next/cache");
-        revalidateTag("pricing");
+        // Next 16: revalidateTag takes (tag, profile). "max" invalidates the
+        // longest-lived cache entries carrying this tag.
+        revalidateTag("pricing", "max");
       },
     ],
   },
