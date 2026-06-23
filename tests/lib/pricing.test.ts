@@ -3,7 +3,9 @@ import {
   computeTotalCents,
   summarizeSelections,
   MAX_EXTRA_MINUTES,
+  DEFAULT_PRICING,
   type OrderSelections,
+  type Pricing,
 } from "@/lib/pricing";
 
 describe("computeTotalCents", () => {
@@ -91,6 +93,48 @@ describe("computeTotalCents", () => {
   test("throws on non-integer extra minutes", () => {
     expect(() =>
       computeTotalCents({ length: "medium", detail: "basic", extraMinutes: 2.5, addOns: [] }),
+    ).toThrow();
+  });
+});
+
+describe("computeTotalCents with injected pricing", () => {
+  const altPricing: Pricing = {
+    ...DEFAULT_PRICING,
+    lengths: [{ id: "short", label: "Short", minutes: 3, price: 200, note: "" }],
+    extraMinutePrice: 99,
+    addOns: [{ id: "narration", label: "Custom narration", price: 33, note: "" }],
+  };
+
+  test("uses the injected pricing, not the defaults", () => {
+    // 200 + 2*99 (198) + narration 33 = 431 dollars => 43100 cents
+    expect(
+      computeTotalCents(
+        { length: "short", detail: "basic", extraMinutes: 2, addOns: ["narration"] },
+        altPricing,
+      ),
+    ).toBe(43100);
+  });
+
+  test("omitting pricing falls back to DEFAULT_PRICING (current live numbers)", () => {
+    // short 180 bare => 18000 cents
+    expect(
+      computeTotalCents({ length: "short", detail: "basic", extraMinutes: 0, addOns: [] }),
+    ).toBe(18000);
+  });
+
+  test("a length absent from injected pricing throws", () => {
+    expect(() =>
+      computeTotalCents(
+        { length: "long", detail: "basic", extraMinutes: 0, addOns: [] },
+        altPricing,
+      ),
+    ).toThrow();
+  });
+
+  test("respects an injected maxExtraMinutes", () => {
+    const capped: Pricing = { ...DEFAULT_PRICING, maxExtraMinutes: 5 };
+    expect(() =>
+      computeTotalCents({ length: "short", detail: "basic", extraMinutes: 6, addOns: [] }, capped),
     ).toThrow();
   });
 });
