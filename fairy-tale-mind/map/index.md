@@ -21,6 +21,10 @@
 | [[studio]] | active | ✓ fresh | The staff order panel at /studio — dashboard (revenue totals, needs-attention queue), order list, and a per-order workstation (status workflow with guardrails, delivery promise, browser-to-Blob video uploads), gated by the Payload admins login. Same brand chrome as the customer area; Payload /admin remains the fallback tool. |
 | [[testing]] | active | ✓ fresh | The test suite — vitest (unit/integration, DB-backed) + a hybrid Playwright E2E suite (deterministic Layer A, DB-backed Layer B on a Neon test branch, gated @smoke Layer C) + a CI typecheck step + the agent-order-tooling MCP harness (tests/agent-mcp/* vitest suite + e2e/agent-loop.spec.ts Layer B). The green-flag-for-production gate across Stripe · Payload · Better Auth · Next.js. |
 | [[the-mind]] | active | ✓ fresh | The Mind itself — the generator, the status hook, and the map-sync command. |
+| [[email-delivery]] | seeded | unverified | Transactional email via Resend — order confirmation, magic-link, status updates, waitlist thank-you, and contact relay. |
+| [[media-storage]] | seeded | unverified | Two-collection Vercel Blob strategy: gated `Media` (customer uploads) + public `SiteMedia` (marketing assets), with browser-to-Blob studio video uploads. |
+| [[order-lifecycle]] | seeded | unverified | End-to-end order state machine — Stripe webhook creation through access-token-gated video delivery, with customer↔studio notes thread. |
+| [[stripe-billing]] | seeded | unverified | Stripe integration — Checkout Session creation, webhook (account + order creation, refund/dispute sync), pricing config. No public sign-up; all accounts originate from the webhook. |
 
 ## ⚠ Verification gaps
 
