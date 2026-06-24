@@ -1,5 +1,9 @@
 {
   "mcpServers": {
+    "Neon": {
+      "type": "http",
+      "url": "https://mcp.neon.tech/mcp"
+    },
     "yours-fairy-tale-agent": {
       "type": "http",
       "url": "http://localhost:39199/mcp"

@@ -69,3 +69,4 @@ fairy-tale-mind/.obsidian/workspace*.json
 .navidx.log
 .navidx.lock
 .navidx.stamp
+.env*.local
