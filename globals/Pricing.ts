@@ -84,6 +84,25 @@ export const Pricing: GlobalConfig = {
           },
         },
         { name: "note", type: "text" },
+        {
+          name: "image",
+          type: "upload",
+          relationTo: "site-media",
+          admin: {
+            description:
+              "Preview image shown in the configurator for this detail level (public site media).",
+          },
+        },
+        {
+          name: "title",
+          type: "text",
+          admin: { description: "Headline above the preview image. Falls back to the label if empty." },
+        },
+        {
+          name: "description",
+          type: "textarea",
+          admin: { description: "Short paragraph describing what this detail level captures." },
+        },
       ],
     },
     {
