@@ -198,6 +198,7 @@ export function Configurator({ pricing }: { pricing: Pricing }) {
                     detailOptions={detailOptions}
                     detail={detail}
                     setDetail={setDetail}
+                    selectedDetail={lvl}
                     addOns={addOns}
                     addOnDefs={addOnDefs}
                     toggleAddOn={toggleAddOn}
