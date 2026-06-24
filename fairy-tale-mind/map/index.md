@@ -4,11 +4,11 @@
 
 | Zone | Status | Freshness | Summary |
 |---|---|---|---|
-| [[agent-tooling]] | active | ✓ fresh | A repo-local MCP server that lets AI agents create, drive, and inspect the full order lifecycle (customer + studio + refund) against the Neon test branch — composed with the existing Playwright MCP for UI. 16 tools, HTTP transport on port 39199, vite-node loader, synthesized Stripe events, hard boot guard. |
+| [[agent-tooling]] | active | ⚠ stale | A repo-local MCP server that lets AI agents create, drive, and inspect the full order lifecycle (customer + studio + refund) against the Neon test branch — composed with the existing Playwright MCP for UI. 16 tools, HTTP transport on port 39199, vite-node loader, synthesized Stripe events, hard boot guard. |
 | [[app-shell]] | active | ✓ fresh | Nav, footer, root layout and fonts — the chrome wrapping every page. Also owns the site-wide error/404 boundaries, sitemap/robots, security headers, and the legal pages (privacy/terms/refund). |
 | [[auth-gating]] | active | ✓ fresh | Two-layer /app gating: optimistic proxy cookie check + authoritative layout session check. Magic-link sign-in page. Owner-scoped order reads (list + single order). Per-order detail page with a customer→studio notes thread. |
 | [[checkout]] | active | ⚠ stale | Stripe checkout integration — mock UI simulation + real Checkout Session route + webhook that creates accounts, orders, sends confirmation email, and syncs refund/dispute status. |
-| [[configurator]] | active | ⚠ stale | The personalized video builder — the homepage's conversion centerpiece (#build). |
+| [[configurator]] | active | ✓ fresh | The personalized video builder — the homepage's conversion centerpiece (#build). |
 | [[contact]] | active | ⚠ stale | The /contact page — a functional Resend-backed contact form, direct channels, support highlights, a contact-oriented mini-FAQ, and a Place-an-order CTA. |
 | [[design-system]] | active | ⚠ stale | Brand tokens, motion primitives, comic shadows, and the cn helper. |
 | [[email-delivery]] | seeded | ⚠ stale | Transactional email via Resend — order confirmation, magic-link sign-in, order status updates, series waitlist thank-you, and contact form relay. Templates live in lib/email-template.ts + lib/email.ts; auth emails wired through Better Auth in lib/auth-emails.ts. |

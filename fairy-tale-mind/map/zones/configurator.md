@@ -4,8 +4,8 @@ summary: "The personalized video builder — the homepage's conversion centerpie
 tags: [surface, conversion]
 status: active
 created: 2026-06-02
-updated: 2026-06-23
-related: ["[[checkout]]", "[[payload-backend]]", "[[2026-06-16-photos-before-checkout-association]]", "[[2026-06-23-pricing-in-payload-global]]"]
+updated: 2026-06-24
+related: ["[[checkout]]", "[[payload-backend]]", "[[2026-06-16-photos-before-checkout-association]]", "[[2026-06-23-pricing-in-payload-global]]", "[[2026-06-24-sitemedia-via-upload-relationship]]"]
 sources: []
 owns:
   routes: []
@@ -28,7 +28,9 @@ invariants:
     enforcedBy: ["e2e/checkout.spec.ts"]
   - rule: "World ids match collections/Orders.ts world options and lib/worlds.ts WORLD_LABELS; childName is optional (empty is allowed, parent adds it later)."
     enforcedBy: []
-verifiedAt: 2b76d1d
+  - rule: "Each detail level may carry an optional admin-editable preview image (upload→site-media, resolved server-side to its public .url via getPricing() at depth:1), title, and description — DISPLAY-ONLY: they never reach computeTotalCents/summarizeSelections/the Stripe charge. All three are optional; DetailPreview returns null and the resolver still falls back to DEFAULT_PRICING when they (or the whole details array) are absent, so an unseeded tier never white-screens."
+    enforcedBy: ["tests/lib/pricing.test.ts", "tests/lib/pricing-source.test.ts"]
+verifiedAt: 36e810e
 ---
 
 ## Purpose
@@ -104,3 +106,11 @@ as the fallback. The configurator no longer value-imports from `lib/pricing.ts`.
 `[[2026-06-23-pricing-in-payload-global]]`. Still pending in prod: `generate:types` +
 `migrate:create` (creates the `pricing` table) must run in an env with a DB, then
 `payload migrate` against prod — see `[[payload-pricing-panel]]`.
+Detail-tier previews landed (2026-06-24, branch `feat/detail-tier-previews`): each
+detail level gained an optional admin-editable preview image (Payload `upload`→
+`site-media`), title, and description on `pricing.details[]`, resolved server-side by
+`getPricing()` at `depth:1` to a public `.url` and shown in a new `DetailPreview` panel
+(`components/home/configurator/detail-preview.tsx`) below the "Detail level" control.
+Display-only (no effect on the charge); first repo use of rendering a `site-media` asset
+through a relationship + public `.url`. See `[[2026-06-24-sitemedia-via-upload-relationship]]`.
+Pending in prod: `migrate` (adds `pricing_details.title/description/image_id`) + `generate:types`.
