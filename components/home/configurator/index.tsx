@@ -144,7 +144,7 @@ export function Configurator({ pricing }: { pricing: Pricing }) {
   return (
     <section
       id="build"
-      className="relative overflow-hidden bg-brand-deep py-20 text-white sm:py-28"
+      className="relative bg-brand-deep py-20 text-white sm:py-28"
       style={{
         backgroundImage:
           "radial-gradient(circle at 10px 10px, rgba(255,249,238,0.08) 2px, transparent 0)",
@@ -171,7 +171,7 @@ export function Configurator({ pricing }: { pricing: Pricing }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ type: "spring", stiffness: 120, damping: 20 }}
-          className="mt-12 grid overflow-hidden rounded-[28px] border-[3px] border-brand-deep bg-white text-brand-deep shadow-comic-lg lg:grid-cols-[1fr_350px]"
+          className="mt-12 grid rounded-[28px] border-[3px] border-brand-deep bg-white text-brand-deep shadow-comic-lg lg:grid-cols-[1fr_350px]"
         >
           {/* Controls */}
           <div className="space-y-9 p-7 sm:p-9">

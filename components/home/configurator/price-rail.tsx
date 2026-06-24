@@ -49,7 +49,10 @@ export function PriceRail(props: {
 }) {
   const { total, totalMinutes, lvl, tier, extraMinutes, minutesCost, chosenAddOns, surcharge, cta } = props;
   return (
-    <div className="border-t-[3px] border-brand-deep bg-brand-yellow p-7 sm:p-9 lg:border-l-[3px] lg:border-t-0">
+    <div className="rounded-b-[25px] border-t-[3px] border-brand-deep bg-brand-yellow lg:rounded-b-none lg:rounded-r-[25px] lg:border-l-[3px] lg:border-t-0">
+      {/* Sticky on desktop so the running total stays in view down the tall form;
+          the yellow column itself fills the grid row, so nothing empties out. */}
+      <div className="p-7 sm:p-9 lg:sticky lg:top-24">
       <p className="text-xs font-black uppercase tracking-widest text-brand-deep/60">
         Their video so far
       </p>
@@ -109,6 +112,7 @@ export function PriceRail(props: {
       </ul>
 
       {cta}
+      </div>
     </div>
   );
 }
