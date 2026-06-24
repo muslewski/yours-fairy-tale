@@ -30,7 +30,7 @@ invariants:
     enforcedBy: []
   - rule: "Each detail level may carry an optional admin-editable preview image (upload→site-media, resolved server-side to its public .url via getPricing() at depth:1), title, and description — DISPLAY-ONLY: they never reach computeTotalCents/summarizeSelections/the Stripe charge. All three are optional; DetailPreview returns null and the resolver still falls back to DEFAULT_PRICING when they (or the whole details array) are absent, so an unseeded tier never white-screens."
     enforcedBy: ["tests/lib/pricing.test.ts", "tests/lib/pricing-source.test.ts"]
-verifiedAt: 36e810e
+verifiedAt: 984fd81
 ---
 
 ## Purpose
@@ -119,3 +119,9 @@ three detail previews wired to their `site-media` images) directly via SQL, then
 live on yoursfairytale.com (basic/detailed/premium images + titles render). Open minor: the
 seed used a direct SQL write (not an admin save), and `payload-types.ts` is not yet
 regenerated (cosmetic — the resolver casts around the generated type).
+Sticky price rail (2026-06-24): the preview panel made the form tall enough to scroll the
+running total out of view, so the rail content is now `lg:sticky lg:top-24` (matches
+`scroll-padding-top: 6rem`) inside a full-height yellow column. Required dropping
+`overflow-hidden` on the `#build` section and the card grid (it traps `position: sticky`)
+and moving the card's corner-clipping onto the rail's own rounded corners. Verified live
+(sticky engages + holds; corners clean).
