@@ -62,9 +62,8 @@ export default buildConfig({
     seoPlugin({
       collections: ["pages"],
       uploadsCollection: "site-media",
-      generateTitle: ({ doc }: { doc?: { title?: string } }) =>
-        doc?.title ?? "Yours Fairy Tale",
-      generateURL: ({ doc }: { doc?: { slug?: string } }) =>
+      generateTitle: ({ doc }) => doc?.title ?? "Yours Fairy Tale",
+      generateURL: ({ doc }) =>
         "https://www.yoursfairytale.com/" + (doc?.slug ?? ""),
     }),
     // Media storage. Pass-through mode (disablePayloadAccessControl NOT set):

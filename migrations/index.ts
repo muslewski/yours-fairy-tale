@@ -9,6 +9,7 @@ import * as migration_20260617_000000_orders_access_token from "./20260617_00000
 import * as migration_20260617_000001_orders_delivery_urls from "./20260617_000001_orders_delivery_urls";
 import * as migration_20260623_000000_pricing_global from "./20260623_000000_pricing_global";
 import * as migration_20260624_000000_pricing_detail_media from "./20260624_000000_pricing_detail_media";
+import * as migration_20260624_000001_cms_pages from "./20260624_000001_cms_pages";
 
 export const migrations = [
   {
@@ -65,5 +66,10 @@ export const migrations = [
     up: migration_20260624_000000_pricing_detail_media.up,
     down: migration_20260624_000000_pricing_detail_media.down,
     name: "20260624_000000_pricing_detail_media",
+  },
+  {
+    up: migration_20260624_000001_cms_pages.up,
+    down: migration_20260624_000001_cms_pages.down,
+    name: "20260624_000001_cms_pages",
   },
 ];
