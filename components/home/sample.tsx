@@ -16,6 +16,9 @@ const SAMPLE_VIDEO_SRC: string | null =
 const SAMPLE_VIDEO_POSTER = "/sample/sample-poster.webp";
 const REACTION_VIDEO_SRC: string | null =
   "https://vnbkdvadf65nev7m.public.blob.vercel-storage.com/site/YoursFairyTaleFirstReakcja-FiSaPidNATfgNMYikocS3ptMGL7Rpi.mp4";
+// A delighted frame (~0:15) pulled from the clip, so the player shows a warm
+// thumbnail instead of the video's dark opening frame.
+const REACTION_VIDEO_POSTER = "/sample/reaction-poster.webp";
 
 function VideoCard({
   src,
@@ -109,7 +112,8 @@ export function Sample() {
           <div className="mt-8">
             <VideoCard
               src={REACTION_VIDEO_SRC}
-              preload="metadata"
+              poster={REACTION_VIDEO_POSTER}
+              preload="none"
               aspect="portrait"
               tilt
               fallbackTitle="Reaction coming soon"
