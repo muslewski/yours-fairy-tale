@@ -65,7 +65,7 @@ describe("computeTotalCents", () => {
   });
 
   test("detailed and premium cost the same as basic while multipliers are flat", () => {
-    const base = { length: "medium", extraMinutes: 0, addOns: [] } as const;
+    const base = { length: "medium", extraMinutes: 0, addOns: [] };
     // medium = 290 dollars => 29000 cents, regardless of detail level
     expect(computeTotalCents({ ...base, detail: "basic" })).toBe(29000);
     expect(computeTotalCents({ ...base, detail: "detailed" })).toBe(29000);
