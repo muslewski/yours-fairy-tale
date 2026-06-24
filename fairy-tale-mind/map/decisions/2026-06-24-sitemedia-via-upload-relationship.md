@@ -16,7 +16,7 @@ supersededBy: ""
 # Detail-tier preview images via a site-media upload relationship
 
 **Date:** 2026-06-24
-**Status:** decided (code shipped on branch `feat/detail-tier-previews`; prod migration + types pending)
+**Status:** live in prod (merged to `main`, deployed; migration auto-applied on prod boot via `instrumentation.ts` — see [[migrate-on-deploy-via-instrumentation]] — and the `pricing` global seeded with all three detail previews; verified on yoursfairytale.com 2026-06-24). Minor follow-up: `payload-types.ts` not yet regenerated (the resolver casts around the generated type, so this is cosmetic).
 
 ## What
 

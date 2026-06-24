@@ -103,9 +103,9 @@ self-corrects (caption shows "Base price", the surcharge line stops rendering).
 Admin-editable pricing landed (2026-06-23): a Payload `pricing` Global now drives the
 configurator (props) and the authoritative charge (`getPricing()`), with `DEFAULT_PRICING`
 as the fallback. The configurator no longer value-imports from `lib/pricing.ts`. See
-`[[2026-06-23-pricing-in-payload-global]]`. Still pending in prod: `generate:types` +
-`migrate:create` (creates the `pricing` table) must run in an env with a DB, then
-`payload migrate` against prod — see `[[payload-pricing-panel]]`.
+`[[2026-06-23-pricing-in-payload-global]]`. (The `pricing` table migration reached prod
+automatically on deploy via `instrumentation.ts` — see `[[migrate-on-deploy-via-instrumentation]]`;
+prod stays on `DEFAULT_PRICING` until the global is seeded.)
 Detail-tier previews landed (2026-06-24, branch `feat/detail-tier-previews`): each
 detail level gained an optional admin-editable preview image (Payload `upload`→
 `site-media`), title, and description on `pricing.details[]`, resolved server-side by
@@ -113,4 +113,9 @@ detail level gained an optional admin-editable preview image (Payload `upload`�
 (`components/home/configurator/detail-preview.tsx`) below the "Detail level" control.
 Display-only (no effect on the charge); first repo use of rendering a `site-media` asset
 through a relationship + public `.url`. See `[[2026-06-24-sitemedia-via-upload-relationship]]`.
-Pending in prod: `migrate` (adds `pricing_details.title/description/image_id`) + `generate:types`.
+Shipped to prod 2026-06-24: merged to `main` + deployed; the `pricing_details` migration
+auto-applied on boot, and the `pricing` global was seeded (full DEFAULT_PRICING values + the
+three detail previews wired to their `site-media` images) directly via SQL, then verified
+live on yoursfairytale.com (basic/detailed/premium images + titles render). Open minor: the
+seed used a direct SQL write (not an admin save), and `payload-types.ts` is not yet
+regenerated (cosmetic — the resolver casts around the generated type).
