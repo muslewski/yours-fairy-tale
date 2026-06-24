@@ -5,7 +5,7 @@ tags: [infrastructure, layout]
 status: active
 created: 2026-06-02
 updated: 2026-06-15
-related: ["[[site-preloader]]", "[[section-waves]]", "[[auth-gating]]"]
+related: ["[[site-preloader]]", "[[section-waves]]", "[[auth-gating]]", "[[cms-pages]]"]
 sources: []
 owns:
   routes: []
@@ -47,7 +47,7 @@ invariants:
     enforcedBy: []
   - rule: "Footer social icons link to the REAL profiles (Instagram, Facebook, TikTok — yoursfairytale7), open in a new tab with rel='noopener noreferrer', and announce the new-tab behavior to assistive tech. Never href='#'."
     enforcedBy: []
-verifiedAt: 01f9d80
+verifiedAt: 1619367
 ---
 
 ## Purpose
@@ -118,3 +118,7 @@ links were removed and "Track your order" repointed to `/sign-in` (the real path
 Studio panel (2026-06-10): `app/robots.ts` disallow gained `/studio` — the staff panel
 stays out of the index alongside `/app`, `/admin`, `/api`, and `/sign-in` (see
 `[[studio]]`).
+CMS pages (2026-06-24): `app/sitemap.ts` became async and now appends published
+Payload page slugs (tagged `pages-sitemap`, so a publish busts it) to the static
+routes. A new dynamic route `app/(site)/[slug]/` renders CMS pages with the shared
+nav/footer chrome — owned by `[[cms-pages]]`, not app-shell.

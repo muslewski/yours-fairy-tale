@@ -5,7 +5,7 @@ tags: [backend, payload, auth, infrastructure]
 status: active
 created: 2026-06-03
 updated: 2026-06-23
-related: ["[[migrate-on-deploy-via-instrumentation]]", "[[prod-env-fail-closed]]", "[[blob-pass-through-proxied-video]]", "[[waitlist-signups-payload-plus-resend]]", "[[studio]]", "[[browser-to-blob-uploads-metadata-media]]", "[[two-media-collections-public-and-gated]]", "[[configurator]]", "[[2026-06-23-pricing-in-payload-global]]"]
+related: ["[[migrate-on-deploy-via-instrumentation]]", "[[prod-env-fail-closed]]", "[[blob-pass-through-proxied-video]]", "[[waitlist-signups-payload-plus-resend]]", "[[studio]]", "[[browser-to-blob-uploads-metadata-media]]", "[[two-media-collections-public-and-gated]]", "[[configurator]]", "[[2026-06-23-pricing-in-payload-global]]", "[[cms-pages]]", "[[2026-06-24-payload-type-generation-workaround]]"]
 sources:
   - "fairy-tale-mind/plans/2026-06-03-purchase-account-dashboard.md"
   - "fairy-tale-mind/plans/2026-06-10-launch-hardening.md"
@@ -76,7 +76,7 @@ invariants:
     enforcedBy: ["collections/Waitlist.ts", "tests/waitlist/waitlist.test.ts"]
   - rule: "The `pricing` Global (globals/Pricing.ts) is read: PUBLIC (the configurator + checkout need it) but update: adminOnly — only staff change money. Its afterChange revalidates the `pricing` cache tag. Consumed via getPricing() ([[configurator]] / [[checkout]]), never written from customer code. NOTE: the pricing table migration (migrate:create) is not yet generated — pending an env with a DB."
     enforcedBy: ["globals/Pricing.ts"]
-verifiedAt: 2b76d1d
+verifiedAt: 1619367
 ---
 
 ## Purpose
@@ -210,3 +210,16 @@ and owns its own pathnames, so it is unaffected).
   empty map for a config with no custom components; regenerate on a supported Node, or once
   custom admin components are added. `payload-types.ts` is not generated yet for the same
   reason — it is not required for the app to run.
+- UPDATE (2026-06-24): type generation now WORKS via a literal file-path import of
+  `payload/dist/bin/generateTypes.js` under vite-node, and migrations via an
+  ephemeral-Postgres drizzle-push + `pg_dump` — see
+  `[[2026-06-24-payload-type-generation-workaround]]`. We still don't commit
+  `payload-types.ts`: a fresh full regen surfaces pre-existing orders/webhook type
+  drift (`[[payload-types-orders-type-drift]]`).
+
+## CMS Pages (2026-06-24)
+The `pages` collection + `@payloadcms/plugin-seo` were registered here (full detail
+in the `[[cms-pages]]` zone). `payload.config.ts` gained `Pages` in `collections`
+and `seoPlugin({ collections: ["pages"], uploadsCollection: "site-media" })` in
+`plugins`; `migrations/20260624_000001_cms_pages.ts` auto-applies on deploy. Pages
+is the first drafts-enabled (`versions:{drafts}`) collection in the repo.
