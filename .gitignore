@@ -50,6 +50,7 @@ yarn-error.log*
 
 # payload local-disk upload storage (dev only; prod uses Vercel Blob)
 /media
+/site-media
 next-env.d.ts
 
 # claude / mcp tooling artifacts

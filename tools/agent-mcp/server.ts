@@ -58,7 +58,9 @@ async function main(): Promise<void> {
           }
           transport = new StreamableHTTPServerTransport({
             sessionIdGenerator: () => randomUUID(),
-            onsessioninitialized: (id) => transports.set(id, transport!),
+            onsessioninitialized: (id) => {
+              transports.set(id, transport!);
+            },
           });
           transport.onclose = () => {
             if (transport!.sessionId) transports.delete(transport!.sessionId);
