@@ -93,7 +93,7 @@ export function Sample() {
 
         {/* Beat 2 — their first reaction */}
         <div className="mt-10">
-          <span className="inline-block rotate-[1deg] rounded-lg border-[3px] border-brand-deep bg-brand-pink px-3 py-1.5 text-xs font-black uppercase tracking-widest text-white shadow-comic-sm">
+          <span className="inline-block rotate-[1deg] rounded-lg border-[3px] border-brand-deep bg-brand-pink px-3 py-1.5 text-xs font-black uppercase tracking-widest text-brand-deep shadow-comic-sm">
             Their first reaction
           </span>
           <h3 className="mt-5 font-[family-name:var(--font-fredoka)] text-2xl font-bold uppercase tracking-tight sm:text-3xl">
