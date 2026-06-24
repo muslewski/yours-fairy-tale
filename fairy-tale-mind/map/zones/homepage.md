@@ -25,7 +25,7 @@ invariants:
     enforcedBy: []
   - rule: "The hero headline must not overflow on mobile: it scales fluidly (clamp) and wraps below lg; whitespace-nowrap is restored only at lg+. The character column moves above the headline on mobile (order-first) at a capped width, restored to the right column at lg."
     enforcedBy: []
-verifiedAt: b09c44f
+verifiedAt: a050135
 ---
 
 ## Purpose
@@ -41,7 +41,8 @@ a two-beat story on one cream background via an in-file `VideoCard` helper:
    zero video bytes load until play.
 2. **Their first reaction** (pink chip, `rotate-[1deg]` tilt, testimonial caption) — a child's
    real first watch (`REACTION_VIDEO_SRC`, a public `site-media` Blob URL),
-   `preload="metadata"` so its first frame is the poster (no poster asset). The clip is
+   `preload="none"` + a curated poster (`public/sample/reaction-poster.webp`, a delighted ~0:15
+   frame, so the player shows a warm thumbnail rather than the clip's dark opening frame). The clip is
    1080×1920 (9:16), so `VideoCard` takes an `aspect` prop (`"video"` | `"portrait"`): the
    reaction uses `aspect="portrait"` → an `aspect-[9/16]` frame, width-capped (`max-w-[340px]`)
    + centered, video `object-cover` so the matching-ratio frame fills with no black bars.
