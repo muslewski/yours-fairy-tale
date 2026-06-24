@@ -23,6 +23,12 @@ export type DetailLevel = {
   /** Surcharge multiplier applied to the subtotal (1 = no surcharge). */
   multiplier: number;
   note: string;
+  /** Resolved public URL of the preview image (site-media). Optional. */
+  image?: string;
+  /** Headline for the preview panel. Optional; falls back to label. */
+  title?: string;
+  /** Short paragraph describing what this tier captures. Optional. */
+  description?: string;
 };
 
 export type AddOn = {
@@ -40,9 +46,33 @@ export const LENGTHS: LengthTier[] = [
 ];
 
 export const DETAILS: DetailLevel[] = [
-  { id: "basic", label: "Basic", multiplier: 1, note: "Clean, charming animation with all the essentials." },
-  { id: "detailed", label: "Detailed", multiplier: 1, note: "Richer backgrounds and more movement in every scene." },
-  { id: "premium", label: "Premium", multiplier: 1, note: "Our finest work, with lush detail in every frame." },
+  {
+    id: "basic",
+    label: "Basic",
+    multiplier: 1,
+    note: "Clean, charming animation with all the essentials.",
+    title: "The essentials, beautifully done",
+    description:
+      "Clean, charming animation with your child as the hero. Their name, their world, their story, told simply and warmly.",
+  },
+  {
+    id: "detailed",
+    label: "Detailed",
+    multiplier: 1,
+    note: "Richer backgrounds and more movement in every scene.",
+    title: "Their world, in the details",
+    description:
+      "We carry through the little things that make it theirs: the color of a favorite cup, a beloved toy, the patterns on their clothes.",
+  },
+  {
+    id: "premium",
+    label: "Premium",
+    multiplier: 1,
+    note: "Our finest work, with lush detail in every frame.",
+    title: "Every little detail, cherished",
+    description:
+      "Our finest work. The fine touches come along too, from a tiny necklace to a favorite watch, so every frame feels made just for them.",
+  },
 ];
 
 export const ADDONS: AddOn[] = [

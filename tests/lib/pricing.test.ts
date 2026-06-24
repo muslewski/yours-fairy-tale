@@ -8,6 +8,28 @@ import {
   type Pricing,
 } from "@/lib/pricing";
 
+describe("detail-level preview fields", () => {
+  test("every default detail level has title and description copy", () => {
+    for (const d of DEFAULT_PRICING.details) {
+      expect(typeof d.title).toBe("string");
+      expect(d.title!.length).toBeGreaterThan(0);
+      expect(typeof d.description).toBe("string");
+      expect(d.description!.length).toBeGreaterThan(0);
+    }
+  });
+
+  test("default detail levels ship no image (images live only in the global)", () => {
+    for (const d of DEFAULT_PRICING.details) {
+      expect(d.image).toBeUndefined();
+    }
+  });
+
+  test("preview fields do not affect the computed total", () => {
+    const sel = { length: "medium", detail: "premium", extraMinutes: 0, addOns: [] };
+    expect(computeTotalCents(sel)).toBe(290 * 100); // multiplier 1.0, no add-ons
+  });
+});
+
 describe("computeTotalCents", () => {
   test("medium + 0 extra + basic + narration is the configurator total", () => {
     // subtotal = 290 (medium) + 0 (extra) + 10 (narration) = 300
@@ -43,7 +65,7 @@ describe("computeTotalCents", () => {
   });
 
   test("detailed and premium cost the same as basic while multipliers are flat", () => {
-    const base = { length: "medium", extraMinutes: 0, addOns: [] } as const;
+    const base = { length: "medium", extraMinutes: 0, addOns: [] };
     // medium = 290 dollars => 29000 cents, regardless of detail level
     expect(computeTotalCents({ ...base, detail: "basic" })).toBe(29000);
     expect(computeTotalCents({ ...base, detail: "detailed" })).toBe(29000);

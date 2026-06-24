@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from "motion/react";
 import { Segmented, type SegOption } from "./segmented";
 import { RangeSlider } from "./range-slider";
-import type { AddOn } from "@/lib/pricing";
+import { DetailPreview } from "./detail-preview";
+import type { AddOn, DetailLevel } from "@/lib/pricing";
 
 const usd = (n: number) => `$${n.toLocaleString("en-US")}`;
 
@@ -18,6 +19,7 @@ export function StepFilm({
   detailOptions,
   detail,
   setDetail,
+  selectedDetail,
   addOns,
   addOnDefs,
   toggleAddOn,
@@ -35,6 +37,7 @@ export function StepFilm({
   detailOptions: SegOption[];
   detail: string;
   setDetail: (v: string) => void;
+  selectedDetail: DetailLevel;
   addOns: string[];
   addOnDefs: AddOn[];
   toggleAddOn: (id: string) => void;
@@ -64,6 +67,7 @@ export function StepFilm({
         selected={detail}
         onSelect={setDetail}
       />
+      <DetailPreview detail={selectedDetail} />
 
       <fieldset>
         <legend className="font-[family-name:var(--font-fredoka)] text-xl font-semibold">

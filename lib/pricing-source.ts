@@ -19,7 +19,15 @@ import { DEFAULT_PRICING, type Pricing } from "@/lib/pricing";
 // exists after `npm run generate:types`, so we map fields defensively here.
 type PricingGlobalDoc = {
   lengths?: Array<{ id: string; label: string; minutes: number; price: number; note?: string | null }>;
-  details?: Array<{ id: string; label: string; multiplier: number; note?: string | null }>;
+  details?: Array<{
+    id: string;
+    label: string;
+    multiplier: number;
+    note?: string | null;
+    image?: { url?: string | null } | string | null;
+    title?: string | null;
+    description?: string | null;
+  }>;
   addOns?: Array<{ id: string; label: string; price: number; note?: string | null }>;
   extraMinutePrice?: number;
   maxExtraMinutes?: number;
@@ -30,8 +38,8 @@ export async function readPricing(): Promise<Pricing> {
     const payload = await getPayloadClient();
     // Cast around the slug union: it resolves to "pricing" only after types are
     // generated; the runtime call is unaffected.
-    const findGlobal = payload.findGlobal as (args: { slug: string }) => Promise<PricingGlobalDoc>;
-    const g = await findGlobal({ slug: "pricing" });
+    const findGlobal = payload.findGlobal as (args: { slug: string; depth?: number }) => Promise<PricingGlobalDoc>;
+    const g = await findGlobal({ slug: "pricing", depth: 1 });
 
     if (
       !g ||
@@ -62,6 +70,14 @@ export async function readPricing(): Promise<Pricing> {
         label: d.label,
         multiplier: d.multiplier,
         note: d.note ?? "",
+        image:
+          typeof d.image === "string"
+            ? d.image
+            : typeof d.image === "object" && d.image
+              ? (d.image.url ?? undefined)
+              : undefined,
+        title: d.title ?? undefined,
+        description: d.description ?? undefined,
       })),
       addOns: g.addOns.map((a) => ({
         id: a.id,
