@@ -106,6 +106,50 @@ describe("readPricing", () => {
     expect(p.details[0].description).toBeUndefined();
   });
 
+  test("resolves a plain-string image url directly (no object wrapping)", async () => {
+    const doc = {
+      lengths: [{ id: "short", label: "Short", minutes: 3, price: 200, note: null }],
+      details: [
+        {
+          id: "basic",
+          label: "Basic",
+          multiplier: 1,
+          note: null,
+          image: "https://cdn.example.com/site/basic-string.webp",
+        },
+      ],
+      addOns: [],
+      extraMinutePrice: 55,
+      maxExtraMinutes: 30,
+    };
+    mockClient.mockResolvedValue({ findGlobal: vi.fn().mockResolvedValue(doc) });
+
+    const p = await readPricing();
+    expect(p.details[0].image).toBe("https://cdn.example.com/site/basic-string.webp");
+  });
+
+  test("resolves image to undefined when object present but url is null (no throw)", async () => {
+    const doc = {
+      lengths: [{ id: "short", label: "Short", minutes: 3, price: 200, note: null }],
+      details: [
+        {
+          id: "basic",
+          label: "Basic",
+          multiplier: 1,
+          note: null,
+          image: { url: null },
+        },
+      ],
+      addOns: [],
+      extraMinutePrice: 55,
+      maxExtraMinutes: 30,
+    };
+    mockClient.mockResolvedValue({ findGlobal: vi.fn().mockResolvedValue(doc) });
+
+    const p = await readPricing();
+    expect(p.details[0].image).toBeUndefined();
+  });
+
   test("requests the global at depth 1 so the image upload populates", async () => {
     const findGlobal = vi.fn().mockResolvedValue({
       lengths: [{ id: "short", label: "Short", minutes: 3, price: 200, note: null }],

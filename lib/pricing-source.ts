@@ -70,7 +70,12 @@ export async function readPricing(): Promise<Pricing> {
         label: d.label,
         multiplier: d.multiplier,
         note: d.note ?? "",
-        image: typeof d.image === "object" && d.image ? (d.image.url ?? undefined) : undefined,
+        image:
+          typeof d.image === "string"
+            ? d.image
+            : typeof d.image === "object" && d.image
+              ? (d.image.url ?? undefined)
+              : undefined,
         title: d.title ?? undefined,
         description: d.description ?? undefined,
       })),
