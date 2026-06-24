@@ -2,6 +2,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import { postgresAdapter } from "@payloadcms/db-postgres";
+import { seoPlugin } from "@payloadcms/plugin-seo";
 import { lexicalEditor } from "@payloadcms/richtext-lexical";
 import { vercelBlobStorage } from "@payloadcms/storage-vercel-blob";
 import { buildConfig } from "payload";
@@ -14,6 +15,7 @@ import { Verifications } from "./collections/auth/Verifications";
 import { Media } from "./collections/Media";
 import { SiteMedia } from "./collections/SiteMedia";
 import { Orders } from "./collections/Orders";
+import { Pages } from "./collections/Pages";
 import { Waitlist } from "./collections/Waitlist";
 import { Pricing } from "./globals/Pricing";
 
@@ -51,9 +53,20 @@ export default buildConfig({
     Waitlist,
     Media,
     SiteMedia,
+    // CMS content.
+    Pages,
   ],
   globals: [Pricing],
   plugins: [
+    // Per-page SEO meta (title/description/og-image + SERP preview) on Pages.
+    seoPlugin({
+      collections: ["pages"],
+      uploadsCollection: "site-media",
+      generateTitle: ({ doc }: { doc?: { title?: string } }) =>
+        doc?.title ?? "Yours Fairy Tale",
+      generateURL: ({ doc }: { doc?: { slug?: string } }) =>
+        "https://www.yoursfairytale.com/" + (doc?.slug ?? ""),
+    }),
     // Media storage. Pass-through mode (disablePayloadAccessControl NOT set):
     // file URLs stay on Payload's /api/media/file/* endpoint, so the
     // collection's `read: adminOnly` keeps gating every byte; Payload streams
