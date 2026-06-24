@@ -35,7 +35,7 @@ invariants:
     enforcedBy: ["tests/lib/pages-source.test.ts"]
   - rule: "RenderBlocks maps blockType→component and renders unknown types as null (forward-compatible when a later deploy adds blocks the frontend predates)."
     enforcedBy: ["tests/components/render-blocks.test.ts"]
-verifiedAt: 1619367
+verifiedAt: 9369825
 ---
 
 ## Purpose
@@ -91,3 +91,11 @@ Payload CLI forced a from-scratch migration + type-generation method
 (`[[2026-06-24-payload-type-generation-workaround]]`). Whole-branch review: SHIP
 (0 critical / 0 important). Spec/plan: `fairy-tale-mind/specs/2026-06-24-cms-pages-design.md`,
 `fairy-tale-mind/plans/2026-06-24-cms-pages.md`. Deferrals in `tech-debt/`.
+Verified end-to-end 2026-06-24 (re-stamped): a seeded published `about` Page
+(Hero+RichText+Media+CTA + plugin-seo meta) on the Neon test branch renders all
+four blocks on-brand under `next start`; `<title>`/description/`og:image`/canonical
+resolve from the `meta` group; an in-process admin REST republish busts the SSG
+page (on-demand revalidation, no redeploy); `/about` appears in `/sitemap.xml`;
+unknown slug → 404. Seeded via `tools/agent-mcp/seed-page.ts` (test branch only).
+The run surfaced that the agent-mcp harness sits in the prod `next build`
+typecheck graph — see `[[agent-mcp-in-prod-build-typecheck]]`.
