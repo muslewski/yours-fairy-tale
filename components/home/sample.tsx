@@ -21,6 +21,7 @@ function VideoCard({
   src,
   poster,
   preload,
+  aspect = "video",
   tilt = false,
   fallbackTitle,
   fallbackBody,
@@ -28,31 +29,37 @@ function VideoCard({
   src: string | null;
   poster?: string;
   preload: "none" | "metadata";
+  /** Frame shape — match the source's ratio so it fills with no black bars.
+   *  "video" = 16:9 landscape; "portrait" = 9:16, width-capped and centered. */
+  aspect?: "video" | "portrait";
   tilt?: boolean;
   fallbackTitle: string;
   fallbackBody: string;
 }) {
+  const portrait = aspect === "portrait";
   return (
-    <div
-      className={`overflow-hidden rounded-[28px] border-[3px] border-brand-deep shadow-comic-lg ${
-        tilt ? "rotate-[1deg]" : ""
-      }`}
-    >
-      {src ? (
-        <video
-          src={src}
-          poster={poster}
-          preload={preload}
-          controls
-          playsInline
-          className="aspect-video w-full bg-brand-deep"
-        />
-      ) : (
-        <div className="flex aspect-video w-full flex-col items-center justify-center gap-3 bg-brand-deep text-white">
-          <span className="text-lg font-black uppercase tracking-wide">{fallbackTitle}</span>
-          <span className="max-w-md text-sm font-medium text-white/70">{fallbackBody}</span>
-        </div>
-      )}
+    <div className={portrait ? "mx-auto w-full max-w-[340px]" : ""}>
+      <div
+        className={`overflow-hidden rounded-[28px] border-[3px] border-brand-deep shadow-comic-lg ${
+          portrait ? "aspect-[9/16]" : "aspect-video"
+        } ${tilt ? "rotate-[1deg]" : ""}`}
+      >
+        {src ? (
+          <video
+            src={src}
+            poster={poster}
+            preload={preload}
+            controls
+            playsInline
+            className="h-full w-full bg-brand-deep object-cover"
+          />
+        ) : (
+          <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-brand-deep text-white">
+            <span className="text-lg font-black uppercase tracking-wide">{fallbackTitle}</span>
+            <span className="max-w-md text-sm font-medium text-white/70">{fallbackBody}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -103,6 +110,7 @@ export function Sample() {
             <VideoCard
               src={REACTION_VIDEO_SRC}
               preload="metadata"
+              aspect="portrait"
               tilt
               fallbackTitle="Reaction coming soon"
               fallbackBody="The first real reactions are on their way. They'll live right here."
