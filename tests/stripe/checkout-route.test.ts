@@ -12,6 +12,16 @@ vi.mock("@/lib/stripe", () => ({
   },
 }));
 
+// `getPricing` wraps `readPricing` in Next's `unstable_cache`, which throws
+// ("Invariant: incrementalCache missing") when the route is invoked outside a
+// Next server context — i.e. directly in vitest. We are testing the route's
+// Stripe error path, not pricing, so stub it with the built-in defaults.
+vi.mock("@/lib/pricing-source", async () => {
+  const { DEFAULT_PRICING } =
+    await vi.importActual<typeof import("@/lib/pricing")>("@/lib/pricing");
+  return { getPricing: vi.fn().mockResolvedValue(DEFAULT_PRICING) };
+});
+
 import { POST } from "@/app/api/stripe/checkout/route";
 
 function postRequest(body: unknown): Request {
