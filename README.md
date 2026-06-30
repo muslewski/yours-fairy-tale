@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/banner.svg" alt="Yours Fairy Tale — an animated fairy tale made for them." width="100%" />
+</p>
+
 # Yours Fairy Tale
 
 Personalized animated fairy-tale videos starring a customer's child. The
