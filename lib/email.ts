@@ -15,15 +15,23 @@ interface SendEmailOptions {
 }
 
 export async function sendEmail({ to, subject, html, replyTo }: SendEmailOptions): Promise<void> {
+  // Real mail must go out in production — EXCEPT under Playwright e2e, which runs
+  // a *production build* but delivers magic links through a file sink (lib/auth.ts)
+  // and must not depend on Resend creds or send real mail to fake test addresses.
+  // Boot validation (lib/required-env.ts) guarantees these keys in real prod, so
+  // this backstop never fires there regardless of the e2e exemption.
+  const mustSend =
+    process.env.NODE_ENV === "production" && process.env.PLAYWRIGHT_TEST !== "1";
+
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    // Dev convenience only. In production this is a hard error: silently
+    // Dev/e2e convenience. In real production this is a hard error: silently
     // dropping mail would break magic-link sign-in (the only sign-in path)
     // and order confirmations with no visible symptom.
-    if (process.env.NODE_ENV === "production") {
+    if (mustSend) {
       throw new Error("[email] RESEND_API_KEY is not set in production.");
     }
-    console.warn("[email] RESEND_API_KEY is not set — skipping email send (dev only).");
+    console.warn("[email] RESEND_API_KEY is not set — skipping email send (dev/e2e only).");
     return;
   }
 
@@ -34,10 +42,10 @@ export async function sendEmail({ to, subject, html, replyTo }: SendEmailOptions
   if (!from) {
     // Same contract as RESEND_API_KEY above: boot validation guarantees this in
     // production; the resend.dev sandbox sender is a dev-only convenience.
-    if (process.env.NODE_ENV === "production") {
+    if (mustSend) {
       throw new Error("[email] RESEND_FROM is not set in production.");
     }
-    console.warn("[email] RESEND_FROM is not set — using the resend.dev sandbox sender (dev only).");
+    console.warn("[email] RESEND_FROM is not set — using the resend.dev sandbox sender (dev/e2e only).");
   }
 
   const resend = new Resend(apiKey);
