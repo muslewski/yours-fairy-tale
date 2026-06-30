@@ -34,5 +34,8 @@ test("@layerA series waitlist server failure shows a gentle error", async ({ pag
   await page.getByLabel("Email address").fill("ada@example.com");
   await page.getByRole("button", { name: "Notify me" }).click();
 
-  await expect(page.getByRole("alert")).toContainText("try again in a moment");
+  // Target the form's own error node: Next's route announcer is also role="alert".
+  await expect(page.locator("#series-waitlist-error")).toContainText(
+    "try again in a moment",
+  );
 });

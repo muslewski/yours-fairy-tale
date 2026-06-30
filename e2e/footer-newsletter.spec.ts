@@ -15,6 +15,9 @@ test("@layerA footer newsletter posts the email and confirms", async ({ page }) 
   await page.locator("#footer-email").fill("ada@example.com");
   await page.locator("#footer-email").press("Enter");
 
-  await expect(page.getByRole("status")).toContainText(/on the list/i);
+  // Scope to the footer: a global loading splash also carries role="status".
+  await expect(page.locator("footer").getByRole("status")).toContainText(
+    /on the list/i,
+  );
   expect(posted).toMatchObject({ email: "ada@example.com", source: "footer" });
 });
