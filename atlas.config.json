@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "enabled": true,
+  "vaultDir": "fairy-tale-mind",
+  "modules": {
+    "flows": true,
+    "programs": true,
+    "vision": true,
+    "reference": true,
+    "archive": true,
+    "backlog": true,
+    "drafts": true
+  },
+  "check": { "strictFreshness": false },
+  "hooks": {
+    "sessionStartStatus": true,
+    "sessionStartIndexRefresh": false
+  },
+  "skills": {
+    "dir": ".claude/skills",
+    "nav": "atlas-nav"
+  }
+}
