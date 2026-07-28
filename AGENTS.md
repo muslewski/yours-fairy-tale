@@ -1,3 +1,7 @@
+<!-- sage-fleet-pointer -->
+**Parallel sessions** — other agent sessions may run concurrently. Before claiming work or opening a PR, use the `sage-fleet` skill (collision check → claim → merge brief). SAGE off/absent ⇒ silent no-op.
+<!-- /sage-fleet-pointer -->
+
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
 
