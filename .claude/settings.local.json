@@ -6,7 +6,16 @@
       "Bash(rtk grep *)",
       "Bash(rtk find *)",
       "Bash(rtk git *)",
-      "Bash(node scripts/nav-refresh-index.mjs*)"
+      "Bash(node scripts/nav-refresh-index.mjs*)",
+      "mcp__plugin_context-mode_context-mode__ctx_search",
+      "Bash(rtk --version)",
+      "Bash(rtk gain *)",
+      "mcp__plugin_context-mode_context-mode__ctx_batch_execute",
+      "mcp__Neon__list_projects"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "yours-fairy-tale-agent"
+  ]
 }

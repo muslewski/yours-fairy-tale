@@ -11,7 +11,9 @@
     "backlog": true,
     "drafts": true
   },
-  "check": { "strictFreshness": false },
+  "check": {
+    "strictFreshness": false
+  },
   "hooks": {
     "sessionStartStatus": true,
     "sessionStartIndexRefresh": false
@@ -19,5 +21,9 @@
   "skills": {
     "dir": ".claude/skills",
     "nav": "atlas-nav"
+  },
+  "telemetry": {
+    "enabled": true,
+    "level": "debug"
   }
 }
