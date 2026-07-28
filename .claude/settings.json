@@ -4,7 +4,18 @@
       {
         "matcher": "",
         "hooks": [
-          { "type": "command", "command": "node scripts/mind/status.mjs" }
+          {
+            "type": "command",
+            "command": "node scripts/mind/status.mjs"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx --no-install atlas status --hook"
+          }
         ]
       }
     ]
