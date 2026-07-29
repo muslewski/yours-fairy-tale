@@ -4,6 +4,10 @@
 
 <!-- BEGIN:nextjs-agent-rules -->
 # This is NOT the Next.js you know
+<!-- desk:ship=auto -->
+Ship policy: auto. A worker that finishes a task on a branch may push, open a PR, and
+merge it without a human gate. This is a deliberate per-repo choice, not the default —
+every other repo on this desk is human-end-gate.
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
