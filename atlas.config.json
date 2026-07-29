@@ -21,9 +21,5 @@
   "skills": {
     "dir": ".claude/skills",
     "nav": "atlas-nav"
-  },
-  "telemetry": {
-    "enabled": true,
-    "level": "debug"
   }
 }
