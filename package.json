@@ -25,8 +25,7 @@
     "atlas:wire": "atlas wire all",
     "predev": "atlas gate",
     "mind:check": "atlas check",
-    "mind:build": "atlas build",
-    "//sage-gate": "global only \u2014 sage gate (preferred judge) is machine-level; not chained into predev. run: sage gate"
+    "mind:build": "atlas build"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.85.0",
@@ -56,11 +55,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "memory-atlas": "0.5.3",
+    "memory-atlas": "^0.5.3",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite-node": "^6.0.0",
     "vitest": "^4.1.8",
     "zod": "^4.4.3"
-  }
+  },
+  "//sage-gate": "global only — sage gate (preferred judge) is machine-level; not chained into predev. run: sage gate"
 }
